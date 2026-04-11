@@ -33,7 +33,54 @@ correct statement in context.
   - the development has reached the gauge-function material in Section G of
     Chapter 3;
   - Chapter 3 is still in progress;
-  - Chapters 4 and beyond have not yet been started in this repository.
+  - Chapters 4 and beyond have not yet been started in this repository, so the
+    roadmap below picks up from the current Chapter 3 frontier.
+
+## Roadmap
+
+From here, we plan to continue chapter-by-chapter in book order. The goal is a
+comprehensive sweep of the remainder of the book: main results, examples, and
+exercises will all be formalized, with dependency-critical exercises prioritized
+first whenever they unlock later sections.
+
+1. Finish Chapter 3, *Cones and Cosmic Closure*: complete the remaining
+   positive-hull and gauge-function material, then close out the rest of the
+   chapter.
+2. Chapter 4, *Set Convergence*: formalize inner and outer limits,
+   Painleve-Kuratowski convergence, Pompeiu-Hausdorff distance, and the
+   compactness and horizon-limit layer.
+3. Chapter 5, *Set-Valued Mappings*: cover domains, ranges, inverses,
+   semicontinuity, local boundedness, graphical convergence, and selection
+   material.
+4. Chapter 6, *Variational Geometry*: develop tangent cones, normal cones,
+   Clarke regularity, multipliers, proximal normals, and tangent-normal
+   relations.
+5. Chapter 7, *Epigraphical Limits*: formalize pointwise convergence,
+   epi-convergence, minimization stability, epi-continuity, and epi-distance
+   results.
+6. Chapter 8, *Subderivatives and Subgradients*: cover subderivatives,
+   subgradients, convexity and optimality criteria, duality, calmness, and
+   graphical differentiation.
+7. Chapter 9, *Lipschitzian Properties*: formalize Lipschitz moduli,
+   subdifferential criteria, the Aubin property, metric regularity, and
+   derivative-based characterizations.
+8. Chapter 10, *Subdifferential Calculus*: develop normals to level sets, chain
+   rules, parametric optimality, PLQ and amenable objects, and coderivative
+   calculus.
+9. Chapter 11, *Dualization*: cover Legendre-Fenchel duality, conjugacy, polar
+   sets and gauges, dual operations, dual optimization, and Lagrangian
+   constructions.
+10. Chapter 12, *Monotone Mappings*: formalize monotonicity and maximality,
+    Minty parameterization, links with convex functions, graphical convergence,
+    and variational inequalities.
+11. Chapter 13, *Second-Order Theory*: develop second-order differentiability,
+    second subderivatives, calculus rules, second-order optimality, and
+    prox-regularity.
+12. Chapter 14, *Measurability*: cover measurable mappings and selections,
+    normal integrands, operations on integrands, and integral functionals.
+
+Priorities may occasionally shift to match Mathlib support and dependency order,
+but the intended reading and formalization order remains the book order.
 
 ## Repository Layout
 

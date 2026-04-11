@@ -190,6 +190,81 @@ theorem convex_inequality_of_convex_epigraph_of_nonneg {h : E → EReal}
       exact lt_of_le_of_lt hzle (by exact_mod_cast hsum_lt)
     exact not_lt_of_ge (le_of_lt hγ₂) hltγ
 
+/-- A function with convex epigraph and no value `⊥` satisfies the convexity
+inequality. This is the `EReal` bridge needed for functions like entropy that
+can take negative values but never `⊥`. -/
+theorem convex_inequality_of_convex_epigraph_of_ne_bot {h : E → EReal}
+    (hep : Convex ℝ (epigraph h)) (hbot : ∀ x, h x ≠ ⊥) :
+    ∀ ⦃x y : E⦄ ⦃a b : ℝ⦄,
+      0 ≤ a → 0 ≤ b → a + b = 1 →
+      h (a • x + b • y) ≤ (a : EReal) * h x + (b : EReal) * h y := by
+  intro x y a b ha hb hab
+  rcases ha.eq_or_lt with rfl | ha'
+  · have hb1 : b = 1 := by linarith
+    subst hb1
+    simp
+  rcases hb.eq_or_lt with rfl | hb'
+  · have ha1 : a = 1 := by linarith
+    subst ha1
+    simp
+  by_cases htop : (a : EReal) * h x + (b : EReal) * h y = ⊤
+  · rw [htop]
+    exact le_top
+  · by_contra hxy
+    have hlt :
+        (a : EReal) * h x + (b : EReal) * h y <
+          h (a • x + b • y) := by
+      exact lt_of_not_ge hxy
+    obtain ⟨γ, hγ₁, hγ₂⟩ := EReal.exists_between_coe_real hlt
+    have hxbot : h x ≠ ⊥ := hbot x
+    have hybot : h y ≠ ⊥ := hbot y
+    have hxtop : h x ≠ ⊤ := by
+      intro hxtop
+      have hby_ne_bot : (b : EReal) * h y ≠ ⊥ := by
+        rw [EReal.mul_ne_bot]
+        exact ⟨Or.inl (EReal.coe_ne_bot b), Or.inr hybot,
+          Or.inl (EReal.coe_ne_top b), Or.inl (by exact_mod_cast hb)⟩
+      have hsum_top :
+          (a : EReal) * h x + (b : EReal) * h y = ⊤ := by
+        rw [hxtop, EReal.coe_mul_top_of_pos ha', EReal.top_add_of_ne_bot hby_ne_bot]
+      exact htop hsum_top
+    have hytop : h y ≠ ⊤ := by
+      intro hytop
+      have hax_ne_bot : (a : EReal) * h x ≠ ⊥ := by
+        rw [EReal.mul_ne_bot]
+        exact ⟨Or.inl (EReal.coe_ne_bot a), Or.inr hxbot,
+          Or.inl (EReal.coe_ne_top a), Or.inl (by exact_mod_cast ha)⟩
+      have hsum_top :
+          (a : EReal) * h x + (b : EReal) * h y = ⊤ := by
+        rw [hytop, EReal.coe_mul_top_of_pos hb', EReal.add_top_of_ne_bot hax_ne_bot]
+      exact htop hsum_top
+    let α : ℝ := (h x).toReal
+    let β : ℝ := (h y).toReal
+    have hα : (α : EReal) = h x := EReal.coe_toReal hxtop hxbot
+    have hβ : (β : EReal) = h y := EReal.coe_toReal hytop hybot
+    have hxepi : (x, α) ∈ epigraph h := by
+      rw [mem_epigraph_iff]
+      exact le_of_eq hα.symm
+    have hyepi : (y, β) ∈ epigraph h := by
+      rw [mem_epigraph_iff]
+      exact le_of_eq hβ.symm
+    have hmem := hep hxepi hyepi ha hb hab
+    have hzle :
+        h (a • x + b • y) ≤ (((a * α + b * β : ℝ) : EReal)) := by
+      simpa [mem_epigraph_iff, Prod.smul_mk, Prod.mk_add_mk, smul_eq_mul] using hmem
+    have hsum_lt : a * α + b * β < γ := by
+      have hsum_lt' :
+          (((a * α + b * β : ℝ) : EReal)) < (γ : EReal) := by
+        calc
+          (((a * α + b * β : ℝ) : EReal))
+              = (a : EReal) * h x + (b : EReal) * h y := by
+                  rw [← hα, ← hβ, ← EReal.coe_mul, ← EReal.coe_mul, ← EReal.coe_add]
+          _ < (γ : EReal) := hγ₁
+      exact_mod_cast hsum_lt'
+    have hltγ : h (a • x + b • y) < (γ : EReal) := by
+      exact lt_of_le_of_lt hzle (by exact_mod_cast hsum_lt)
+    exact not_lt_of_ge (le_of_lt hγ₂) hltγ
+
 /-- A sublinear function satisfies the convexity inequality. -/
 theorem convex_inequality_of_sublinear {h : E → EReal}
     (hh : Sublinear h) :
@@ -248,6 +323,17 @@ theorem sublinear_of_positivelyHomogeneous_of_convex_epigraph_of_nonneg
     Sublinear h :=
   sublinear_of_positivelyHomogeneous_of_convex hph
     (convex_inequality_of_convex_epigraph_of_nonneg hep hnonneg)
+
+/-- Positive homogeneity together with convex epigraph and absence of `⊥`
+values implies sublinearity. -/
+theorem sublinear_of_positivelyHomogeneous_of_convex_epigraph_of_ne_bot
+    {h : E → EReal}
+    (hph : PositivelyHomogeneous h)
+    (hep : Convex ℝ (epigraph h))
+    (hbot : ∀ x, h x ≠ ⊥) :
+    Sublinear h :=
+  sublinear_of_positivelyHomogeneous_of_convex hph
+    (convex_inequality_of_convex_epigraph_of_ne_bot hep hbot)
 
 /-- A function is sublinear iff it is positively homogeneous and satisfies the
 convexity inequality. -/

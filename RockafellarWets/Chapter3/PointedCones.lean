@@ -27,6 +27,12 @@ equal `0` unless every summand already vanishes. -/
 def IsPointed (K : Set E) : Prop :=
   ∀ n : ℕ, ∀ z : Fin n → E, (∀ i, z i ∈ K) → (∑ i, z i) = 0 → ∀ i, z i = 0
 
+/-- Pointedness is inherited by subsets. -/
+theorem IsPointed.mono {K L : Set E} (hL : IsPointed L) (hKL : K ⊆ L) :
+    IsPointed K := by
+  intro n z hz hsum i
+  exact hL n z (fun j => hKL (hz j)) hsum i
+
 /-- A pointed cone annihilates any vanishing finite sum indexed by an arbitrary
 finite type. -/
 theorem IsPointed.fintype {K : Set E} (hK : IsPointed K)

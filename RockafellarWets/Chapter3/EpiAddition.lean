@@ -23,19 +23,19 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 /-- The linear map sending two epigraph points `(y,a)` and `(w,b)` to the
 epigraph point `((w, y + w), a + b)` of the epi-sum integrand. -/
-private def epiSumLinearMap : ((E × ℝ) × (E × ℝ)) →ₗ[ℝ] ((E × E) × ℝ) where
+def epiSumLinearMap : ((E × ℝ) × (E × ℝ)) →ₗ[ℝ] ((E × E) × ℝ) where
   toFun p := ((p.2.1, p.1.1 + p.2.1), p.1.2 + p.2.2)
   map_add' p q := by
     ext <;> simp [add_assoc, add_left_comm, add_comm]
   map_smul' c p := by
     ext <;> simp [smul_add, mul_add]
 
-@[simp] private theorem epiSumLinearMap_apply (p : ((E × ℝ) × (E × ℝ))) :
+@[simp] theorem epiSumLinearMap_apply (p : ((E × ℝ) × (E × ℝ))) :
     epiSumLinearMap p = ((p.2.1, p.1.1 + p.2.1), p.1.2 + p.2.2) := rfl
 
 /-- Real epigraphs are stable under the epi-sum linear map as soon as both
 functions are everywhere strictly above `⊥`. -/
-private theorem image_epiSumLinearMap_eq_epigraph
+theorem image_epiSumLinearMap_eq_epigraph
     {h₁ h₂ : E → EReal}
     (hbot₁ : ∀ x, h₁ x > ⊥) (hbot₂ : ∀ x, h₂ x > ⊥) :
     epiSumLinearMap '' (epigraph h₁ ×ˢ epigraph h₂) =

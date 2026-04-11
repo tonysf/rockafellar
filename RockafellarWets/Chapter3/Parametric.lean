@@ -50,14 +50,14 @@ the extended-real setting. -/
 def paramArgmin (f : E × F → EReal) (u : F) : Set E :=
   {x | valueFunction f u = f (x, u) ∧ valueFunction f u < ⊤ ∧ valueFunction f u > ⊥}
 
-private def valueProjection : ((E × F) × ℝ) →ₗ[ℝ] F × ℝ where
+def valueProjection : ((E × F) × ℝ) →ₗ[ℝ] F × ℝ where
   toFun p := (p.1.2, p.2)
   map_add' p q := by
     ext <;> rfl
   map_smul' c p := by
     ext <;> rfl
 
-@[simp] private theorem valueProjection_apply (p : ((E × F) × ℝ)) :
+@[simp] theorem valueProjection_apply (p : ((E × F) × ℝ)) :
     valueProjection p = (p.1.2, p.2) := rfl
 
 /-- A finite lower level set is convex whenever the epigraph is convex. -/
@@ -360,6 +360,122 @@ theorem epigraph_valueFunction_eq_valueProjection_image_epigraph_of_lsc_localUni
       hqp (Filter.Eventually.of_forall hqepi)
   refine ⟨((xBar, u), a), hlimit, ?_⟩
   simp [valueProjection]
+
+/-- If a slice has finite infimum, then local uniform level-boundedness and
+lower semicontinuity rule out the value `-∞`. -/
+theorem bot_lt_valueFunction_of_lt_top_of_lsc_localUniform
+    [FiniteDimensional ℝ E]
+    {f : E × F → EReal} (hlsc : LowerSemicontinuous f)
+    (hbot : ∀ p : E × F, f p > ⊥)
+    (hLB : IsLevelBoundedInXLocallyUniformly f) {u : F}
+    (htop : valueFunction f u < ⊤) :
+    valueFunction f u > ⊥ := by
+  let g : E → EReal := fun x => f (x, u)
+  have hg_lsc : LowerSemicontinuous g := by
+    simpa [g, Function.comp] using
+      hlsc.comp (continuous_id.prodMk continuous_const)
+  have hfin : ∃ x : E, g x < ⊤ := by
+    by_contra h
+    push_neg at h
+    have hall : ∀ x : E, g x = ⊤ := by
+      intro x
+      exact le_antisymm le_top (h x)
+    have htop' : valueFunction f u = ⊤ := by
+      simp [valueFunction, g, hall]
+    exact (ne_of_lt htop) htop'
+  rcases hfin with ⟨x0, hx0fin⟩
+  let α : ℝ := (g x0).toReal
+  let K : Set E := levelSet g α
+  have hx0K : x0 ∈ K := by
+    change g x0 ≤ (α : EReal)
+    simpa [α] using EReal.le_coe_toReal (x := g x0) (ne_of_lt hx0fin)
+  have hKne : K.Nonempty := ⟨x0, hx0K⟩
+  have hKclosed : IsClosed K := by
+    simpa [K] using isClosed_levelSet_of_lsc_ereal hg_lsc α
+  obtain ⟨eps, heps, hbounded_prod⟩ := hLB u α
+  have hpair_bdd : IsBounded ((fun x : E => (x, u)) '' K) := by
+    refine hbounded_prod.subset ?_
+    rintro _ ⟨x, hx, rfl⟩
+    refine ⟨?_, ?_⟩
+    · exact ⟨by simp, by simpa [Metric.mem_closedBall, le_of_lt heps]⟩
+    · simpa [K] using hx
+  have hfst :
+      Prod.fst '' ((fun x : E => (x, u)) '' K) = K := by
+    ext x
+    constructor
+    · rintro ⟨p, ⟨y, hy, rfl⟩, hp⟩
+      simpa using hp ▸ hy
+    · intro hx
+      exact ⟨(x, u), ⟨x, hx, rfl⟩, rfl⟩
+  have hKbounded : IsBounded K := by
+    rw [← hfst]
+    exact hpair_bdd.image_fst
+  have hKcompact : IsCompact K := by
+    exact Metric.isCompact_iff_isClosed_bounded.2 ⟨hKclosed, hKbounded⟩
+  have hreal_lsc : LowerSemicontinuousOn (fun x : E => (g x).toReal) K := by
+    rw [← lowerSemicontinuous_restrict_iff, lsc_iff_sublevelSets_closed]
+    intro β
+    have hEq :
+        {x : K | K.restrict (fun x : E => (g x).toReal) x ≤ β} =
+          Subtype.val ⁻¹' levelSet g β := by
+      ext x
+      constructor
+      · intro hx
+        have hx_top : g x.1 ≠ ⊤ := by
+          exact ne_of_lt (lt_of_le_of_lt x.2 (EReal.coe_lt_top α))
+        have hx_bot : g x.1 ≠ ⊥ := ne_of_gt (hbot (x.1, u))
+        have hx' : (((g x.1).toReal : ℝ) : EReal) ≤ (β : EReal) := by
+          exact_mod_cast hx
+        simpa [levelSet, EReal.coe_toReal hx_top hx_bot] using hx'
+      · intro hx
+        have hx' : g x.1 ≤ (β : EReal) := by
+          simpa [levelSet] using hx
+        simpa using
+          (EReal.toReal_le_toReal hx' (ne_of_gt (hbot (x.1, u))) (EReal.coe_ne_top β))
+    rw [hEq]
+    exact (isClosed_levelSet_of_lsc_ereal hg_lsc β).preimage continuous_subtype_val
+  obtain ⟨xMin, hxMinK, hxMin⟩ :=
+    exists_min_of_lsc_compact (f := fun x : E => (g x).toReal) hreal_lsc hKcompact hKne
+  have hlower : (((g xMin).toReal : ℝ) : EReal) ≤ valueFunction f u := by
+    refine le_iInf ?_
+    intro x
+    by_cases hxK : x ∈ K
+    · have hxMin_top : g xMin ≠ ⊤ := by
+        exact ne_of_lt (lt_of_le_of_lt hxMinK (EReal.coe_lt_top α))
+      have hxMin_bot : g xMin ≠ ⊥ := ne_of_gt (hbot (xMin, u))
+      have hx_top : g x ≠ ⊤ := by
+        exact ne_of_lt (lt_of_le_of_lt hxK (EReal.coe_lt_top α))
+      have hx_bot : g x ≠ ⊥ := ne_of_gt (hbot (x, u))
+      have hreal : (g xMin).toReal ≤ (g x).toReal := hxMin hxK
+      calc
+        (((g xMin).toReal : ℝ) : EReal) ≤ (((g x).toReal : ℝ) : EReal) := by
+          exact_mod_cast hreal
+        _ = g x := EReal.coe_toReal hx_top hx_bot
+        _ = f (x, u) := rfl
+    · have hαlt : (α : EReal) < g x := lt_of_not_ge hxK
+      have hmin_le_α : (((g xMin).toReal : ℝ) : EReal) ≤ (α : EReal) := by
+        have h' : (g xMin).toReal ≤ α := by
+          simpa [α] using
+            (EReal.toReal_le_toReal hxMinK (ne_of_gt (hbot (xMin, u))) (EReal.coe_ne_top α))
+        exact_mod_cast h'
+      exact le_trans hmin_le_α hαlt.le
+  exact lt_of_lt_of_le (by simp) hlower
+
+/-- Under local uniform level-boundedness, the value function of a proper lsc
+integrand is proper. -/
+theorem isProper_valueFunction_of_lsc_localUniform
+    [FiniteDimensional ℝ E]
+    {f : E × F → EReal} (hlsc : LowerSemicontinuous f) (hproper : IsProper f)
+    (hLB : IsLevelBoundedInXLocallyUniformly f) :
+    IsProper (valueFunction f) := by
+  constructor
+  · rcases hproper.1 with ⟨⟨x, u⟩, hxu⟩
+    exact ⟨u, (iInf_le (fun x' : E => f (x', u)) x).trans_lt hxu⟩
+  · intro u
+    by_cases htop : valueFunction f u < ⊤
+    · exact bot_lt_valueFunction_of_lt_top_of_lsc_localUniform hlsc hproper.2 hLB htop
+    · have hu_top : valueFunction f u = ⊤ := le_antisymm le_top (le_of_not_gt htop)
+      simpa [hu_top]
 
 /-- A proper function has a nonempty value-function epigraph. -/
 theorem epigraph_valueFunction_nonempty_of_isProper

@@ -11,9 +11,15 @@ basic properties:
 -/
 
 import RockafellarWets.Chapter3.HorizonCones
+import RockafellarWets.Chapter3.LinearImages
 import RockafellarWets.Chapter3.HomogeneousOperations
+import RockafellarWets.Chapter3.CosmicClosure
+import RockafellarWets.Chapter3.HorizonFunctions
 import RockafellarWets.Chapter1.Semicontinuity
+import Mathlib.Analysis.Convex.Gauge
+import Mathlib.Analysis.LocallyConvex.Barrelled
 import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.Topology.Baire.CompleteMetrizable
 
 open Set EReal
 open scoped Pointwise
@@ -102,6 +108,130 @@ theorem convex_positiveHull {C : Set E} (hC : Convex ℝ C) :
       have hcoef_b : (a + b) * (b / (a + b)) = b := by
         field_simp [hs.ne']
       simp [hcoef_a, hcoef_b]
+
+/-- The first-coordinate projection of the ray-space cone with trivial
+direction part is the positive hull. -/
+theorem fst_image_raySpaceCone_zero_eq_positiveHull (C : Set E) :
+    (LinearMap.fst ℝ E ℝ) '' raySpaceCone C ({0} : Set E) = positiveHull C := by
+  ext x
+  constructor
+  · rintro ⟨p, hp, rfl⟩
+    rcases hp with hOrd | hHor
+    · rcases hOrd with ⟨y, hy, a, ha, hEq⟩
+      right
+      refine ⟨a, ha, y, hy, ?_⟩
+      simpa using congrArg Prod.fst hEq
+    · rcases p with ⟨y, b⟩
+      rcases hHor with ⟨hy, hb⟩
+      left
+      have hy0 : y = 0 := by simpa using hy
+      simpa [hy0]
+  · intro hx
+    rcases hx with rfl | ⟨a, ha, y, hy, rfl⟩
+    · refine ⟨(0, 0), ?_, by simp⟩
+      exact Or.inr ⟨by simp, rfl⟩
+    · refine ⟨(a • y, -a), ?_, by simp⟩
+      exact Or.inl ⟨y, hy, a, ha, rfl⟩
+
+/-- The first-coordinate projection of the ray-space cone with horizon
+directions adjoined is `positiveHull C ∪ horizonCone C`. -/
+theorem fst_image_raySpaceCone_horizon_eq (C : Set E) :
+    (LinearMap.fst ℝ E ℝ) '' raySpaceCone C (horizonCone C) =
+      positiveHull C ∪ horizonCone C := by
+  ext x
+  constructor
+  · rintro ⟨p, hp, rfl⟩
+    rcases hp with hOrd | hHor
+    · left
+      rcases hOrd with ⟨y, hy, a, ha, hEq⟩
+      right
+      refine ⟨a, ha, y, hy, ?_⟩
+      simpa using congrArg Prod.fst hEq
+    · right
+      rcases p with ⟨y, b⟩
+      rcases hHor with ⟨hy, hb⟩
+      simp at hb
+      subst hb
+      simpa using hy
+  · intro hx
+    rcases hx with hx | hx
+    · rcases hx with rfl | ⟨a, ha, y, hy, rfl⟩
+      · refine ⟨(0, 0), ?_, by simp⟩
+        exact Or.inr ⟨zero_mem_horizonCone C, rfl⟩
+      · refine ⟨(a • y, -a), ?_, by simp⟩
+        exact Or.inl ⟨y, hy, a, ha, rfl⟩
+    · exact ⟨(x, 0), Or.inr ⟨hx, rfl⟩, by simp⟩
+
+/-- **Exercise 3.48(a)**: for a closed set avoiding the origin, the closure of
+its positive hull is obtained by adjoining the horizon cone. -/
+theorem closure_positiveHull_eq_union_horizonCone [FiniteDimensional ℝ E]
+    {C : Set E} (hCclosed : IsClosed C) (h0C : (0 : E) ∉ C) :
+    closure (positiveHull C) = positiveHull C ∪ horizonCone C := by
+  let L : (E × ℝ) →ₗ[ℝ] E := LinearMap.fst ℝ E ℝ
+  have hzeroCone : IsCone ({0} : Set E) := by
+    refine ⟨by simp, ?_⟩
+    intro x hx c hc
+    simpa [Set.mem_singleton_iff.mp hx]
+  have hSclosed : IsClosed (raySpaceCone C (horizonCone C)) := by
+    exact (isClosed_raySpaceCone_iff (isCone_horizonCone C)).2
+      ⟨hCclosed, isClosed_horizonCone C, subset_rfl⟩
+  have hScone : IsCone (raySpaceCone C (horizonCone C)) :=
+    isCone_raySpaceCone (isCone_horizonCone C)
+  have hker :
+      ∀ ⦃v : E × ℝ⦄, v ∈ horizonCone (raySpaceCone C (horizonCone C)) → L v = 0 → v = 0 := by
+    intro v hv hLv
+    have hvS : v ∈ raySpaceCone C (horizonCone C) := by
+      simpa [horizonCone_eq_self_of_isClosed_isCone hSclosed hScone] using hv
+    rcases hvS with hOrd | hHor
+    · rcases hOrd with ⟨x, hx, a, ha, hEq⟩
+      have hvfst : v.1 = 0 := by
+        simpa [L] using hLv
+      have hfst : a • x = 0 := by
+        simpa [hEq] using hvfst
+      have hx0 : x = 0 :=
+        (smul_eq_zero.mp hfst).resolve_left ha.ne'
+      exact False.elim (h0C (hx0 ▸ hx))
+    · rcases v with ⟨w, b⟩
+      rcases hHor with ⟨hw, hb⟩
+      simp at hb
+      subst hb
+      have hw0 : w = 0 := by
+        simpa [L] using hLv
+      ext <;> simp [hw0]
+  have hclosedUnion : IsClosed (positiveHull C ∪ horizonCone C) := by
+    have hclosedImage :
+        IsClosed (L '' raySpaceCone C (horizonCone C)) :=
+      isClosed_linearImage_of_horizonCone_ker_trivial
+        (L := L) (C := raySpaceCone C (horizonCone C)) hSclosed hker
+    rw [fst_image_raySpaceCone_horizon_eq] at hclosedImage
+    exact hclosedImage
+  apply le_antisymm
+  · exact closure_minimal Set.subset_union_left hclosedUnion
+  · intro x hx
+    rcases hx with hx | hx
+    · exact subset_closure hx
+    · have hpair :
+          ((x, (0 : ℝ)) : E × ℝ) ∈ closure (raySpaceCone C ({0} : Set E)) :=
+        mem_closure_raySpaceCone_of_mem_horizonCone hzeroCone hx
+      have hxcl :
+          x ∈ closure (L '' raySpaceCone C ({0} : Set E)) := by
+        simpa [L] using
+          mem_closure_image (L.continuous_of_finiteDimensional.continuousAt) hpair
+      rw [fst_image_raySpaceCone_zero_eq_positiveHull] at hxcl
+      exact hxcl
+
+/-- **Exercise 3.48(a)**: if the closed set is bounded and avoids `0`, its
+positive hull is closed. -/
+theorem isClosed_positiveHull_of_isClosed_of_isBounded [FiniteDimensional ℝ E]
+    {C : Set E} (hCclosed : IsClosed C) (h0C : (0 : E) ∉ C)
+    (hCbdd : Bornology.IsBounded C) :
+    IsClosed (positiveHull C) := by
+  rw [← closure_eq_iff_isClosed, closure_positiveHull_eq_union_horizonCone hCclosed h0C,
+    (isBounded_iff_horizonCone_eq_singleton_zero (C := C)).mp hCbdd]
+  exact Set.union_eq_left.mpr (by
+    intro x hx
+    have hx0 : x = 0 := by simpa [Set.mem_singleton_iff] using hx
+    simpa [hx0] using zero_mem_positiveHull C)
 
 end Sets
 
@@ -278,6 +408,192 @@ theorem exists_mem_positiveHull_epigraph_lt {f : E → EReal} {x : E} {α : ℝ}
     simpa [A, positiveHullFunction] using hα
   obtain ⟨a, ha⟩ := exists_lt_of_ciInf_lt hlt
   exact ⟨a, a.property, ha⟩
+
+/-- If `f(0)` is finite and positive, then every nonnegative vertical point over
+the origin belongs to `positiveHull (epi f)`. -/
+theorem mem_positiveHull_epigraph_zero_of_zero_lt {f : E → EReal}
+    (h0pos : (0 : EReal) < f 0) (h0fin : f 0 < ⊤) {a : ℝ} (ha : 0 ≤ a) :
+    ((0 : E), a) ∈ positiveHull (epigraph f) := by
+  rcases eq_or_lt_of_le ha with rfl | ha'
+  · left
+    simp
+  · obtain ⟨b, hfb, hbr⟩ := EReal.exists_between_coe_real h0fin
+    have hbpos : (0 : ℝ) < b := by
+      have h0b : (0 : EReal) < (b : EReal) := lt_of_lt_of_le h0pos (le_of_lt hfb)
+      exact_mod_cast h0b
+    have h0epi : ((0 : E), b) ∈ epigraph f := by
+      rw [mem_epigraph_iff]
+      exact le_of_lt hfb
+    right
+    refine ⟨a / b, div_pos ha' hbpos, ((0 : E), b), h0epi, ?_⟩
+    ext <;> simp [Prod.smul_mk, smul_eq_mul, hbpos.ne', div_eq_mul_inv]
+
+/-- If `f(0)` is finite and positive, slices of `positiveHull (epi f)` are
+upward closed in the vertical coordinate. -/
+theorem mem_positiveHull_epigraph_of_mem_of_le {f : E → EReal}
+    (h0pos : (0 : EReal) < f 0) (h0fin : f 0 < ⊤)
+    {x : E} {a b : ℝ} (ha : (x, a) ∈ positiveHull (epigraph f)) (hab : a ≤ b) :
+    (x, b) ∈ positiveHull (epigraph f) := by
+  rcases ha with hzero | ⟨c, hc, p, hp, hpEq⟩
+  · have hx0 : x = 0 := by
+      simpa using congrArg Prod.fst hzero
+    subst hx0
+    have ha0 : a = 0 := by
+      simpa using congrArg Prod.snd hzero
+    subst ha0
+    exact mem_positiveHull_epigraph_zero_of_zero_lt h0pos h0fin hab
+  · rcases p with ⟨y, r⟩
+    have har : a = c * r := by
+      simpa [Prod.smul_mk, smul_eq_mul] using congrArg Prod.snd hpEq
+    have hdelta : 0 ≤ (b - a) / c := by
+      exact div_nonneg (sub_nonneg.mpr hab) hc.le
+    right
+    refine ⟨c, hc, (y, r + (b - a) / c), ?_, ?_⟩
+    · rw [mem_epigraph_iff] at hp ⊢
+      have : (r : EReal) ≤ ((r + (b - a) / c : ℝ) : EReal) := by
+        exact_mod_cast le_add_of_nonneg_right hdelta
+      exact le_trans hp this
+    · ext
+      · simpa [Prod.smul_mk, smul_eq_mul] using congrArg Prod.fst hpEq
+      · have hc0 : c ≠ 0 := hc.ne'
+        have hsec : c * (r + (b - a) / c) = b := by
+          calc
+            c * (r + (b - a) / c) = c * r + (b - a) := by
+              field_simp [hc0]
+            _ = a + (b - a) := by rw [har]
+            _ = b := by ring
+        simpa [Prod.smul_mk, smul_eq_mul, hsec] using congrArg Prod.snd hpEq
+
+/-- Under a finite positive value at the origin, the epigraph of the positive
+hull function lies in the closure of the positive hull of the epigraph. -/
+theorem epigraph_positiveHullFunction_subset_closure_positiveHull_epigraph
+    {f : E → EReal} (h0pos : (0 : EReal) < f 0) (h0fin : f 0 < ⊤) :
+    epigraph (positiveHullFunction f) ⊆ closure (positiveHull (epigraph f)) := by
+  intro p hp
+  rcases p with ⟨x, a⟩
+  rw [mem_epigraph_iff] at hp
+  have happrox :
+      ∀ n : ℕ, ∃ b : ℝ, (x, b) ∈ positiveHull (epigraph f) ∧
+        ((b : ℝ) : EReal) < ((a + ((n : ℝ) + 1)⁻¹ : ℝ) : EReal) := by
+    intro n
+    have hlt :
+        positiveHullFunction f x < ((a + ((n : ℝ) + 1)⁻¹ : ℝ) : EReal) := by
+      exact lt_of_le_of_lt hp <| by
+        exact_mod_cast lt_add_of_pos_right a (by positivity : 0 < ((n : ℝ) + 1)⁻¹)
+    exact exists_mem_positiveHull_epigraph_lt hlt
+  choose b hbmem hblt using happrox
+  let c : ℕ → ℝ := fun n => if b n ≤ a then a else b n
+  have hc_mem : ∀ n : ℕ, (x, c n) ∈ positiveHull (epigraph f) := by
+    intro n
+    by_cases hba : b n ≤ a
+    · simpa [c, hba] using
+        (mem_positiveHull_epigraph_of_mem_of_le h0pos h0fin (hbmem n) hba)
+    · simp [c, hba, hbmem n]
+  have hca : ∀ n : ℕ, a ≤ c n := by
+    intro n
+    by_cases hba : b n ≤ a
+    · simp [c, hba]
+    · simp [c, hba, le_of_not_ge hba]
+  have hcup : ∀ n : ℕ, c n < a + ((n : ℝ) + 1)⁻¹ := by
+    intro n
+    by_cases hba : b n ≤ a
+    · have hc_eq : c n = a := by simp [c, hba]
+      rw [hc_eq]
+      exact lt_add_of_pos_right a (by positivity : 0 < ((n : ℝ) + 1)⁻¹)
+    · have hlt' : b n < a + ((n : ℝ) + 1)⁻¹ := by
+        exact_mod_cast hblt n
+      simpa [c, hba] using hlt'
+  have hcup_le : ∀ n : ℕ, c n ≤ a + ((n : ℝ) + 1)⁻¹ := by
+    intro n
+    exact le_of_lt (hcup n)
+  have hupper_tendsto :
+      Filter.Tendsto (fun n : ℕ => a + ((n : ℝ) + 1)⁻¹) Filter.atTop (nhds a) := by
+    simpa [one_div] using
+      (tendsto_const_nhds (x := a)).add (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
+  have hc_tendsto : Filter.Tendsto c Filter.atTop (nhds a) := by
+    exact tendsto_of_tendsto_of_tendsto_of_le_of_le
+      tendsto_const_nhds hupper_tendsto hca hcup_le
+  have hp_tendsto :
+      Filter.Tendsto (fun n : ℕ => (x, c n)) Filter.atTop (nhds (x, a)) := by
+    exact tendsto_const_nhds.prodMk_nhds hc_tendsto
+  exact mem_closure_of_tendsto hp_tendsto <|
+    Filter.Eventually.of_forall hc_mem
+
+/-- **Exercise 3.48(b)**: under lower semicontinuity and a finite positive
+value at the origin, the closure of `epi(pos f)` is obtained by adjoining the
+horizon epigraph. -/
+theorem closure_epigraph_positiveHullFunction_eq_union_horizonFunction
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hlsc : LowerSemicontinuous f) (h0pos : (0 : EReal) < f 0) (h0fin : f 0 < ⊤) :
+    closure (epigraph (positiveHullFunction f)) =
+      epigraph (positiveHullFunction f) ∪ epigraph (horizonFunction f) := by
+  have hclosed : IsClosed (epigraph f) := isClosed_epigraph_of_lsc_ereal f hlsc
+  have h0not : ((0 : E), (0 : ℝ)) ∉ epigraph f := by
+    intro h
+    rw [mem_epigraph_iff] at h
+    exact not_le_of_gt h0pos h
+  obtain ⟨a₀, hf0a₀, _⟩ := EReal.exists_between_coe_real h0fin
+  have hne : (epigraph f).Nonempty := by
+    refine ⟨(0, a₀), ?_⟩
+    rw [mem_epigraph_iff]
+    exact le_of_lt hf0a₀
+  have hsubsetA :
+      positiveHull (epigraph f) ⊆ epigraph (positiveHullFunction f) :=
+    positiveHull_epigraph_subset_epigraph_positiveHullFunction f
+  have hsubsetB :
+      epigraph (positiveHullFunction f) ⊆ closure (positiveHull (epigraph f)) :=
+    epigraph_positiveHullFunction_subset_closure_positiveHull_epigraph h0pos h0fin
+  have hclosure_eq :
+      closure (epigraph (positiveHullFunction f)) = closure (positiveHull (epigraph f)) := by
+    apply le_antisymm
+    · exact closure_minimal hsubsetB isClosed_closure
+    · exact closure_minimal (fun p hp => subset_closure (hsubsetA hp)) isClosed_closure
+  calc
+    closure (epigraph (positiveHullFunction f)) = closure (positiveHull (epigraph f)) := hclosure_eq
+    _ = positiveHull (epigraph f) ∪ horizonCone (epigraph f) :=
+      closure_positiveHull_eq_union_horizonCone hclosed h0not
+    _ = epigraph (positiveHullFunction f) ∪ horizonCone (epigraph f) := by
+      apply le_antisymm
+      · intro p hp
+        rcases hp with hp | hp
+        · exact Or.inl (hsubsetA hp)
+        · exact Or.inr hp
+      · intro p hp
+        rcases hp with hp | hp
+        · have hp' : p ∈ closure (positiveHull (epigraph f)) := hsubsetB hp
+          rw [closure_positiveHull_eq_union_horizonCone hclosed h0not] at hp'
+          exact hp'
+        · exact Or.inr hp
+    _ = epigraph (positiveHullFunction f) ∪ epigraph (horizonFunction f) := by
+      simp [epigraph_horizonFunction_eq_horizonCone_epigraph hne]
+
+/-- **Exercise 3.48(b)** in function form: the closed epigraph attached to
+`pos f` is the epigraph of `min(pos f, f∞)`. -/
+theorem closure_epigraph_positiveHullFunction_eq_epigraph_min_horizonFunction
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hlsc : LowerSemicontinuous f) (h0pos : (0 : EReal) < f 0) (h0fin : f 0 < ⊤) :
+    closure (epigraph (positiveHullFunction f)) =
+      epigraph (fun x => min (positiveHullFunction f x) (horizonFunction f x)) := by
+  rw [closure_epigraph_positiveHullFunction_eq_union_horizonFunction hlsc h0pos h0fin]
+  ext p
+  rcases p with ⟨x, a⟩
+  simp [mem_epigraph_iff, min_le_iff]
+
+/-- **Exercise 3.48(b)**: if `pos f ≤ f∞`, then `pos f` is already lower
+semicontinuous. -/
+theorem lowerSemicontinuous_positiveHullFunction_of_le_horizonFunction
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hlsc : LowerSemicontinuous f) (h0pos : (0 : EReal) < f 0) (h0fin : f 0 < ⊤)
+    (hph : positiveHullFunction f ≤ horizonFunction f) :
+    LowerSemicontinuous (positiveHullFunction f) := by
+  apply lowerSemicontinuous_of_isClosed_epigraph_ereal
+  rw [← closure_eq_iff_isClosed,
+    closure_epigraph_positiveHullFunction_eq_union_horizonFunction hlsc h0pos h0fin]
+  apply Set.union_eq_left.2
+  intro p hp
+  rcases p with ⟨x, a⟩
+  rw [mem_epigraph_iff] at hp ⊢
+  exact le_trans (hph x) hp
 
 /-- The epigraph of the positive hull function is convex whenever the original
 epigraph is convex. This is the function-side form of Exercise `3.49(b)`. -/
@@ -608,6 +924,408 @@ theorem convex_epigraph_perspectiveFunction {f : E → EReal} (hproper : IsPrope
   simpa [positiveHullFunction_unitSliceFunction_eq_perspectiveFunction hproper] using
     convex_epigraph_positiveHullFunction (f := unitSliceFunction f)
       (convex_epigraph_unitSliceFunction hconv)
+
+/-- The epigraph of the unit-slice function is the unit hyperplane over
+`epigraph f`. -/
+theorem epigraph_unitSliceFunction_eq (f : E → EReal) :
+    epigraph (unitSliceFunction f) =
+      {p : ((ℝ × E) × ℝ) | p.1.1 = 1 ∧ (p.1.2, p.2) ∈ epigraph f} := by
+  ext p
+  rcases p with ⟨⟨lam, x⟩, a⟩
+  constructor
+  · intro h
+    rw [mem_epigraph_unitSliceFunction_iff] at h
+    simpa [mem_epigraph_iff] using h
+  · intro h
+    rw [mem_epigraph_unitSliceFunction_iff]
+    simpa [mem_epigraph_iff] using h
+
+/-- Lower semicontinuity of `f` lifts to the unit-slice construction. -/
+theorem isClosed_epigraph_unitSliceFunction {f : E → EReal}
+    (hlsc : LowerSemicontinuous f) :
+    IsClosed (epigraph (unitSliceFunction f)) := by
+  rw [epigraph_unitSliceFunction_eq]
+  have hlam : Continuous fun p : ((ℝ × E) × ℝ) => p.1.1 := continuous_fst.fst
+  have hproj : Continuous fun p : ((ℝ × E) × ℝ) => (p.1.2, p.2) :=
+    continuous_fst.snd.prodMk continuous_snd
+  have h1 : IsClosed {p : ((ℝ × E) × ℝ) | p.1.1 = (1 : ℝ)} :=
+    isClosed_eq hlam continuous_const
+  have h2 : IsClosed {p : ((ℝ × E) × ℝ) | (p.1.2, p.2) ∈ epigraph f} :=
+    (isClosed_epigraph_of_lsc_ereal f hlsc).preimage hproj
+  simpa [Set.setOf_and] using h1.inter h2
+
+/-- Properness of `f` gives a nonempty epigraph for the unit-slice function. -/
+theorem epigraph_unitSliceFunction_nonempty_of_isProper {f : E → EReal}
+    (hproper : IsProper f) :
+    (epigraph (unitSliceFunction f)).Nonempty := by
+  rcases hproper.1 with ⟨x, hx⟩
+  have hbot : f x ≠ ⊥ := ne_of_gt (hproper.2 x)
+  refine ⟨((1, x), (f x).toReal), ?_⟩
+  rw [mem_epigraph_unitSliceFunction_iff]
+  refine ⟨rfl, ?_⟩
+  simpa [EReal.coe_toReal (ne_of_lt hx) hbot] using (le_rfl : f x ≤ f x)
+
+/-- The origin never belongs to the epigraph of the unit-slice function. -/
+theorem zero_not_mem_epigraph_unitSliceFunction (f : E → EReal) :
+    ((((0 : ℝ), (0 : E)), (0 : ℝ)) : (ℝ × E) × ℝ) ∉ epigraph (unitSliceFunction f) := by
+  simp [mem_epigraph_unitSliceFunction_iff]
+
+/-- Positive-`λ` epigraph points of the perspective function already belong to
+the positive hull of the epigraph of the unit-slice function. -/
+theorem mem_positiveHull_epigraph_unitSliceFunction_of_mem_epigraph_perspectiveFunction_pos
+    {f : E → EReal} (hproper : IsProper f)
+    {lam : ℝ} {x : E} {a : ℝ} (hlam : 0 < lam)
+    (ha : ((lam, x), a) ∈ epigraph (perspectiveFunction f)) :
+    (((lam, x), a) : (ℝ × E) × ℝ) ∈ positiveHull (epigraph (unitSliceFunction f)) := by
+  let v : E := lam⁻¹ • x
+  rw [mem_epigraph_iff] at ha
+  have hpers : (lam : EReal) * f v ≤ (a : EReal) := by
+    simpa [perspectiveFunction, hlam, v] using ha
+  have hvbot : f v ≠ ⊥ := ne_of_gt (hproper.2 v)
+  have hvtop : f v ≠ ⊤ := by
+    intro hvtop
+    have : ((lam : EReal) * (⊤ : EReal)) ≤ (a : EReal) := by
+      simpa [v, perspectiveFunction, hlam, hvtop] using hpers
+    simpa [EReal.coe_mul_top_of_pos hlam] using this
+  have hreal : (((f v).toReal : ℝ) : EReal) = f v :=
+    EReal.coe_toReal hvtop hvbot
+  have hreal_le : lam * (f v).toReal ≤ a := by
+    have : (((lam * (f v).toReal : ℝ) : EReal)) ≤ (a : EReal) := by
+      calc
+        (((lam * (f v).toReal : ℝ) : EReal)) = (lam : EReal) * f v := by
+          rw [EReal.coe_mul, hreal]
+        _ ≤ (a : EReal) := hpers
+    exact_mod_cast this
+  have hv_le : f v ≤ ((a / lam : ℝ) : EReal) := by
+    rw [← hreal]
+    exact_mod_cast (show (f v).toReal ≤ a / lam by
+      have hlam0 : lam ≠ 0 := hlam.ne'
+      field_simp [hlam0]
+      linarith)
+  have hmem_epi : (((1 : ℝ), v), a / lam) ∈ epigraph (unitSliceFunction f) := by
+    rw [mem_epigraph_unitSliceFunction_iff]
+    exact ⟨rfl, hv_le⟩
+  right
+  refine ⟨lam, hlam, ((1, v), a / lam), hmem_epi, ?_⟩
+  change ((lam, x), a) = ((lam • (1 : ℝ), lam • v), lam * (a / lam))
+  refine Prod.ext ?_ ?_
+  · refine Prod.ext ?_ ?_
+    · simp [smul_eq_mul]
+    · simpa [v, Prod.smul_mk, smul_smul, mul_inv_cancel₀ hlam.ne', smul_eq_mul]
+  · field_simp [hlam.ne']
+
+/-- The vertical ray over `((0,0), a)` with `a ≥ 0` lies in the closure of the
+positive hull of the unit-slice epigraph. -/
+theorem mem_closure_positiveHull_epigraph_unitSliceFunction_zero_zero
+    {f : E → EReal} (hproper : IsProper f) {a : ℝ} (ha : 0 ≤ a) :
+    ((((0 : ℝ), (0 : E)), a) : (ℝ × E) × ℝ) ∈
+      closure (positiveHull (epigraph (unitSliceFunction f))) := by
+  rcases hproper.1 with ⟨x0, hx0⟩
+  have hx0bot : f x0 ≠ ⊥ := ne_of_gt (hproper.2 x0)
+  let B : ℝ := (f x0).toReal + 1
+  have hBmem : f x0 ≤ (B : EReal) := by
+    rw [show ((B : ℝ) : EReal) = f x0 + 1 by
+      simp [B, EReal.coe_toReal (ne_of_lt hx0) hx0bot, EReal.coe_add]]
+    exact le_add_of_nonneg_right (by norm_num : (0 : EReal) ≤ 1)
+  let c : ℕ → ℝ := fun n => ((n : ℝ) + 1)⁻¹
+  have hc_tendsto : Filter.Tendsto c Filter.atTop (nhds (0 : ℝ)) := by
+    simpa [c, one_div] using tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)
+  let z : ℕ → ((ℝ × E) × ℝ) := fun n =>
+    (((c n, c n • x0), a + c n * B))
+  have hz_mem : ∀ n, z n ∈ positiveHull (epigraph (unitSliceFunction f)) := by
+    intro n
+    have hcpos : 0 < c n := by
+      dsimp [c]
+      positivity
+    have hmem_epi :
+        (((1 : ℝ), x0), (((n : ℝ) + 1) * a + B)) ∈ epigraph (unitSliceFunction f) := by
+      rw [mem_epigraph_unitSliceFunction_iff]
+      refine ⟨rfl, ?_⟩
+      have hle_real : B ≤ (((n : ℝ) + 1) * a + B) := by
+        nlinarith
+      have hle_real' : (B : EReal) ≤ ((((n : ℝ) + 1) * a + B : ℝ) : EReal) := by
+        exact_mod_cast hle_real
+      exact le_trans hBmem hle_real'
+    right
+    refine ⟨c n, hcpos, (((1 : ℝ), x0), (((n : ℝ) + 1) * a + B)), hmem_epi, ?_⟩
+    change (z n) = ((c n • ((1 : ℝ), x0)), c n * ((((n : ℝ) + 1) * a + B)))
+    refine Prod.ext ?_ ?_
+    · refine Prod.ext ?_ ?_
+      · simp [z, c, smul_eq_mul]
+      · simp [z, c, Prod.smul_mk, smul_smul, smul_eq_mul]
+    · have hc0 : ((n : ℝ) + 1) ≠ 0 := by positivity
+      dsimp [z, c]
+      field_simp [hc0]
+  have hz_tendsto : Filter.Tendsto z Filter.atTop (nhds ((((0 : ℝ), (0 : E)), a) : (ℝ × E) × ℝ)) := by
+    have hx_tendsto : Filter.Tendsto (fun n => c n • x0) Filter.atTop (nhds (0 : E)) := by
+      simpa [c] using ((continuous_id.smul continuous_const).continuousAt : ContinuousAt
+        (fun r : ℝ => r • x0) 0).tendsto.comp hc_tendsto
+    have ha_tendsto : Filter.Tendsto (fun n => a + c n * B) Filter.atTop (nhds a) := by
+      have hmul : Filter.Tendsto (fun n => c n * B) Filter.atTop (nhds (0 : ℝ)) := by
+        simpa [c] using hc_tendsto.mul tendsto_const_nhds
+      simpa using tendsto_const_nhds.add hmul
+    have hpair : Filter.Tendsto (fun n => (c n, c n • x0)) Filter.atTop (nhds ((0 : ℝ), (0 : E))) :=
+      hc_tendsto.prodMk_nhds hx_tendsto
+    exact hpair.prodMk_nhds ha_tendsto
+  exact mem_closure_of_tendsto hz_tendsto <| Filter.Eventually.of_forall hz_mem
+
+/-- Every point in the epigraph of the perspective function lies in the
+closure of the positive hull of the epigraph of the unit-slice function. -/
+theorem epigraph_perspectiveFunction_subset_closure_positiveHull_epigraph_unitSliceFunction
+    {f : E → EReal} (hproper : IsProper f) :
+    epigraph (perspectiveFunction f) ⊆ closure (positiveHull (epigraph (unitSliceFunction f))) := by
+  intro p hp
+  rcases p with ⟨⟨lam, x⟩, a⟩
+  rw [mem_epigraph_iff] at hp
+  by_cases hlam : 0 < lam
+  · exact subset_closure <|
+      mem_positiveHull_epigraph_unitSliceFunction_of_mem_epigraph_perspectiveFunction_pos
+        hproper hlam (by simpa [mem_epigraph_iff] using hp)
+  · by_cases h0 : lam = 0
+    · subst h0
+      by_cases hx : x = 0
+      · subst hx
+        have ha0 : 0 ≤ a := by
+          simpa [perspectiveFunction] using hp
+        exact mem_closure_positiveHull_epigraph_unitSliceFunction_zero_zero hproper ha0
+      · have : (⊤ : EReal) ≤ (a : EReal) := by
+          simpa [perspectiveFunction, hx] using hp
+        simp at this
+    · have hneg : lam < 0 := lt_of_le_of_ne (le_of_not_gt hlam) h0
+      have : (⊤ : EReal) ≤ (a : EReal) := by
+        simpa [perspectiveFunction, hlam, h0] using hp
+      simp at this
+
+section PerspectiveClosure
+
+variable [FiniteDimensional ℝ E]
+
+/-- Horizon directions of the unit-slice epigraph with zero first coordinate
+correspond exactly to horizon directions of `epigraph f`. -/
+theorem mem_asymptoticCone_epigraph_unitSliceFunction_zero_iff {f : E → EReal}
+    {x : E} {a : ℝ} :
+    ((((0 : ℝ), x), a) : (ℝ × E) × ℝ) ∈ asymptoticCone ℝ (epigraph (unitSliceFunction f)) ↔
+      ((x, a) : E × ℝ) ∈ asymptoticCone ℝ (epigraph f) := by
+  constructor
+  · intro h
+    rcases exists_seq_pos_smul_of_mem_asymptoticCone (C := epigraph (unitSliceFunction f)) h with
+      ⟨c, u, hc, hu, hcpos, hmem⟩
+    let v : ℕ → E × ℝ := fun n => ((u n).1.2, (u n).2)
+    have hv_tendsto : Filter.Tendsto v Filter.atTop (nhds (x, a)) := by
+      have hu1 : Filter.Tendsto (fun n => (u n).1) Filter.atTop (nhds ((0 : ℝ), x)) :=
+        (continuous_fst.continuousAt.tendsto.comp hu)
+      have hv1 : Filter.Tendsto (fun n => (u n).1.2) Filter.atTop (nhds x) :=
+        (continuous_snd.continuousAt.tendsto.comp hu1)
+      have hv2 : Filter.Tendsto (fun n => (u n).2) Filter.atTop (nhds a) :=
+        (continuous_snd.continuousAt.tendsto.comp hu)
+      exact hv1.prodMk_nhds hv2
+    have hv_mem : ∀ n, c n • v n ∈ epigraph f := by
+      intro n
+      have hn : c n • u n ∈ epigraph (unitSliceFunction f) := hmem n
+      rw [mem_epigraph_unitSliceFunction_iff] at hn
+      rcases hn with ⟨_, hle⟩
+      rw [mem_epigraph_iff]
+      simpa [v, Prod.smul_mk, smul_eq_mul] using hle
+    exact mem_asymptoticCone_of_seq_smul hc hv_tendsto hv_mem
+  · intro h
+    rcases exists_seq_pos_smul_of_mem_asymptoticCone (C := epigraph f) h with
+      ⟨c, v, hc, hv, hcpos, hmem⟩
+    let u : ℕ → (ℝ × E) × ℝ := fun n => (((c n)⁻¹, (v n).1), (v n).2)
+    have hu_tendsto :
+        Filter.Tendsto u Filter.atTop (nhds ((((0 : ℝ), x), a) : (ℝ × E) × ℝ)) := by
+      have hcinv : Filter.Tendsto (fun n => (c n)⁻¹) Filter.atTop (nhds (0 : ℝ)) := by
+        simpa [one_div] using tendsto_inv_atTop_zero.comp hc
+      have hv1 : Filter.Tendsto (fun n => (v n).1) Filter.atTop (nhds x) :=
+        (continuous_fst.continuousAt.tendsto.comp hv)
+      have hv2 : Filter.Tendsto (fun n => (v n).2) Filter.atTop (nhds a) :=
+        (continuous_snd.continuousAt.tendsto.comp hv)
+      exact (hcinv.prodMk_nhds hv1).prodMk_nhds hv2
+    have hu_mem : ∀ n, c n • u n ∈ epigraph (unitSliceFunction f) := by
+      intro n
+      rw [mem_epigraph_unitSliceFunction_iff]
+      refine ⟨?_, ?_⟩
+      · simp [u, Prod.smul_mk, smul_eq_mul, mul_inv_cancel₀ (hcpos n).ne']
+      · simpa [u, mem_epigraph_iff, Prod.smul_mk, smul_eq_mul] using hmem n
+    exact mem_asymptoticCone_of_seq_smul hc hu_tendsto hu_mem
+
+/-- The zero-first-coordinate slice of the horizon cone of the unit-slice
+epigraph is exactly the horizon cone of `epigraph f`. -/
+theorem mem_horizonCone_epigraph_unitSliceFunction_zero_iff {f : E → EReal}
+    {x : E} {a : ℝ} :
+    ((((0 : ℝ), x), a) : (ℝ × E) × ℝ) ∈ horizonCone (epigraph (unitSliceFunction f)) ↔
+      ((x, a) : E × ℝ) ∈ horizonCone (epigraph f) := by
+  by_cases hzero : x = 0 ∧ a = 0
+  · rcases hzero with ⟨rfl, rfl⟩
+    constructor
+    · intro _
+      simp [horizonCone]
+    · intro _
+      simp [horizonCone]
+  · have hleft :
+        ((((0 : ℝ), x), a) : (ℝ × E) × ℝ) ≠ 0 := by
+          intro h
+          apply hzero
+          simpa using h
+    have hright : ((x, a) : E × ℝ) ≠ 0 := by
+      intro h
+      apply hzero
+      simpa using h
+    simp [horizonCone, hleft, hright, mem_asymptoticCone_epigraph_unitSliceFunction_zero_iff]
+
+/-- The horizon function of the unit-slice construction at `λ = 0` is the
+horizon function of the original function. -/
+theorem horizonFunction_unitSliceFunction_zero_eq {f : E → EReal} (x : E) :
+    horizonFunction (unitSliceFunction f) (0, x) = horizonFunction f x := by
+  apply le_antisymm
+  · refine le_iInf ?_
+    intro a
+    exact horizonFunction_le_of_mem_horizonCone_epigraph <|
+      (mem_horizonCone_epigraph_unitSliceFunction_zero_iff).2 a.property
+  · refine le_iInf ?_
+    intro a
+    exact horizonFunction_le_of_mem_horizonCone_epigraph <|
+      (mem_horizonCone_epigraph_unitSliceFunction_zero_iff).1 a.property
+
+/-- The horizon function of the unit-slice construction is `⊤` away from the
+hyperplane `λ = 0`. -/
+theorem horizonFunction_unitSliceFunction_ne_zero_eq_top {f : E → EReal}
+    {lam : ℝ} {x : E} (hlam : lam ≠ 0) :
+    horizonFunction (unitSliceFunction f) (lam, x) = ⊤ := by
+  let A : Type := {a : ℝ // (((lam, x), a) : (ℝ × E) × ℝ) ∈ horizonCone (epigraph (unitSliceFunction f))}
+  have hA : IsEmpty A := by
+    refine ⟨?_⟩
+    intro a
+    have hneq :
+        (((lam, x), (a : ℝ)) : (ℝ × E) × ℝ) ≠ 0 := by
+      intro h0
+      exact hlam (by simpa using congrArg (fun p : (ℝ × E) × ℝ => p.1.1) h0)
+    have hasymp :
+        (((lam, x), (a : ℝ)) : (ℝ × E) × ℝ) ∈ asymptoticCone ℝ (epigraph (unitSliceFunction f)) := by
+      simpa [horizonCone, hneq] using a.property
+    rcases exists_seq_pos_smul_of_mem_asymptoticCone (C := epigraph (unitSliceFunction f)) hasymp with
+      ⟨c, u, hc, hu, hcpos, hmem⟩
+    have hu1 : Filter.Tendsto (fun n => (u n).1.1) Filter.atTop (nhds lam) := by
+      have hu' : Filter.Tendsto (fun n => (u n).1) Filter.atTop (nhds (lam, x)) :=
+        (continuous_fst.continuousAt.tendsto.comp hu)
+      exact (continuous_fst.continuousAt.tendsto.comp hu')
+    have hcinv : Filter.Tendsto (fun n => (c n)⁻¹) Filter.atTop (nhds (0 : ℝ)) := by
+      simpa [one_div] using tendsto_inv_atTop_zero.comp hc
+    have hEq :
+        (fun n => (u n).1.1) = fun n => (c n)⁻¹ := by
+      funext n
+      have hn : c n • u n ∈ epigraph (unitSliceFunction f) := hmem n
+      rw [mem_epigraph_unitSliceFunction_iff] at hn
+      rcases hn with ⟨hfst, _⟩
+      have hmul : (u n).1.1 * c n = 1 := by
+        simpa [Prod.smul_mk, smul_eq_mul, mul_comm] using hfst
+      simpa [one_div] using (eq_one_div_of_mul_eq_one_left hmul)
+    have hu0 : Filter.Tendsto (fun n => (u n).1.1) Filter.atTop (nhds (0 : ℝ)) := by
+      rw [hEq]
+      exact hcinv
+    have : lam = 0 := tendsto_nhds_unique hu1 hu0
+    exact hlam this
+  letI : IsEmpty A := hA
+  rw [horizonFunction, iInf_of_empty]
+
+/-- The lower-closure profile in Exercise `3.49(c)`. -/
+noncomputable def closedPerspectiveFunction (f : E → EReal) : ℝ × E → EReal := by
+  classical
+  exact fun p =>
+    if hpos : 0 < p.1 then
+      (p.1 : EReal) * f (p.1⁻¹ • p.2)
+    else if p.1 = 0 then
+      horizonFunction f p.2
+    else
+      ⊤
+
+/-- The horizon part in the unit-slice closure formula reduces to the explicit
+closed perspective profile. -/
+theorem min_perspectiveFunction_horizonFunction_unitSliceFunction_eq_closedPerspectiveFunction
+    {f : E → EReal} (hproper : IsProper f) :
+    (fun p => min (perspectiveFunction f p) (horizonFunction (unitSliceFunction f) p))
+      = closedPerspectiveFunction f := by
+  funext p
+  rcases p with ⟨lam, x⟩
+  by_cases hlam : 0 < lam
+  · rw [horizonFunction_unitSliceFunction_ne_zero_eq_top (f := f) (x := x) (hlam := hlam.ne')]
+    simp [closedPerspectiveFunction, perspectiveFunction, hlam]
+  · by_cases h0 : lam = 0
+    · subst h0
+      rw [horizonFunction_unitSliceFunction_zero_eq (f := f) x]
+      by_cases hx : x = 0
+      · subst hx
+        have hle0 : horizonFunction f 0 ≤ 0 :=
+          (positivelyHomogeneous_horizonFunction f).map_zero_le_zero
+        have hmin : min (0 : EReal) (horizonFunction f 0) = horizonFunction f 0 := by
+          exact min_eq_right hle0
+        simp [closedPerspectiveFunction, perspectiveFunction, hmin]
+      · simp [closedPerspectiveFunction, perspectiveFunction, hx]
+    · have hneg : lam < 0 := lt_of_le_of_ne (le_of_not_gt hlam) h0
+      rw [horizonFunction_unitSliceFunction_ne_zero_eq_top (f := f) (x := x) (hlam := h0)]
+      simp [closedPerspectiveFunction, perspectiveFunction, hlam, h0]
+
+/-- The lower closure of the perspective function from Exercise `3.49(c)`. -/
+theorem closure_epigraph_perspectiveFunction_eq_epigraph_closedPerspectiveFunction
+    {f : E → EReal} (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    closure (epigraph (perspectiveFunction f)) = epigraph (closedPerspectiveFunction f) := by
+  have hsubsetA :
+      positiveHull (epigraph (unitSliceFunction f)) ⊆ epigraph (perspectiveFunction f) := by
+    simpa [positiveHullFunction_unitSliceFunction_eq_perspectiveFunction hproper] using
+      positiveHull_epigraph_subset_epigraph_positiveHullFunction (unitSliceFunction f)
+  have hsubsetB :
+      epigraph (perspectiveFunction f) ⊆ closure (positiveHull (epigraph (unitSliceFunction f))) :=
+    epigraph_perspectiveFunction_subset_closure_positiveHull_epigraph_unitSliceFunction hproper
+  have hclosure_eq :
+      closure (epigraph (perspectiveFunction f)) =
+        closure (positiveHull (epigraph (unitSliceFunction f))) := by
+    apply le_antisymm
+    · exact closure_minimal hsubsetB isClosed_closure
+    · exact closure_minimal (fun p hp => subset_closure (hsubsetA hp)) isClosed_closure
+  have hunit_nonempty : (epigraph (unitSliceFunction f)).Nonempty :=
+    epigraph_unitSliceFunction_nonempty_of_isProper hproper
+  calc
+    closure (epigraph (perspectiveFunction f))
+        = closure (positiveHull (epigraph (unitSliceFunction f))) := hclosure_eq
+    _ = positiveHull (epigraph (unitSliceFunction f)) ∪ horizonCone (epigraph (unitSliceFunction f)) := by
+          exact closure_positiveHull_eq_union_horizonCone
+            (isClosed_epigraph_unitSliceFunction hlsc) (zero_not_mem_epigraph_unitSliceFunction f)
+    _ = epigraph (perspectiveFunction f) ∪ horizonCone (epigraph (unitSliceFunction f)) := by
+          apply le_antisymm
+          · intro p hp
+            rcases hp with hp | hp
+            · exact Or.inl (hsubsetA hp)
+            · exact Or.inr hp
+          · intro p hp
+            rcases hp with hp | hp
+            · have hp' :
+                p ∈ closure (positiveHull (epigraph (unitSliceFunction f))) := hsubsetB hp
+              rw [closure_positiveHull_eq_union_horizonCone
+                (isClosed_epigraph_unitSliceFunction hlsc) (zero_not_mem_epigraph_unitSliceFunction f)] at hp'
+              exact hp'
+            · exact Or.inr hp
+    _ = epigraph (perspectiveFunction f) ∪ epigraph (horizonFunction (unitSliceFunction f)) := by
+          simp [epigraph_horizonFunction_eq_horizonCone_epigraph hunit_nonempty]
+    _ = epigraph (fun p => min (perspectiveFunction f p) (horizonFunction (unitSliceFunction f) p)) := by
+          ext p
+          rcases p with ⟨u, a⟩
+          simp [mem_epigraph_iff]
+    _ = epigraph (closedPerspectiveFunction f) := by
+          simp [min_perspectiveFunction_horizonFunction_unitSliceFunction_eq_closedPerspectiveFunction
+            (f := f) hproper]
+
+/-- The closed perspective profile is lower semicontinuous. -/
+theorem lowerSemicontinuous_closedPerspectiveFunction
+    {f : E → EReal} (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    LowerSemicontinuous (closedPerspectiveFunction f) := by
+  apply lowerSemicontinuous_of_isClosed_epigraph_ereal
+  have hEq :
+      epigraph (closedPerspectiveFunction f) = closure (epigraph (perspectiveFunction f)) :=
+    (closure_epigraph_perspectiveFunction_eq_epigraph_closedPerspectiveFunction
+      (f := f) hlsc hproper).symm
+  rw [hEq]
+  exact isClosed_closure
+
+end PerspectiveClosure
 
 /-- The epigraph of `δ_C + 1` is the vertical cylinder over `C` starting at
 height `1`. -/
@@ -1083,6 +1801,67 @@ theorem effectiveDomain_gaugeFunction_eq_univ_of_mem_interior_zero {C : Set E}
     effectiveDomain (gaugeFunction C) = Set.univ := by
   rw [effectiveDomain_gaugeFunction, positiveHull_eq_univ_of_mem_interior_zero h0int]
 
+/-- If a convex symmetric set containing `0` has full positive hull, then it is
+absorbent. -/
+theorem absorbent_of_positiveHull_eq_univ_of_convex_of_zero_mem_of_symmetric
+    {C : Set E} (hpos : positiveHull C = Set.univ)
+    (hC : Convex ℝ C) (h0 : (0 : E) ∈ C)
+    (hsym : ∀ ⦃x : E⦄, x ∈ C → -x ∈ C) :
+    Absorbent ℝ C := by
+  rw [absorbent_iff_forall_absorbs_singleton]
+  have hbal : Balanced ℝ C := (balanced_iff_neg_mem hC).2 hsym
+  intro x
+  apply Absorbs.of_norm
+  have hxpos : x ∈ positiveHull C := by
+    simpa [hpos] using (show x ∈ (Set.univ : Set E) by simp)
+  rcases hxpos with rfl | ⟨a, ha, y, hy, rfl⟩
+  · refine ⟨1, ?_⟩
+    intro c hc
+    intro z hz
+    have hz0 : z = 0 := by simpa using hz
+    subst hz0
+    exact ⟨0, h0, by simp⟩
+  · refine ⟨a, ?_⟩
+    intro c hc
+    have hc0 : c ≠ 0 := by
+      intro hcz
+      have : a ≤ 0 := by simpa [hcz] using hc
+      exact (not_le_of_gt ha) this
+    rw [singleton_subset_iff, Set.mem_smul_set_iff_inv_smul_mem₀ hc0]
+    have hratio : ‖a / c‖ ≤ 1 := by
+      have hcpos : 0 < ‖c‖ := norm_pos_iff.mpr hc0
+      rw [norm_div, Real.norm_eq_abs, abs_of_pos ha]
+      exact (_root_.div_le_iff₀ hcpos).2 (by simpa using hc)
+    simpa [div_eq_inv_mul, smul_smul] using hbal.smul_mem hratio hy
+
+/-- The real-valued Minkowski gauge of a closed convex absorbent set is lower
+semicontinuous. -/
+theorem lowerSemicontinuous_gauge_of_isClosed {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    (hAbs : Absorbent ℝ C) :
+    LowerSemicontinuous (gauge C) := by
+  rw [lowerSemicontinuous_iff_isClosed_preimage]
+  intro a
+  by_cases ha : 0 ≤ a
+  · change IsClosed {x | gauge C x ≤ a}
+    rw [gauge_le_eq hC h0 hAbs ha]
+    refine isClosed_iInter ?_
+    intro r
+    refine isClosed_iInter ?_
+    intro hr
+    have hr0 : 0 < r := lt_of_le_of_lt ha hr
+    exact hC_closed.smul_of_ne_zero (c := r) hr0.ne'
+  · have hneg : a < 0 := lt_of_not_ge ha
+    have hset : {x | gauge C x ≤ a} = ∅ := by
+      ext x
+      constructor
+      · intro hx
+        exact False.elim <| (not_lt_of_ge (gauge_nonneg x)) (lt_of_le_of_lt hx hneg)
+      · simp
+    change IsClosed {x | gauge C x ≤ a}
+    rw [hset]
+    exact isClosed_empty
+
 /-- The gauge of a closed convex set containing `0` is lower semicontinuous. -/
 theorem lowerSemicontinuous_gaugeFunction {C : Set E}
     (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
@@ -1140,6 +1919,141 @@ theorem lowerSemicontinuous_gaugeFunction {C : Set E}
           · simp
         rw [hset]
         exact isClosed_empty
+
+/-- Evenness of the gauge recovers symmetry of a closed convex set from its unit
+sublevel set. -/
+theorem symmetric_of_gaugeFunction_neg_eq {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    (heven : ∀ x : E, gaugeFunction C (-x) = gaugeFunction C x) :
+    ∀ ⦃x : E⦄, x ∈ C → -x ∈ C := by
+  intro x hx
+  rw [← levelSet_gaugeFunction_one hC hC_closed h0]
+  change gaugeFunction C (-x) ≤ 1
+  rw [heven x]
+  exact gaugeFunction_le_one_of_mem hx
+
+/-- If the gauge of a closed convex set containing `0` vanishes only at `0`,
+then the set is bounded in finite dimension. -/
+theorem isBounded_of_gaugeFunction_eq_zero_iff
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    (hzero : ∀ x : E, gaugeFunction C x = 0 ↔ x = 0) :
+    Bornology.IsBounded C := by
+  have hlevel :
+      levelSet (gaugeFunction C) (0 : ℝ) = ({0} : Set E) := by
+    ext x
+    rw [levelSet, Set.mem_setOf_eq, Set.mem_singleton_iff]
+    constructor
+    · intro hx
+      have hx0 : gaugeFunction C x = 0 := le_antisymm hx (nonneg_gaugeFunction C x)
+      exact (hzero x).1 hx0
+    · intro hx
+      simpa [hx] using (show gaugeFunction C x = 0 from (hzero x).2 hx)
+  have hhoriz : horizonCone C = ({0} : Set E) := by
+    rw [← levelSet_gaugeFunction_zero hC hC_closed h0, hlevel]
+  exact (isBounded_iff_horizonCone_eq_singleton_zero (C := C)).mpr hhoriz
+
+/-- Under the standard bounded/interior/symmetry hypotheses, the gauge has the
+expected norm properties: it is finite everywhere, lower semicontinuous,
+sublinear, even, positive definite, and has unit ball `C`. -/
+theorem gaugeFunction_has_norm_properties_of_isBounded_of_mem_interior_zero_of_symmetric
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C)
+    (h0int : (0 : E) ∈ interior C) (hsym : ∀ ⦃x : E⦄, x ∈ C → -x ∈ C)
+    (hCbdd : Bornology.IsBounded C) :
+    effectiveDomain (gaugeFunction C) = Set.univ ∧
+      LowerSemicontinuous (gaugeFunction C) ∧
+      Sublinear (gaugeFunction C) ∧
+      (∀ x : E, gaugeFunction C (-x) = gaugeFunction C x) ∧
+      (∀ x : E, gaugeFunction C x = 0 ↔ x = 0) ∧
+      levelSet (gaugeFunction C) 1 = C := by
+  have h0 : (0 : E) ∈ C := interior_subset h0int
+  refine ⟨effectiveDomain_gaugeFunction_eq_univ_of_mem_interior_zero h0int, ?_, ?_, ?_, ?_, ?_⟩
+  · exact lowerSemicontinuous_gaugeFunction hC hC_closed h0
+  · exact sublinear_gaugeFunction hC
+  · intro x
+    exact gaugeFunction_neg_eq_of_symmetric hsym x
+  · intro x
+    exact gaugeFunction_eq_zero_iff_of_isBounded hC hC_closed h0 hCbdd
+  · exact levelSet_gaugeFunction_one hC hC_closed h0
+
+/-- Evenness and positive-definiteness of the gauge recover symmetry and
+boundedness of the underlying set. -/
+theorem symmetric_and_isBounded_of_gaugeFunction_norm_properties
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    (heven : ∀ x : E, gaugeFunction C (-x) = gaugeFunction C x)
+    (hzero : ∀ x : E, gaugeFunction C x = 0 ↔ x = 0) :
+    (∀ ⦃x : E⦄, x ∈ C → -x ∈ C) ∧ Bornology.IsBounded C := by
+  refine ⟨symmetric_of_gaugeFunction_neg_eq hC hC_closed h0 heven, ?_⟩
+  exact isBounded_of_gaugeFunction_eq_zero_iff hC hC_closed h0 hzero
+
+/-- If the gauge is finite everywhere and the set is symmetric, then `0` lies
+in the interior. This closes the remaining converse direction in Example
+`3.50`. -/
+theorem mem_interior_zero_of_effectiveDomain_gaugeFunction_eq_univ_of_symmetric
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    (hdom : effectiveDomain (gaugeFunction C) = Set.univ)
+    (hsym : ∀ ⦃x : E⦄, x ∈ C → -x ∈ C) :
+    (0 : E) ∈ interior C := by
+  letI : CompleteSpace E := FiniteDimensional.complete ℝ E
+  have hpos : positiveHull C = Set.univ := by
+    rwa [effectiveDomain_gaugeFunction_eq_univ_iff] at hdom
+  have hAbs : Absorbent ℝ C :=
+    absorbent_of_positiveHull_eq_univ_of_convex_of_zero_mem_of_symmetric
+      hpos hC h0 hsym
+  have hbal : Balanced ℝ C := (balanced_iff_neg_mem hC).2 hsym
+  let p : Seminorm ℝ E := gaugeSeminorm hbal hC hAbs
+  have hlsc : LowerSemicontinuous p := by
+    simpa [p] using lowerSemicontinuous_gauge_of_isClosed hC hC_closed h0 hAbs
+  have hpcont : Continuous p :=
+    Seminorm.continuous_of_lowerSemicontinuous p hlsc
+  have hball : p.ball 0 1 ⊆ C := by
+    intro x hx
+    exact gauge_lt_one_subset_self hC h0 hAbs (by simpa [p] using hx)
+  have hnhds : C ∈ nhds (0 : E) := by
+    exact Filter.mem_of_superset (p.ball_mem_nhds hpcont zero_lt_one) hball
+  exact mem_interior_iff_mem_nhds.mpr hnhds
+
+/-- The standard norm-like gauge assumptions recover the missing interior
+condition on the underlying set. -/
+theorem mem_interior_zero_of_gaugeFunction_norm_properties
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    (hdom : effectiveDomain (gaugeFunction C) = Set.univ)
+    (heven : ∀ x : E, gaugeFunction C (-x) = gaugeFunction C x) :
+    (0 : E) ∈ interior C := by
+  apply mem_interior_zero_of_effectiveDomain_gaugeFunction_eq_univ_of_symmetric
+    hC hC_closed h0 hdom
+  exact symmetric_of_gaugeFunction_neg_eq hC hC_closed h0 heven
+
+/-- **Example 3.50** packaged as an equivalence: for a closed convex set
+containing `0`, the gauge has the expected norm-like properties exactly when
+`0` is an interior point, the set is symmetric, and the set is bounded. -/
+theorem gaugeFunction_has_norm_properties_iff
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
+    (effectiveDomain (gaugeFunction C) = Set.univ ∧
+      LowerSemicontinuous (gaugeFunction C) ∧
+      Sublinear (gaugeFunction C) ∧
+      (∀ x : E, gaugeFunction C (-x) = gaugeFunction C x) ∧
+      (∀ x : E, gaugeFunction C x = 0 ↔ x = 0) ∧
+      levelSet (gaugeFunction C) 1 = C) ↔
+    ((0 : E) ∈ interior C ∧
+      (∀ ⦃x : E⦄, x ∈ C → -x ∈ C) ∧
+      Bornology.IsBounded C) := by
+  constructor
+  · rintro ⟨hdom, _, _, heven, hzero, _⟩
+    have hsym_bdd :=
+      symmetric_and_isBounded_of_gaugeFunction_norm_properties
+        hC hC_closed h0 heven hzero
+    refine ⟨?_, hsym_bdd.1, hsym_bdd.2⟩
+    exact mem_interior_zero_of_gaugeFunction_norm_properties
+      hC hC_closed h0 hdom heven
+  · rintro ⟨h0int, hsym, hCbdd⟩
+    exact gaugeFunction_has_norm_properties_of_isBounded_of_mem_interior_zero_of_symmetric
+      hC hC_closed h0int hsym hCbdd
 
 end Functions
 
