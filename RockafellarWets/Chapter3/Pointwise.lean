@@ -24,6 +24,14 @@ theorem epigraph_iSup {ι : Type*} (f : ι → E → EReal) :
   rcases p with ⟨x, a⟩
   simp [mem_epigraph_iff, iSup_le_iff]
 
+/-- The epigraph of a binary pointwise supremum is the intersection of the two
+epigraphs. -/
+theorem epigraph_sup {f g : E → EReal} :
+    epigraph (fun x => f x ⊔ g x) = epigraph f ∩ epigraph g := by
+  ext p
+  rcases p with ⟨x, a⟩
+  simp [mem_epigraph_iff, sup_le_iff]
+
 /-- For a finite nonempty family, the epigraph of the pointwise infimum is the
 union of the epigraphs. -/
 theorem epigraph_iInf_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
@@ -41,6 +49,14 @@ theorem epigraph_iInf_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
     simpa [hEq] using h
   · rintro ⟨i, hi⟩
     exact (iInf_le (fun j => f j x) i).trans hi
+
+/-- The epigraph of a binary pointwise infimum is the union of the two
+epigraphs. -/
+theorem epigraph_inf {f g : E → EReal} :
+    epigraph (fun x => f x ⊓ g x) = epigraph f ∪ epigraph g := by
+  ext p
+  rcases p with ⟨x, a⟩
+  simp [mem_epigraph_iff]
 
 /-- Equality of real epigraphs determines an `EReal`-valued function. -/
 theorem eq_of_epigraph_eq {f g : E → EReal} (hfg : epigraph f = epigraph g) :
@@ -85,6 +101,19 @@ theorem iSup_horizonFunction_le_horizonFunction_iSup {ι : Type*}
     rw [epigraph_iSup]
     exact Set.iInter_subset _ i
 
+/-- The horizon function of a binary pointwise supremum dominates the pointwise
+supremum of the two horizon functions. -/
+theorem sup_horizonFunction_le_horizonFunction_sup
+    (f g : E → EReal) (w : E) :
+    horizonFunction f w ⊔ horizonFunction g w ≤
+      horizonFunction (fun x => f x ⊔ g x) w := by
+  have hsup :
+      (⨆ b : Bool, horizonFunction (fun x => cond b (f x) (g x)) w) ≤
+        horizonFunction (fun x => ⨆ b : Bool, cond b (f x) (g x)) w :=
+    iSup_horizonFunction_le_horizonFunction_iSup
+      (f := fun b x => cond b (f x) (g x)) w
+  simpa [sup_eq_iSup] using hsup
+
 /-- **Proposition 3.30** (second inequality): the horizon function of a pointwise
 infimum is bounded above by the pointwise infimum of the horizon functions. -/
 theorem horizonFunction_iInf_le_iInf {ι : Type*}
@@ -97,6 +126,18 @@ theorem horizonFunction_iInf_le_iInf {ι : Type*}
     rcases p with ⟨x, a⟩
     rw [mem_epigraph_iff] at hp ⊢
     exact (iInf_le (fun j => f j x) i).trans hp
+
+/-- The horizon function of a binary pointwise infimum is bounded above by the
+pointwise infimum of the two horizon functions. -/
+theorem horizonFunction_inf_le_inf_horizonFunction
+    (f g : E → EReal) (w : E) :
+    horizonFunction (fun x => f x ⊓ g x) w ≤
+      horizonFunction f w ⊓ horizonFunction g w := by
+  have hinf :
+      horizonFunction (fun x => ⨅ b : Bool, cond b (f x) (g x)) w ≤
+        ⨅ b : Bool, horizonFunction (fun x => cond b (f x) (g x)) w :=
+    horizonFunction_iInf_le_iInf (f := fun b x => cond b (f x) (g x)) w
+  simpa [inf_eq_iInf] using hinf
 
 /-- **Proposition 3.30** (equality case for suprema): if the pointwise supremum
 has a nonempty epigraph and the functions are proper, lsc, and convex, then the
@@ -125,6 +166,49 @@ theorem horizonFunction_iSup_eq_iSup {ι : Type*} {f : ι → E → EReal}
     _ = epigraph (fun w => ⨆ i, horizonFunction (f i) w) := by
           rw [epigraph_iSup]
 
+/-- If the pointwise supremum of two functions has nonempty epigraph and each
+function is proper, lsc, and convex, then the horizon function commutes with
+the binary pointwise supremum. -/
+theorem horizonFunction_sup_eq_sup {f g : E → EReal}
+    (hf_conv : Convex ℝ (epigraph f)) (hg_conv : Convex ℝ (epigraph g))
+    (hf_lsc : LowerSemicontinuous f) (hg_lsc : LowerSemicontinuous g)
+    (hf_proper : IsProper f) (hg_proper : IsProper g)
+    (hsup : (epigraph (fun x => f x ⊔ g x)).Nonempty) :
+    horizonFunction (fun x => f x ⊔ g x) =
+      fun w => horizonFunction f w ⊔ horizonFunction g w := by
+  have hsup' :
+      horizonFunction (fun x => ⨆ b : Bool, cond b (f x) (g x)) =
+        fun w => ⨆ b : Bool, horizonFunction (fun x => cond b (f x) (g x)) w :=
+    horizonFunction_iSup_eq_iSup
+      (f := fun b x => cond b (f x) (g x))
+      (by
+        intro b
+        cases b
+        · simpa using hg_conv
+        · simpa using hf_conv)
+      (by
+        intro b
+        cases b
+        · simpa using hg_lsc
+        · simpa using hf_lsc)
+      (by
+        intro b
+        cases b
+        · simpa using hg_proper
+        · simpa using hf_proper)
+      (by simpa [sup_eq_iSup] using hsup)
+  funext w
+  calc
+    horizonFunction (fun x => f x ⊔ g x) w
+        = horizonFunction (fun x => ⨆ b : Bool, cond b (f x) (g x)) w := by
+            simp [sup_eq_iSup]
+    _ = ⨆ b : Bool, horizonFunction (fun x => cond b (f x) (g x)) w := congrFun hsup' w
+    _ = ⨆ b : Bool, cond b (horizonFunction f w) (horizonFunction g w) := by
+          congr with b
+          cases b <;> rfl
+    _ = horizonFunction f w ⊔ horizonFunction g w := by
+          simp [sup_eq_iSup]
+
 /-- **Proposition 3.30** (equality case for finite infima): for a finite nonempty
 family, the horizon function commutes with the pointwise infimum. -/
 theorem horizonFunction_iInf_eq_iInf_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
@@ -142,5 +226,26 @@ theorem horizonFunction_iInf_eq_iInf_of_finite {ι : Type*} [Finite ι] [Nonempt
     rcases Set.mem_iUnion.1 ha with ⟨i, hi⟩
     exact (iInf_le (fun j => horizonFunction (f j) w) i).trans <|
       horizonFunction_le_of_mem_horizonCone_epigraph hi
+
+/-- For a binary pointwise infimum, the horizon function commutes with the
+infimum. -/
+theorem horizonFunction_inf_eq_inf {f g : E → EReal} :
+    horizonFunction (fun x => f x ⊓ g x) =
+      fun w => horizonFunction f w ⊓ horizonFunction g w := by
+  have hinf :
+      horizonFunction (fun x => ⨅ b : Bool, cond b (f x) (g x)) =
+        fun w => ⨅ b : Bool, horizonFunction (fun x => cond b (f x) (g x)) w :=
+    horizonFunction_iInf_eq_iInf_of_finite (f := fun b x => cond b (f x) (g x))
+  funext w
+  calc
+    horizonFunction (fun x => f x ⊓ g x) w
+        = horizonFunction (fun x => ⨅ b : Bool, cond b (f x) (g x)) w := by
+            simp [inf_eq_iInf]
+    _ = ⨅ b : Bool, horizonFunction (fun x => cond b (f x) (g x)) w := congrFun hinf w
+    _ = ⨅ b : Bool, cond b (horizonFunction f w) (horizonFunction g w) := by
+          congr with b
+          cases b <;> rfl
+    _ = horizonFunction f w ⊓ horizonFunction g w := by
+          simp [inf_eq_iInf]
 
 end RW

@@ -102,6 +102,12 @@ theorem HasClosedPolyhedralEpigraph.lowerSemicontinuous {f : E → EReal}
     LowerSemicontinuous f :=
   lowerSemicontinuous_of_isClosed_epigraph_ereal f hf.isClosed
 
+theorem HasClosedPolyhedralEpigraph.hasPolyhedralEpigraph [FiniteDimensional ℝ E]
+    {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) :
+    HasPolyhedralEpigraph f :=
+  IsClosedPolyhedral.isPolyhedral hf
+
 theorem hasPolyhedralEpigraph_zero [FiniteDimensional ℝ E] :
     HasPolyhedralEpigraph (fun _ : E => (0 : EReal)) := by
   have hzero : indicatorVA (Set.univ : Set E) = (fun _ : E => (0 : EReal)) := by

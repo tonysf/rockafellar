@@ -218,6 +218,85 @@ theorem IsClosedPolyhedral.exists_nonempty_generators_of_nonempty
   · simpa using hCne
   · exact ⟨s, t, hs, rfl⟩
 
+theorem IsClosedPolyhedral.exists_closure_conicHull_generators_of_isCone
+    {K : Set E} (hK : IsClosedPolyhedral K) (hKcone : IsCone K) :
+    ∃ s : Finset E, K = closure (conicHull (↑s : Set E)) := by
+  classical
+  rcases hK with ⟨s, t, rfl⟩
+  refine ⟨s ∪ t, ?_⟩
+  apply le_antisymm
+  · intro x hx
+    rcases hx with ⟨a, ha, b, hb, rfl⟩
+    have hsHull :
+        convexHull ℝ (↑s : Set E) ⊆ closure (conicHull (↑(s ∪ t) : Set E)) :=
+      convexHull_minimal
+        (by
+          intro y hy
+          exact subset_closure <| subset_conicHull <| by
+            simpa using (show y ∈ s ∪ t from Finset.mem_union.mpr (Or.inl hy)))
+        ((convex_conicHull _).closure)
+    have htHull :
+        closure (conicHull (↑t : Set E)) ⊆ closure (conicHull (↑(s ∪ t) : Set E)) :=
+      closure_minimal
+        (Subset.trans
+          (conicHull_mono <| by
+            intro y hy
+            simpa using (show y ∈ s ∪ t from Finset.mem_union.mpr (Or.inr hy)))
+          subset_closure)
+        isClosed_closure
+    have hconeClosure :
+        IsCone (closure (conicHull (↑(s ∪ t) : Set E))) := by
+      rw [← horizonCone_conicHull_eq_closure (C := (↑(s ∪ t) : Set E))]
+      exact isCone_horizonCone _
+    exact add_mem_of_convex_isCone
+      ((convex_conicHull _).closure)
+      hconeClosure
+      (hsHull ha)
+      (htHull hb)
+  · have hzero :
+        (0 : E) ∈ convexHull ℝ (↑s : Set E) + closure (conicHull (↑t : Set E)) := by
+        simpa using hKcone.1
+    rcases hzero with ⟨a₀, ha₀, b₀, hb₀, hab₀⟩
+    have hconeT : IsCone (closure (conicHull (↑t : Set E))) := by
+      rw [← horizonCone_conicHull_eq_closure (C := (↑t : Set E))]
+      exact isCone_horizonCone _
+    refine closure_minimal ?_ ?_
+    · refine conicHull_minimal
+        (K := convexHull ℝ (↑s : Set E) + closure (conicHull (↑t : Set E)))
+        ((convex_convexHull ℝ _).add ((convex_conicHull _).closure))
+        hKcone
+        ?_
+      intro y hy
+      rcases Finset.mem_union.mp hy with hy | hy
+      · exact Set.mem_add.2
+          ⟨y,
+            subset_convexHull (𝕜 := ℝ) (s := (↑s : Set E)) <| by simpa using hy,
+            0,
+            subset_closure (zero_mem_conicHull (↑t : Set E)),
+            by simp⟩
+      · have hb₀y : b₀ + y ∈ closure (conicHull (↑t : Set E)) :=
+          add_mem_of_convex_isCone
+            ((convex_conicHull _).closure)
+            hconeT
+            hb₀
+            (subset_closure <| subset_conicHull <| by simpa using hy)
+        exact Set.mem_add.2
+          ⟨a₀, ha₀, b₀ + y, hb₀y, by
+            calc
+              a₀ + (b₀ + y) = (a₀ + b₀) + y := by simp [add_assoc]
+              _ = y := by simpa [hab₀]⟩
+    · exact IsClosedPolyhedral.isClosed ⟨s, t, rfl⟩
+
+theorem IsClosedPolyhedral.isFinitelyGeneratedCone_of_isCone
+    [FiniteDimensional ℝ E]
+    {K : Set E} (hK : IsClosedPolyhedral K) (hKcone : IsCone K) :
+    IsFinitelyGeneratedCone K := by
+  obtain ⟨s, hs⟩ := hK.exists_closure_conicHull_generators_of_isCone hKcone
+  refine ⟨s, ?_⟩
+  have hsclosed : IsClosed (conicHull (↑s : Set E)) :=
+    isClosed_conicHull_finset (E := E) s
+  simpa [hsclosed.closure_eq] using hs
+
 theorem IsClosedPolyhedral.horizonCone_isClosedPolyhedral
     [FiniteDimensional ℝ E]
     {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
@@ -243,6 +322,21 @@ theorem IsClosedPolyhedral.horizonCone_isClosedPolyhedral
           rw [horizonCone_closure, horizonCone_conicHull_eq_closure]
     _ = convexHull ℝ (↑({0} : Finset E) : Set E) + closure (conicHull (↑t : Set E)) := by
           simp
+
+theorem IsClosedPolyhedral.exists_horizon_closure_conicHull_generators
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E, RW.horizonCone C = closure (conicHull (↑t : Set E)) := by
+  exact
+    (hC.horizonCone_isClosedPolyhedral hCne).exists_closure_conicHull_generators_of_isCone
+      (isCone_horizonCone C)
+
+theorem IsClosedPolyhedral.horizonCone_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (RW.horizonCone C) :=
+  (hC.horizonCone_isClosedPolyhedral hCne).isFinitelyGeneratedCone_of_isCone
+    (isCone_horizonCone C)
 
 section Products
 
@@ -450,6 +544,16 @@ theorem IsFinitelyGeneratedCone.isPolyhedral {K : Set E}
     IsPolyhedral K :=
   IsFinitelyGeneratedCone.isExtendedFinitelyGenerated hK
 
+theorem IsClosedPolyhedral.isPolyhedral
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) :
+    IsPolyhedral C := by
+  rcases hC with ⟨s, t, rfl⟩
+  refine ⟨s, t, ?_⟩
+  have htclosed : IsClosed (conicHull (↑t : Set E)) :=
+    isClosed_conicHull_finset (E := E) t
+  simpa [extendedConvexHull, htclosed.closure_eq]
+
 theorem IsPolyhedral.isFinitelyGeneratedCone {K : Set E}
     (hK : IsPolyhedral K) (hKcone : IsCone K) :
     IsFinitelyGeneratedCone K := by
@@ -592,6 +696,75 @@ theorem IsPolyhedral.Ici_zero : IsPolyhedral (Set.Ici (0 : ℝ)) := by
 theorem IsClosedPolyhedral.Ici_zero : IsClosedPolyhedral (Set.Ici (0 : ℝ)) := by
   exact IsPolyhedral.Ici_zero.isClosedPolyhedral_of_isClosed isClosed_Ici
 
+section ClosedImages
+
+variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+variable [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+
+theorem IsClosedPolyhedral.linear_image {C : Set E}
+    (hC : IsClosedPolyhedral C) (L : E →ₗ[ℝ] F) :
+    IsClosedPolyhedral (L '' C) := by
+  classical
+  rcases hC with ⟨s, t, rfl⟩
+  refine ⟨s.image L, t.image L, ?_⟩
+  have htclosed : IsClosed (conicHull (↑t : Set E)) :=
+    isClosed_conicHull_finset (E := E) t
+  have htclosed' : IsClosed (conicHull (↑(t.image L) : Set F)) :=
+    isClosed_conicHull_finset (E := F) (t.image L)
+  calc
+    L '' (convexHull ℝ (↑s : Set E) + closure (conicHull (↑t : Set E)))
+        = L '' extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+            simp [extendedConvexHull, htclosed.closure_eq]
+    _ = extendedConvexHull (L '' (↑s : Set E)) (L '' (↑t : Set E)) := by
+          simpa using
+            (LinearMap.image_extendedConvexHull
+              (L := L) (A := (↑s : Set E)) (B := (↑t : Set E)))
+    _ = convexHull ℝ (↑(s.image L) : Set F) + conicHull (↑(t.image L) : Set F) := by
+          rw [extendedConvexHull, LinearMap.image_finset_coe, LinearMap.image_finset_coe]
+    _ = convexHull ℝ (↑(s.image L) : Set F) + closure (conicHull (↑(t.image L) : Set F)) := by
+          rw [htclosed'.closure_eq]
+
+theorem IsClosedPolyhedral.affine_image {C : Set E}
+    (hC : IsClosedPolyhedral C) (f : E →ᵃ[ℝ] F) :
+    IsClosedPolyhedral (f '' C) := by
+  classical
+  rcases hC with ⟨s, t, rfl⟩
+  refine ⟨s.image f, t.image f.linear, ?_⟩
+  have htclosed : IsClosed (conicHull (↑t : Set E)) :=
+    isClosed_conicHull_finset (E := E) t
+  have htclosed' : IsClosed (conicHull (↑(t.image f.linear) : Set F)) :=
+    isClosed_conicHull_finset (E := F) (t.image f.linear)
+  calc
+    f '' (convexHull ℝ (↑s : Set E) + closure (conicHull (↑t : Set E)))
+        = f '' extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+            simp [extendedConvexHull, htclosed.closure_eq]
+    _ = extendedConvexHull (f '' (↑s : Set E)) (f.linear '' (↑t : Set E)) := by
+          simpa using
+            (AffineMap.image_extendedConvexHull
+              (f := f) (A := (↑s : Set E)) (B := (↑t : Set E)))
+    _ = convexHull ℝ (↑(s.image f) : Set F) + conicHull (↑(t.image f.linear) : Set F) := by
+          rw [extendedConvexHull, AffineMap.image_finset_coe, LinearMap.image_finset_coe]
+    _ = convexHull ℝ (↑(s.image f) : Set F) +
+          closure (conicHull (↑(t.image f.linear) : Set F)) := by
+            rw [htclosed'.closure_eq]
+
+end ClosedImages
+
+theorem IsClosedPolyhedral.add
+    [FiniteDimensional ℝ E] {C D : Set E}
+    (hC : IsClosedPolyhedral C) (hD : IsClosedPolyhedral D) :
+    IsClosedPolyhedral (C + D) := by
+  let L : E × E →ₗ[ℝ] E := LinearMap.fst ℝ E E + LinearMap.snd ℝ E E
+  have himage : L '' (C ×ˢ D) = C + D := by
+    ext x
+    constructor
+    · rintro ⟨p, hp, rfl⟩
+      exact Set.mem_add.2 ⟨p.1, hp.1, p.2, hp.2, by simp [L]⟩
+    · rintro ⟨y, hy, z, hz, rfl⟩
+      exact ⟨(y, z), ⟨hy, hz⟩, by simp [L]⟩
+  rw [← himage]
+  exact (hC.prod hD).linear_image L
+
 section FiniteDimensionalRanges
 
 variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] [FiniteDimensional ℝ F]
@@ -682,6 +855,45 @@ theorem IsClosedPolyhedral.image_linearEquiv {C : Set E}
           congr 1 <;> ext y <;> simp
 
 end LinearEquivImages
+
+section Translations
+
+private theorem image_add_right_set (A B : Set E) (u : E) :
+    (fun x : E => x + u) '' (A + B) = ((fun x : E => x + u) '' A) + B := by
+  ext y
+  constructor
+  · rintro ⟨x, hx, rfl⟩
+    rcases hx with ⟨a, ha, b, hb, rfl⟩
+    exact Set.mem_add.2 ⟨a + u, ⟨a, ha, rfl⟩, b, hb, by simp [add_assoc, add_left_comm, add_comm]⟩
+  · rintro ⟨x, ⟨a, ha, rfl⟩, b, hb, hxb⟩
+    refine ⟨a + b, Set.mem_add.2 ⟨a, ha, b, hb, rfl⟩, ?_⟩
+    simpa [add_assoc, add_left_comm, add_comm] using hxb
+
+theorem IsClosedPolyhedral.image_add_right {C : Set E}
+    (hC : IsClosedPolyhedral C) (u : E) :
+    IsClosedPolyhedral ((fun x : E => x + u) '' C) := by
+  classical
+  rcases hC with ⟨s, t, rfl⟩
+  refine ⟨s.image fun x => x + u, t, ?_⟩
+  calc
+    (fun x : E => x + u) '' (convexHull ℝ (↑s : Set E) + closure (conicHull (↑t : Set E)))
+        = (fun x : E => x + u) '' convexHull ℝ (↑s : Set E) + closure (conicHull (↑t : Set E)) := by
+            simpa using
+              image_add_right_set
+                (A := convexHull ℝ (↑s : Set E))
+                (B := closure (conicHull (↑t : Set E))) u
+    _ = convexHull ℝ ((fun x : E => x + u) '' (↑s : Set E)) + closure (conicHull (↑t : Set E)) := by
+          congr 1
+          simpa [add_comm] using
+            (AffineMap.image_convexHull
+              (f := (AffineEquiv.constVAdd ℝ E u : E →ᵃ[ℝ] E))
+              (s := (↑s : Set E)))
+    _ = convexHull ℝ (↑(s.image fun x => x + u) : Set E) + closure (conicHull (↑t : Set E)) := by
+          congr 1
+          ext y
+          simp
+
+end Translations
 
 section LinearPreimages
 

@@ -440,4 +440,105 @@ theorem IsFinitelyGeneratedCone.isClosed_of_isPointed [FiniteDimensional ℝ E]
   rcases hK with ⟨s, rfl⟩
   exact isClosed_conicHull_finset_of_isPointed s hpointed
 
+/-- In finite dimensions, every finitely generated cone is closed. -/
+theorem isClosed_conicHull_finset [FiniteDimensional ℝ E] (s : Finset E) :
+    IsClosed (conicHull (↑s : Set E)) := by
+  let K : Set E := conicHull (↑s : Set E)
+  let L : Submodule ℝ E :=
+    { carrier := K ∩ -K
+      zero_mem' := by
+        constructor
+        · exact zero_mem_conicHull (↑s : Set E)
+        · simpa using zero_mem_conicHull (↑s : Set E)
+      add_mem' := by
+        intro x y hx hy
+        constructor
+        · exact add_mem_of_convex_isCone (convex_conicHull _) (isCone_conicHull _) hx.1 hy.1
+        · have hnegx : -x ∈ K := by simpa using hx.2
+          have hnegy : -y ∈ K := by simpa using hy.2
+          have hsum : -x + -y ∈ K :=
+            add_mem_of_convex_isCone (convex_conicHull _) (isCone_conicHull _) hnegx hnegy
+          simpa [K, neg_add, add_comm] using hsum
+      smul_mem' := by
+        intro a x hx
+        constructor
+        · by_cases ha : 0 ≤ a
+          · exact (isCone_conicHull _).smul_mem hx.1 ha
+          · have hna : 0 ≤ -a := by linarith
+            have hnegx : -x ∈ K := by simpa using hx.2
+            simpa [smul_neg, neg_smul, K] using (isCone_conicHull _).smul_mem hnegx hna
+        · by_cases ha : 0 ≤ a
+          · have hnegx : -x ∈ K := by simpa using hx.2
+            have hscaled : a • (-x) ∈ K := (isCone_conicHull _).smul_mem hnegx ha
+            simpa [smul_neg, neg_smul, K] using hscaled
+          · have hna : 0 ≤ -a := by linarith
+            have hscaled : (-a) • x ∈ K := (isCone_conicHull _).smul_mem hx.1 hna
+            simpa [smul_neg, neg_smul, K] using hscaled }
+  letI : IsClosed (L : Set E) := L.closed_of_finiteDimensional
+  let q : E →ₗ[ℝ] E ⧸ L := L.mkQ
+  have hqfg : IsFinitelyGeneratedCone (q '' K) :=
+    (show IsFinitelyGeneratedCone K from ⟨s, rfl⟩).linear_image q
+  have hqconv : Convex ℝ (q '' K) := hqfg.convex
+  have hqcone : IsCone (q '' K) := hqfg.isCone
+  have hqpointed : IsPointed (q '' K) := by
+    apply (isPointed_iff_inter_neg_eq_singleton_zero hqconv hqcone).2
+    apply le_antisymm
+    · intro z hz
+      rcases hz.1 with ⟨u, hu, rfl⟩
+      have hzneg : -(q u) ∈ q '' K := by simpa using hz.2
+      rcases hzneg with ⟨v, hv, hvq⟩
+      have huvq : q (u + v) = 0 := by
+        simpa [map_add] using congrArg (fun w => q u + w) hvq
+      have huvL : u + v ∈ L := by
+        have hker : u + v ∈ LinearMap.ker q := by
+          simpa [LinearMap.mem_ker] using huvq
+        simpa [q, Submodule.ker_mkQ] using hker
+      have huvneg : -(u + v) ∈ K := by simpa [L, K] using huvL.2
+      have huneg : -u ∈ K := by
+        have : v + -(u + v) ∈ K :=
+          add_mem_of_convex_isCone (convex_conicHull _) (isCone_conicHull _) hv huvneg
+        simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm, K] using this
+      have huL : u ∈ L := by
+        constructor
+        · exact hu
+        · simpa [K] using huneg
+      have huq : q u = 0 := by
+        have hker : u ∈ LinearMap.ker q := by
+          simpa [q, Submodule.ker_mkQ] using huL
+        simpa [LinearMap.mem_ker] using hker
+      simpa [huq]
+    · intro z hz
+      have hz0 : z = 0 := by simpa using hz
+      subst hz0
+      constructor
+      · exact hqcone.1
+      · simpa using hqcone.1
+  have hqclosed : IsClosed (q '' K) := hqfg.isClosed_of_isPointed hqpointed
+  have hpre : q ⁻¹' (q '' K) = K := by
+    ext x
+    constructor
+    · intro hx
+      rcases hx with ⟨u, hu, hxu⟩
+      have hdiffq : q (x - u) = 0 := by simpa [map_sub, hxu]
+      have hdiffL : x - u ∈ L := by
+        have hker : x - u ∈ LinearMap.ker q := by
+          simpa [LinearMap.mem_ker] using hdiffq
+        simpa [q, Submodule.ker_mkQ] using hker
+      have hdiffK : x - u ∈ K := hdiffL.1
+      have hx' : (x - u) + u = x := by
+        simp [sub_eq_add_neg, add_assoc]
+      rw [← hx']
+      exact add_mem_of_convex_isCone (convex_conicHull _) (isCone_conicHull _) hdiffK hu
+    · intro hx
+      exact ⟨x, hx, rfl⟩
+  have hqcont : Continuous q := LinearMap.continuous_of_finiteDimensional q
+  simpa [K, hpre] using hqclosed.preimage hqcont
+
+/-- In finite dimensions, every finitely generated cone is closed. -/
+theorem IsFinitelyGeneratedCone.isClosed [FiniteDimensional ℝ E]
+    {K : Set E} (hK : IsFinitelyGeneratedCone K) :
+    IsClosed K := by
+  rcases hK with ⟨s, rfl⟩
+  exact isClosed_conicHull_finset s
+
 end RW
