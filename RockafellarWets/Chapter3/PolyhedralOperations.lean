@@ -1200,6 +1200,25 @@ theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_const_mul
   exact HasPolyhedralEpigraph.isConvexPiecewiseLinear_const_mul
     hf.hasPolyhedralEpigraph hf.lowerSemicontinuous hproper ha
 
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearEquiv
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    [FiniteDimensional ℝ E]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (hproper : IsProper f) (e : F ≃L[ℝ] E) :
+    IsConvexPiecewiseLinear (fun y : F => f (e y)) := by
+  exact HasPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearEquiv
+    hf.hasPolyhedralEpigraph hf.lowerSemicontinuous hproper e
+
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_of_surjective
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (hproper : IsProper f)
+    (L : F →ₗ[ℝ] E) (hL : LinearMap.range L = ⊤) :
+    IsConvexPiecewiseLinear (fun y : F => f (L y)) := by
+  exact HasPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_of_surjective
+    hf.hasPolyhedralEpigraph hf.lowerSemicontinuous hproper L hL
+
 theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_affineChange_of_surjective
     {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
     [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]

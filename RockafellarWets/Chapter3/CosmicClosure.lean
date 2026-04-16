@@ -45,6 +45,68 @@ theorem ordinaryRayCone_mono {C D : Set E} (hCD : C ⊆ D) :
   rintro p ⟨x, hx, a, ha, rfl⟩
   exact ⟨x, hCD hx, a, ha, rfl⟩
 
+theorem snd_lt_zero_of_mem_ordinaryRayCone {C : Set E} {p : E × ℝ}
+    (hp : p ∈ ordinaryRayCone C) :
+    p.2 < 0 := by
+  rcases hp with ⟨x, hx, a, ha, hEq⟩
+  have hneg : (-(a : ℝ)) < 0 := by
+    linarith
+  simpa [hEq] using hneg
+
+theorem ordinaryRayCone_inter {C D : Set E} :
+    ordinaryRayCone (C ∩ D) = ordinaryRayCone C ∩ ordinaryRayCone D := by
+  ext p
+  constructor
+  · rintro ⟨x, hx, a, ha, rfl⟩
+    exact ⟨⟨x, hx.1, a, ha, rfl⟩, ⟨x, hx.2, a, ha, rfl⟩⟩
+  · rintro ⟨hpC, hpD⟩
+    rcases hpC with ⟨x, hx, a, ha, hEq⟩
+    rcases hpD with ⟨y, hy, b, hb, hEq'⟩
+    have hpEq : (a • x, -a) = (b • y, -b) := by
+      calc
+        (a • x, -a) = p := hEq.symm
+        _ = (b • y, -b) := hEq'
+    have hab : a = b := by
+      have hsnd : (-a : ℝ) = -b := by
+        simpa using congrArg Prod.snd hpEq
+      linarith
+    have hxy : x = y := by
+      have hfst : a • x = b • y := by
+        simpa using congrArg Prod.fst hpEq
+      subst hab
+      have hsmul : a⁻¹ • (a • x) = a⁻¹ • (a • y) := by
+        simpa using congrArg (fun z : E => a⁻¹ • z) hfst
+      simpa [smul_smul, ha.ne', inv_mul_cancel₀, one_smul] using hsmul
+    refine ⟨x, ⟨hx, hxy ▸ hy⟩, a, ha, hEq⟩
+
+theorem raySpaceCone_inter {C D K L : Set E} :
+    raySpaceCone C K ∩ raySpaceCone D L = raySpaceCone (C ∩ D) (K ∩ L) := by
+  ext p
+  constructor
+  · rintro ⟨hp, hq⟩
+    rcases hp with hpOrd | hpHor
+    · rcases hq with hqOrd | hqHor
+      · left
+        rw [ordinaryRayCone_inter]
+        exact ⟨hpOrd, hqOrd⟩
+      · exfalso
+        have hlt : p.2 < 0 := snd_lt_zero_of_mem_ordinaryRayCone hpOrd
+        have hzero : p.2 = 0 := by
+          simpa using hqHor.2
+        linarith
+    · rcases hq with hqOrd | hqHor
+      · exfalso
+        have hzero : p.2 = 0 := by
+          simpa using hpHor.2
+        have hlt : p.2 < 0 := snd_lt_zero_of_mem_ordinaryRayCone hqOrd
+        linarith
+      · exact Or.inr ⟨⟨hpHor.1, hqHor.1⟩, by simpa using hpHor.2⟩
+  · rintro (hpOrd | hpHor)
+    · refine ⟨Or.inl ?_, Or.inl ?_⟩
+      · exact ordinaryRayCone_mono inter_subset_left hpOrd
+      · exact ordinaryRayCone_mono inter_subset_right hpOrd
+    · exact ⟨Or.inr ⟨hpHor.1.1, hpHor.2⟩, Or.inr ⟨hpHor.1.2, hpHor.2⟩⟩
+
 theorem mem_raySpaceCone_zero_iff {C K : Set E} {x : E} :
     (x, 0) ∈ raySpaceCone C K ↔ x ∈ K := by
   constructor
