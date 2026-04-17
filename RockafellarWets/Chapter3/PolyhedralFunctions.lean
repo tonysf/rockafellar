@@ -14,6 +14,7 @@ Chapter 3:
 
 import RockafellarWets.Chapter1.Semicontinuity
 import RockafellarWets.Chapter3.GeneratedSets
+import RockafellarWets.Chapter3.Pointwise
 import RockafellarWets.Chapter3.PositiveHomogeneity
 
 open Set EReal
@@ -102,6 +103,19 @@ theorem HasClosedPolyhedralEpigraph.lowerSemicontinuous {f : E → EReal}
     LowerSemicontinuous f :=
   lowerSemicontinuous_of_isClosed_epigraph_ereal f hf.isClosed
 
+theorem HasPolyhedralEpigraph.effectiveDomain_isPolyhedral {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) :
+    IsPolyhedral (effectiveDomain f) := by
+  rw [← epigraph_proj_eq_effectiveDomain f]
+  exact hf.linear_image (LinearMap.fst ℝ E ℝ)
+
+theorem HasClosedPolyhedralEpigraph.effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) :
+    IsClosedPolyhedral (effectiveDomain f) := by
+  rw [← epigraph_proj_eq_effectiveDomain f]
+  exact hf.linear_image (LinearMap.fst ℝ E ℝ)
+
 theorem HasClosedPolyhedralEpigraph.hasPolyhedralEpigraph [FiniteDimensional ℝ E]
     {f : E → EReal}
     (hf : HasClosedPolyhedralEpigraph f) :
@@ -164,6 +178,116 @@ theorem IsConvexPiecewiseLinear.lowerSemicontinuous {f : E → EReal}
     (hf : IsConvexPiecewiseLinear f) :
     LowerSemicontinuous f :=
   hf.2.lowerSemicontinuous
+
+theorem IsConvexPiecewiseLinear.effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsClosedPolyhedral (effectiveDomain f) :=
+  hf.2.effectiveDomain_isClosedPolyhedral
+
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_indicatorVA_effectiveDomain
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsConvexPiecewiseLinear (indicatorVA (effectiveDomain f)) := by
+  refine IsClosedPolyhedral.isConvexPiecewiseLinear_indicatorVA
+    (hC := hf.effectiveDomain_isClosedPolyhedral) ?_
+  exact hf.isProper.1
+
+theorem HasClosedPolyhedralEpigraph.isProper_sup_of_nonempty_effectiveDomain_inter
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    IsProper (fun x => f x ⊔ g x) :=
+  isProper_sup_of_isProper_of_nonempty_effectiveDomain_inter hproperf hproperg hdom
+
+theorem HasClosedPolyhedralEpigraph.lowerSemicontinuous_sup
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g) :
+    LowerSemicontinuous (fun x => f x ⊔ g x) :=
+  RW.lowerSemicontinuous_sup hf.lowerSemicontinuous hg.lowerSemicontinuous
+
+theorem HasClosedPolyhedralEpigraph.convex_epigraph_sup
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g) :
+    Convex ℝ (epigraph (fun x => f x ⊔ g x)) :=
+  RW.convex_epigraph_sup hf.convex hg.convex
+
+theorem HasClosedPolyhedralEpigraph.horizonFunction_sup_eq_sup_of_nonempty_effectiveDomain_inter
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    horizonFunction (fun x => f x ⊔ g x) = fun w => horizonFunction f w ⊔ horizonFunction g w := by
+  have hproperSup :
+      IsProper (fun x => f x ⊔ g x) :=
+    hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
+  exact RW.horizonFunction_sup_eq_sup
+    hf.convex
+    hg.convex
+    hf.lowerSemicontinuous
+    hg.lowerSemicontinuous
+    hproperf
+    hproperg
+    (epigraph_nonempty_of_isProper hproperSup)
+
+theorem HasClosedPolyhedralEpigraph.sup_regular_of_nonempty_effectiveDomain_inter
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    IsProper (fun x => f x ⊔ g x) ∧
+      LowerSemicontinuous (fun x => f x ⊔ g x) ∧
+      Convex ℝ (epigraph (fun x => f x ⊔ g x)) ∧
+      horizonFunction (fun x => f x ⊔ g x) = fun w => horizonFunction f w ⊔ horizonFunction g w := by
+  refine ⟨hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom, ?_, ?_, ?_⟩
+  · exact hf.lowerSemicontinuous_sup hg
+  · exact hf.convex_epigraph_sup hg
+  · exact hf.horizonFunction_sup_eq_sup_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
+
+theorem IsConvexPiecewiseLinear.isProper_sup_of_nonempty_effectiveDomain_inter
+    {f g : E → EReal} (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    IsProper (fun x => f x ⊔ g x) :=
+  isProper_sup_of_isProper_of_nonempty_effectiveDomain_inter hf.isProper hg.isProper hdom
+
+theorem IsConvexPiecewiseLinear.lowerSemicontinuous_sup
+    {f g : E → EReal} (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g) :
+    LowerSemicontinuous (fun x => f x ⊔ g x) :=
+  RW.lowerSemicontinuous_sup hf.lowerSemicontinuous hg.lowerSemicontinuous
+
+theorem IsConvexPiecewiseLinear.convex_epigraph_sup
+    {f g : E → EReal} (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g) :
+    Convex ℝ (epigraph (fun x => f x ⊔ g x)) :=
+  RW.convex_epigraph_sup hf.2.convex hg.2.convex
+
+theorem IsConvexPiecewiseLinear.horizonFunction_sup_eq_sup_of_nonempty_effectiveDomain_inter
+    {f g : E → EReal} (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    horizonFunction (fun x => f x ⊔ g x) = fun w => horizonFunction f w ⊔ horizonFunction g w := by
+  have hproperSup :
+      IsProper (fun x => f x ⊔ g x) :=
+    hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hdom
+  exact RW.horizonFunction_sup_eq_sup
+    hf.2.convex
+    hg.2.convex
+    hf.lowerSemicontinuous
+    hg.lowerSemicontinuous
+    hf.isProper
+    hg.isProper
+    (epigraph_nonempty_of_isProper hproperSup)
+
+theorem IsConvexPiecewiseLinear.sup_regular_of_nonempty_effectiveDomain_inter
+    {f g : E → EReal} (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    IsProper (fun x => f x ⊔ g x) ∧
+      LowerSemicontinuous (fun x => f x ⊔ g x) ∧
+      Convex ℝ (epigraph (fun x => f x ⊔ g x)) ∧
+      horizonFunction (fun x => f x ⊔ g x) = fun w => horizonFunction f w ⊔ horizonFunction g w := by
+  refine ⟨hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hdom, ?_, ?_, ?_⟩
+  · exact hf.lowerSemicontinuous_sup hg
+  · exact hf.convex_epigraph_sup hg
+  · exact hf.horizonFunction_sup_eq_sup_of_nonempty_effectiveDomain_inter hg hdom
 
 theorem IsConvexPiecewiseLinear.convex_epigraph {f : E → EReal}
     (hf : IsConvexPiecewiseLinear f) :

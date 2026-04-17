@@ -14,6 +14,7 @@ import RockafellarWets.Chapter3.PointedCones
 import RockafellarWets.Chapter3.Pointwise
 import RockafellarWets.Chapter3.SetOperations
 import RockafellarWets.Chapter3.HorizonFunctions
+import RockafellarWets.Chapter3.PositiveHulls
 import Mathlib.Analysis.SpecificLimits.Basic
 
 open scoped Pointwise
@@ -60,6 +61,117 @@ def valueProjection : ((E × F) × ℝ) →ₗ[ℝ] F × ℝ where
 @[simp] theorem valueProjection_apply (p : ((E × F) × ℝ)) :
     valueProjection p = (p.1.2, p.2) := rfl
 
+section EpigraphHeight
+
+variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
+
+/-- The scalar-height integrand attached to `epi f`: minimizing over the real
+height variable recovers `f`. -/
+noncomputable def epigraphHeightIntegrand (f : G → EReal) : ℝ × G → EReal :=
+  fun p => indicatorVA (epigraph f) (p.2, p.1) + (p.1 : EReal)
+
+@[simp] theorem epigraphHeightIntegrand_apply (f : G → EReal) (r : ℝ) (x : G) :
+    epigraphHeightIntegrand f (r, x) = indicatorVA (epigraph f) (x, r) + (r : EReal) :=
+  rfl
+
+/-- The scalar-height integrand whose value function is the pointwise
+supremum. -/
+noncomputable def supHeightIntegrand (f g : G → EReal) : ℝ × G → EReal :=
+  fun p =>
+    indicatorVA (epigraph f) (p.2, p.1) +
+      indicatorVA (epigraph g) (p.2, p.1) + (p.1 : EReal)
+
+@[simp] theorem supHeightIntegrand_apply (f g : G → EReal) (r : ℝ) (x : G) :
+    supHeightIntegrand f g (r, x) =
+      indicatorVA (epigraph f) (x, r) +
+        indicatorVA (epigraph g) (x, r) + (r : EReal) :=
+  rfl
+
+theorem supHeightIntegrand_eq_epigraphHeightIntegrand_sup
+    (f g : G → EReal) :
+    supHeightIntegrand f g = epigraphHeightIntegrand (fun x => f x ⊔ g x) := by
+  funext p
+  simp [supHeightIntegrand, epigraphHeightIntegrand, epigraph_sup, indicatorVA_inter, add_assoc]
+
+/-- Minimizing the epigraph-height integrand over the height variable recovers
+the original function. -/
+theorem valueFunction_epigraphHeightIntegrand (f : G → EReal) :
+    valueFunction (E := ℝ) (F := G) (epigraphHeightIntegrand f) = f := by
+  funext x
+  rw [valueFunction]
+  change (⨅ r : ℝ, indicatorVA (epigraph f) (x, r) + (r : EReal)) = f x
+  calc
+    (⨅ r : ℝ, indicatorVA (epigraph f) (x, r) + (r : EReal))
+        = ⨅ r : ℝ, ⨅ (_ : f x ≤ (r : EReal)), (r : EReal) := by
+            refine iInf_congr ?_
+            intro r
+            by_cases hr : f x ≤ (r : EReal) <;> simp [indicatorVA, mem_epigraph_iff, hr]
+    _ = (⨅ r : {r : ℝ // f x ≤ (r : EReal)}, (r : EReal)) := by
+          rw [iInf_subtype']
+    _ = f x := iInf_coe_real_ge_eq (f x)
+
+/-- The pointwise supremum is the value function of the scalar-height problem
+requiring the height to dominate both epigraphs. -/
+theorem valueFunction_sup_eq
+    (f g : G → EReal) :
+    valueFunction (E := ℝ) (F := G) (supHeightIntegrand f g) =
+      fun x => f x ⊔ g x := by
+  rw [supHeightIntegrand_eq_epigraphHeightIntegrand_sup]
+  exact valueFunction_epigraphHeightIntegrand (fun x => f x ⊔ g x)
+
+/-- Properness of `f` lifts to properness of the scalar-height epigraph
+integrand. -/
+theorem isProper_epigraphHeightIntegrand
+    {f : G → EReal} (hproper : IsProper f) :
+    IsProper (epigraphHeightIntegrand f) := by
+  constructor
+  · rcases hproper.1 with ⟨x, hx⟩
+    let r : ℝ := (f x).toReal
+    have htoReal : ((r : ℝ) : EReal) = f x := by
+      simpa [r] using EReal.coe_toReal (ne_of_lt hx) (ne_of_gt (hproper.2 x))
+    have hmem : (x, r) ∈ epigraph f := by
+      change f x ≤ (r : EReal)
+      simpa using le_of_eq htoReal.symm
+    refine ⟨(r, x), ?_⟩
+    simpa [epigraphHeightIntegrand_apply, indicatorVA, hmem] using EReal.coe_lt_top r
+  · intro p
+    rcases p with ⟨r, x⟩
+    by_cases hmem : (x, r) ∈ epigraph f
+    · simpa [epigraphHeightIntegrand_apply, indicatorVA, hmem] using EReal.bot_lt_coe r
+    · simpa [epigraphHeightIntegrand_apply, indicatorVA, hmem] using
+        (EReal.bot_lt_top : (⊥ : EReal) < ⊤)
+
+/-- Lower semicontinuity of `f` lifts to lower semicontinuity of the
+scalar-height epigraph integrand. -/
+theorem lowerSemicontinuous_epigraphHeightIntegrand
+    {f : G → EReal} (hlsc : LowerSemicontinuous f) :
+    LowerSemicontinuous (epigraphHeightIntegrand f) := by
+  have hind0 : LowerSemicontinuous (indicatorVA (epigraph f) : G × ℝ → EReal) :=
+    lowerSemicontinuous_indicatorVA (C := epigraph f) (isClosed_epigraph_of_lsc_ereal f hlsc)
+  have hind : LowerSemicontinuous (fun p : ℝ × G => indicatorVA (epigraph f) (p.2, p.1)) := by
+    simpa [Function.comp] using hind0.comp (ContinuousLinearEquiv.prodComm ℝ ℝ G).continuous
+  have hcont_r : Continuous (fun p : ℝ × G => ((p.1 : ℝ) : EReal)) :=
+    continuous_coe_real_ereal.comp continuous_fst
+  refine LowerSemicontinuous.add' hind hcont_r.lowerSemicontinuous ?_
+  intro p
+  exact EReal.continuousAt_add
+    (Or.inr (by simpa using EReal.coe_ne_bot p.1))
+    (Or.inr (by simpa using EReal.coe_ne_top p.1))
+
+theorem isProper_supHeightIntegrand
+    {f g : G → EReal} (hproper : IsProper (fun x => f x ⊔ g x)) :
+    IsProper (supHeightIntegrand f g) := by
+  simpa [supHeightIntegrand_eq_epigraphHeightIntegrand_sup] using
+    isProper_epigraphHeightIntegrand (f := fun x => f x ⊔ g x) hproper
+
+theorem lowerSemicontinuous_supHeightIntegrand
+    {f g : G → EReal} (hlsc : LowerSemicontinuous (fun x => f x ⊔ g x)) :
+    LowerSemicontinuous (supHeightIntegrand f g) := by
+  simpa [supHeightIntegrand_eq_epigraphHeightIntegrand_sup] using
+    lowerSemicontinuous_epigraphHeightIntegrand (f := fun x => f x ⊔ g x) hlsc
+
+end EpigraphHeight
+
 /-- A finite lower level set is convex whenever the epigraph is convex. -/
 theorem convex_levelSet_of_convex_epigraph
     {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
@@ -97,6 +209,111 @@ theorem isClosed_levelSet_of_lsc_ereal
     simp [phi, mem_epigraph_iff, levelSet]
   rw [hpreimage]
   exact hclosed.preimage hphi
+
+/-- The scalar-height integrand is level-bounded in the height variable locally
+uniformly in the spatial variable, provided the base function is proper and
+lower semicontinuous. -/
+theorem isLevelBoundedInXLocallyUniformly_epigraphHeightIntegrand
+    {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G] [FiniteDimensional ℝ G]
+    {f : G → EReal} (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    IsLevelBoundedInXLocallyUniformly (epigraphHeightIntegrand f) := by
+  intro xBar α
+  let K : Set G := closedBall xBar 1 ∩ levelSet f α
+  have hdata_of_mem :
+      ∀ {r : ℝ} {x : G},
+        (r, x) ∈ localUniformSublevel (epigraphHeightIntegrand f) xBar 1 α →
+          x ∈ closedBall xBar 1 ∧ (x, r) ∈ epigraph f ∧ ((r : ℝ) : EReal) ≤ α := by
+    intro r x hp
+    rcases hp with ⟨hball, hpLvl⟩
+    have hfxr_le : epigraphHeightIntegrand f (r, x) ≤ (α : EReal) := by
+      simpa [levelSet] using hpLvl
+    have hxr : (x, r) ∈ epigraph f := by
+      by_cases hmem : (x, r) ∈ epigraph f
+      · exact hmem
+      · exfalso
+        have : (⊤ : EReal) ≤ (α : EReal) := by
+          simpa [epigraphHeightIntegrand_apply, indicatorVA, hmem] using hfxr_le
+        simpa using this
+    have hrα : (r : EReal) ≤ (α : EReal) := by
+      simpa [epigraphHeightIntegrand_apply, indicatorVA, hxr] using hfxr_le
+    exact ⟨hball.2, hxr, hrα⟩
+  have hxK_of_mem :
+      ∀ {r : ℝ} {x : G},
+        (r, x) ∈ localUniformSublevel (epigraphHeightIntegrand f) xBar 1 α →
+          x ∈ K := by
+    intro r x hp
+    rcases hdata_of_mem hp with ⟨hxball, hxr, hrα⟩
+    have hfxα : f x ≤ (α : EReal) := by
+      exact le_trans (by simpa [mem_epigraph_iff] using hxr) hrα
+    exact ⟨hxball, by simpa [K, levelSet] using hfxα⟩
+  refine ⟨1, zero_lt_one, ?_⟩
+  by_cases hKne : K.Nonempty
+  · have hKclosed : IsClosed K := by
+      exact isClosed_closedBall.inter (isClosed_levelSet_of_lsc_ereal hlsc α)
+    have hKbounded : IsBounded K := by
+      exact isBounded_closedBall.subset inter_subset_left
+    have hKcompact : IsCompact K := by
+      exact Metric.isCompact_iff_isClosed_bounded.2 ⟨hKclosed, hKbounded⟩
+    have hreal_lsc : LowerSemicontinuousOn (fun x : G => (f x).toReal) K := by
+      rw [← lowerSemicontinuous_restrict_iff, lsc_iff_sublevelSets_closed]
+      intro β
+      have hEq :
+          {x : K | K.restrict (fun x : G => (f x).toReal) x ≤ β} =
+            Subtype.val ⁻¹' levelSet f β := by
+        ext x
+        constructor
+        · intro hx
+          have hx_top : f x.1 ≠ ⊤ := by
+            exact ne_of_lt (lt_of_le_of_lt x.2.2 (EReal.coe_lt_top α))
+          have hx_bot : f x.1 ≠ ⊥ := ne_of_gt (hproper.2 x.1)
+          have hx' : (((f x.1).toReal : ℝ) : EReal) ≤ (β : EReal) := by
+            exact_mod_cast hx
+          simpa [levelSet, EReal.coe_toReal hx_top hx_bot] using hx'
+        · intro hx
+          have hx' : f x.1 ≤ (β : EReal) := by
+            simpa [levelSet] using hx
+          simpa using
+            (EReal.toReal_le_toReal hx' (ne_of_gt (hproper.2 x.1)) (EReal.coe_ne_top β))
+      rw [hEq]
+      exact (isClosed_levelSet_of_lsc_ereal hlsc β).preimage continuous_subtype_val
+    obtain ⟨xMin, hxMinK, hxMin⟩ :=
+      exists_min_of_lsc_compact (f := fun x : G => (f x).toReal) hreal_lsc hKcompact hKne
+    let m : ℝ := (f xMin).toReal
+    have hsub :
+        localUniformSublevel (epigraphHeightIntegrand f) xBar 1 α ⊆
+          Set.Icc m α ×ˢ closedBall xBar 1 := by
+      intro p hp
+      rcases p with ⟨r, x⟩
+      rcases hdata_of_mem hp with ⟨hxball, hxr, hrα⟩
+      have hxK : x ∈ K := hxK_of_mem hp
+      have hxmin : m ≤ (f x).toReal := by
+        exact hxMin hxK
+      have hfxr : f x ≤ (r : EReal) := by
+        simpa [mem_epigraph_iff] using hxr
+      have htoReal : (f x).toReal ≤ r := by
+        exact EReal.toReal_le_toReal hfxr (ne_of_gt (hproper.2 x)) (EReal.coe_ne_top r)
+      refine ⟨?_, hxball⟩
+      constructor
+      · exact le_trans hxmin htoReal
+      · exact_mod_cast hrα
+    exact (Metric.isBounded_Icc m α).prod isBounded_closedBall |>.subset hsub
+  · have hEmpty : localUniformSublevel (epigraphHeightIntegrand f) xBar 1 α = ∅ := by
+      ext p
+      constructor
+      · intro hp
+        rcases p with ⟨r, x⟩
+        exact (hKne ⟨x, hxK_of_mem hp⟩).elim
+      · simp
+    simpa [hEmpty] using (isBounded_empty : IsBounded (∅ : Set (ℝ × G)))
+
+theorem isLevelBoundedInXLocallyUniformly_supHeightIntegrand
+    {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G] [FiniteDimensional ℝ G]
+    {f g : G → EReal} (hlsc : LowerSemicontinuous (fun x => f x ⊔ g x))
+    (hproper : IsProper (fun x => f x ⊔ g x)) :
+    IsLevelBoundedInXLocallyUniformly (supHeightIntegrand f g) := by
+  simpa [supHeightIntegrand_eq_epigraphHeightIntegrand_sup] using
+    isLevelBoundedInXLocallyUniformly_epigraphHeightIntegrand
+      (f := fun x => f x ⊔ g x) hlsc hproper
 
 /-- The horizon cone of a local-uniform sublevel slice is the intersection of
 the horizon cones of its two defining factors. -/

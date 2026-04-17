@@ -32,6 +32,39 @@ theorem epigraph_sup {f g : E → EReal} :
   rcases p with ⟨x, a⟩
   simp [mem_epigraph_iff, sup_le_iff]
 
+/-- Lower semicontinuity is preserved by binary pointwise suprema. -/
+theorem lowerSemicontinuous_sup {f g : E → EReal}
+    (hf : LowerSemicontinuous f) (hg : LowerSemicontinuous g) :
+    LowerSemicontinuous (fun x => f x ⊔ g x) := by
+  rw [lsc_iff_epigraph_closed_ereal]
+  rw [epigraph_sup]
+  exact (isClosed_epigraph_of_lsc_ereal f hf).inter (isClosed_epigraph_of_lsc_ereal g hg)
+
+/-- Convexity of epigraphs is preserved by binary pointwise suprema. -/
+theorem convex_epigraph_sup {f g : E → EReal}
+    (hf : Convex ℝ (epigraph f)) (hg : Convex ℝ (epigraph g)) :
+    Convex ℝ (epigraph (fun x => f x ⊔ g x)) := by
+  rw [epigraph_sup]
+  exact hf.inter hg
+
+/-- The effective domain of a binary pointwise supremum is the intersection of
+the effective domains. -/
+theorem effectiveDomain_sup {f g : E → EReal} :
+    effectiveDomain (fun x => f x ⊔ g x) = effectiveDomain f ∩ effectiveDomain g := by
+  ext x
+  simp [mem_effectiveDomain_iff, sup_lt_iff]
+
+/-- If two proper functions have a common effective-domain point, then their
+binary pointwise supremum is proper. -/
+theorem isProper_sup_of_isProper_of_nonempty_effectiveDomain_inter
+    {f g : E → EReal} (hf : IsProper f) (hg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    IsProper (fun x => f x ⊔ g x) := by
+  refine ⟨?_ , ?_⟩
+  · simpa [effectiveDomain_sup] using hdom
+  · intro x
+    exact lt_of_lt_of_le (hf.2 x) le_sup_left
+
 /-- For a finite nonempty family, the epigraph of the pointwise infimum is the
 union of the epigraphs. -/
 theorem epigraph_iInf_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
@@ -57,6 +90,14 @@ theorem epigraph_inf {f g : E → EReal} :
   ext p
   rcases p with ⟨x, a⟩
   simp [mem_epigraph_iff]
+
+/-- Lower semicontinuity is preserved by binary pointwise infima. -/
+theorem lowerSemicontinuous_inf {f g : E → EReal}
+    (hf : LowerSemicontinuous f) (hg : LowerSemicontinuous g) :
+    LowerSemicontinuous (fun x => f x ⊓ g x) := by
+  rw [lsc_iff_epigraph_closed_ereal]
+  rw [epigraph_inf]
+  exact (isClosed_epigraph_of_lsc_ereal f hf).union (isClosed_epigraph_of_lsc_ereal g hg)
 
 /-- Equality of real epigraphs determines an `EReal`-valued function. -/
 theorem eq_of_epigraph_eq {f g : E → EReal} (hfg : epigraph f = epigraph g) :

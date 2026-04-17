@@ -43,6 +43,49 @@ theorem convexHull_raySpaceCone_eq_raySpaceCone_extendedConvexHull
   simpa [extendedConvexHull, hconv] using
     convexHull_raySpaceCone (C := A) (K := conicHull B) hcone
 
+/-- For a cone, the ordinary ray slice is exactly the negative-height strip
+over the cone. -/
+theorem ordinaryRayCone_eq_prod_Iio_zero_of_isCone {K : Set E} (hK : IsCone K) :
+    ordinaryRayCone K = K ×ˢ Set.Iio (0 : ℝ) := by
+  ext p
+  constructor
+  · rintro ⟨x, hx, a, ha, rfl⟩
+    refine ⟨hK.2 hx ha, ?_⟩
+    show (-a : ℝ) < 0
+    linarith
+  · rintro ⟨hpK, hp2⟩
+    have hp2lt : p.2 < 0 := hp2
+    have hp2' : 0 < -p.2 := by linarith
+    refine ⟨((-p.2)⁻¹ • p.1), hK.2 hpK (inv_pos.mpr hp2'), -p.2, hp2', ?_⟩
+    ext
+    · symm
+      calc
+        (-p.2 : ℝ) • (((-p.2)⁻¹ : ℝ) • p.1)
+            = (((-p.2 : ℝ) * (-p.2)⁻¹) : ℝ) • p.1 := by rw [smul_smul]
+        _ = p.1 := by
+              have hp20 : p.2 ≠ 0 := by linarith
+              simp [hp20]
+    · ring
+
+/-- For a cone, the full ray-space cone is the product with the nonpositive
+real ray. -/
+theorem raySpaceCone_eq_prod_Iic_zero_of_isCone {K : Set E} (hK : IsCone K) :
+    raySpaceCone K K = K ×ˢ Set.Iic (0 : ℝ) := by
+  rw [raySpaceCone, ordinaryRayCone_eq_prod_Iio_zero_of_isCone hK]
+  ext p
+  constructor
+  · rintro (hp | hp)
+    · change p.1 ∈ K ∧ p.2 ≤ 0
+      exact ⟨hp.1, le_of_lt (show p.2 < 0 from hp.2)⟩
+    · rcases hp with ⟨hpK, hpZero⟩
+      have hp20 : p.2 = 0 := by simpa using hpZero
+      change p.1 ∈ K ∧ p.2 ≤ 0
+      exact ⟨hpK, by simpa [hp20]⟩
+  · rintro ⟨hpK, hp2⟩
+    rcases lt_or_eq_of_le (show p.2 ≤ 0 from hp2) with hp2' | hp2'
+    · exact Or.inl ⟨hpK, hp2'⟩
+    · exact Or.inr ⟨hpK, by simpa [hp2']⟩
+
 /-- A set is finitely generated in the extended-convex-hull sense if it is the
 sum of the convex hull of finitely many ordinary points and the conic hull of
 finitely many directions. -/
@@ -62,6 +105,14 @@ theorem IsFinitelyGeneratedCone.isExtendedFinitelyGenerated {K : Set E}
   rcases hK with ⟨t, rfl⟩
   refine ⟨{0}, t, ?_⟩
   simp [extendedConvexHull, conicHull]
+
+theorem IsFinitelyGeneratedCone.raySpaceCone_of_isCone {K : Set E}
+    (hK : IsFinitelyGeneratedCone K) (hKcone : IsCone K) :
+    IsFinitelyGeneratedCone (raySpaceCone K K) := by
+  rw [raySpaceCone_eq_prod_Iic_zero_of_isCone hKcone]
+  exact hK.prod (show IsFinitelyGeneratedCone (Set.Iic (0 : ℝ)) from by
+    refine ⟨{-1}, ?_⟩
+    simpa using conicHull_singleton_neg_one_eq_Iic_zero.symm)
 
 open Classical in
 private noncomputable def finsetAdd (s t : Finset E) : Finset E :=
@@ -666,6 +717,42 @@ theorem IsPolyhedral.isClosedPolyhedral_of_isClosed {C : Set E}
     IsClosedPolyhedral C := by
   simpa [hclosed.closure_eq] using hC.closure_isClosedPolyhedral
 
+theorem IsFinitelyGeneratedCone.isClosedPolyhedral
+    [FiniteDimensional ℝ E] {K : Set E}
+    (hK : IsFinitelyGeneratedCone K) :
+    IsClosedPolyhedral K :=
+  hK.isPolyhedral.isClosedPolyhedral_of_isClosed hK.isClosed
+
+theorem IsPolyhedral.submodule
+    [FiniteDimensional ℝ E] (S : Submodule ℝ E) :
+    IsPolyhedral (S : Set E) :=
+  (IsFinitelyGeneratedCone.submodule S).isPolyhedral
+
+theorem IsClosedPolyhedral.submodule
+    [FiniteDimensional ℝ E] (S : Submodule ℝ E) :
+    IsClosedPolyhedral (S : Set E) :=
+  (IsFinitelyGeneratedCone.submodule S).isClosedPolyhedral
+
+theorem IsPolyhedral.ker_linearMap
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    (L : F →ₗ[ℝ] E) :
+    IsPolyhedral (LinearMap.ker L : Set F) :=
+  (IsFinitelyGeneratedCone.ker_linearMap (E := E) L).isPolyhedral
+
+theorem IsClosedPolyhedral.ker_linearMap
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    (L : F →ₗ[ℝ] E) :
+    IsClosedPolyhedral (LinearMap.ker L : Set F) :=
+  (IsFinitelyGeneratedCone.ker_linearMap (E := E) L).isClosedPolyhedral
+
+theorem IsPolyhedral.isClosedPolyhedral_of_isCone
+    [FiniteDimensional ℝ E] {K : Set E}
+    (hK : IsPolyhedral K) (hcone : IsCone K) :
+    IsClosedPolyhedral K :=
+  (hK.isFinitelyGeneratedCone hcone).isClosedPolyhedral
+
 theorem IsFinitelyGeneratedCone.isClosedPolyhedral_of_isPointed
     [FiniteDimensional ℝ E] {K : Set E}
     (hK : IsFinitelyGeneratedCone K) (hpointed : IsPointed K) :
@@ -695,6 +782,15 @@ theorem IsPolyhedral.Ici_zero : IsPolyhedral (Set.Ici (0 : ℝ)) := by
 
 theorem IsClosedPolyhedral.Ici_zero : IsClosedPolyhedral (Set.Ici (0 : ℝ)) := by
   exact IsPolyhedral.Ici_zero.isClosedPolyhedral_of_isClosed isClosed_Ici
+
+theorem IsPolyhedral.Iic_zero : IsPolyhedral (Set.Iic (0 : ℝ)) := by
+  simpa [Finset.coe_singleton, conicHull_singleton_neg_one_eq_Iic_zero] using
+    (show IsPolyhedral (conicHull (↑({-1} : Finset ℝ) : Set ℝ)) from
+      (show IsFinitelyGeneratedCone (conicHull (↑({-1} : Finset ℝ) : Set ℝ)) from
+        ⟨{-1}, rfl⟩).isPolyhedral)
+
+theorem IsClosedPolyhedral.Iic_zero : IsClosedPolyhedral (Set.Iic (0 : ℝ)) := by
+  exact IsPolyhedral.Iic_zero.isClosedPolyhedral_of_isClosed isClosed_Iic
 
 section ClosedImages
 
@@ -951,7 +1047,97 @@ theorem IsClosedPolyhedral.preimage_linearMap_of_surjective
   rw [hpre, ← e.image_symm_eq_preimage]
   exact (hC.prod (IsClosedPolyhedral.univ (E := LinearMap.ker L))).image_linearEquiv e.symm
 
+theorem IsFinitelyGeneratedCone.preimage_linearMap_of_surjective
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {K : Set E} (hK : IsFinitelyGeneratedCone K) (L : F →ₗ[ℝ] E)
+    (hL : LinearMap.range L = ⊤) :
+    IsFinitelyGeneratedCone (L ⁻¹' K) := by
+  have hpre : IsClosedPolyhedral (L ⁻¹' K) :=
+    hK.isClosedPolyhedral.preimage_linearMap_of_surjective L hL
+  have hcone : IsCone (L ⁻¹' K) :=
+    LinearMap.isCone_preimage L hK.isCone
+  exact hpre.isFinitelyGeneratedCone_of_isCone hcone
+
 end LinearPreimages
+
+section LinearInjections
+
+variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+
+theorem IsPolyhedral.preimage_linearMap_of_injective_of_inter_range
+    (L : F →ₗ[ℝ] E) {C : Set E}
+    (hinter : IsPolyhedral (C ∩ (LinearMap.range L : Set E)))
+    (hL : LinearMap.ker L = ⊥) :
+    IsPolyhedral (L ⁻¹' C) := by
+  let r : E →ₗ[ℝ] F := L.leftInverse
+  have hr : r.comp L = LinearMap.id := L.leftInverse_comp_of_inj hL
+  have himage : r '' (C ∩ (LinearMap.range L : Set E)) = L ⁻¹' C := by
+    ext x
+    constructor
+    · rintro ⟨y, ⟨hyC, hyR⟩, rfl⟩
+      rcases hyR with ⟨z, rfl⟩
+      have hz : r (L z) = z := by
+        simpa using LinearMap.congr_fun hr z
+      change L (r (L z)) ∈ C
+      simpa [hz] using hyC
+    · intro hx
+      refine ⟨L x, ⟨hx, ⟨x, rfl⟩⟩, ?_⟩
+      simpa using LinearMap.congr_fun hr x
+  rw [← himage]
+  exact hinter.linear_image r
+
+theorem IsClosedPolyhedral.preimage_linearMap_of_injective_of_inter_range
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    (L : F →ₗ[ℝ] E) {C : Set E}
+    (hinter : IsClosedPolyhedral (C ∩ (LinearMap.range L : Set E)))
+    (hL : LinearMap.ker L = ⊥) :
+    IsClosedPolyhedral (L ⁻¹' C) := by
+  let r : E →ₗ[ℝ] F := L.leftInverse
+  have hr : r.comp L = LinearMap.id := L.leftInverse_comp_of_inj hL
+  have himage : r '' (C ∩ (LinearMap.range L : Set E)) = L ⁻¹' C := by
+    ext x
+    constructor
+    · rintro ⟨y, ⟨hyC, hyR⟩, rfl⟩
+      rcases hyR with ⟨z, rfl⟩
+      have hz : r (L z) = z := by
+        simpa using LinearMap.congr_fun hr z
+      change L (r (L z)) ∈ C
+      simpa [hz] using hyC
+    · intro hx
+      refine ⟨L x, ⟨hx, ⟨x, rfl⟩⟩, ?_⟩
+      simpa using LinearMap.congr_fun hr x
+  rw [← himage]
+  exact hinter.linear_image r
+
+theorem IsClosedPolyhedral.inter_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E] {C D : Set E}
+    (hdiag :
+      IsClosedPolyhedral ((C ×ˢ D) ∩ {p : E × E | p.1 = p.2})) :
+    IsClosedPolyhedral (C ∩ D) := by
+  let Δ : E →ₗ[ℝ] E × E := (LinearMap.id : E →ₗ[ℝ] E).prod (LinearMap.id : E →ₗ[ℝ] E)
+  have hdiagRange : (LinearMap.range Δ : Set (E × E)) = {p : E × E | p.1 = p.2} := by
+    ext p
+    constructor
+    · rintro ⟨x, hx⟩
+      cases hx
+      simp [Δ]
+    · intro hp
+      refine ⟨p.1, ?_⟩
+      ext <;> simpa [Δ] using hp
+  have hΔinj : Function.Injective Δ := by
+    intro x y hxy
+    exact congrArg Prod.fst hxy
+  have hΔ : LinearMap.ker Δ = ⊥ := LinearMap.ker_eq_bot.mpr hΔinj
+  have hpre : Δ ⁻¹' (C ×ˢ D) = C ∩ D := by
+    ext x
+    simp [Δ]
+  have hinter : IsClosedPolyhedral ((C ×ˢ D) ∩ (LinearMap.range Δ : Set (E × E))) := by
+    simpa [hdiagRange] using hdiag
+  rw [← hpre]
+  exact IsClosedPolyhedral.preimage_linearMap_of_injective_of_inter_range
+    (C := C ×ˢ D) Δ hinter hΔ
+
+end LinearInjections
 
 theorem IsPolyhedral.exists_nonempty_generators_of_nonempty
     {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
@@ -981,5 +1167,300 @@ theorem IsPolyhedral.exists_horizon_generators_of_nonempty
     {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
     ∃ t : Finset E, horizonCone C = horizonCone (conicHull (↑t : Set E)) :=
   IsExtendedFinitelyGenerated.exists_horizon_generators_of_nonempty hC hCne
+
+open Classical in
+/-- The ray-space cone of an extended-convex-hull representation is itself a
+finitely generated cone in `E × ℝ`, generated by the ordinary slice at level
+`-1` together with the horizontal direction slice at level `0`. -/
+theorem raySpaceCone_extendedConvexHull_eq_conicHull_rayGenerators
+    (s t : Finset E) :
+    raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E)) (conicHull (↑t : Set E)) =
+      conicHull
+        (↑((s.image fun x => (x, (-1 : ℝ))) ∪ (t.image fun x => (x, (0 : ℝ)))) :
+          Set (E × ℝ)) := by
+  let G : Set (E × ℝ) :=
+    ((↑((s.image fun x => (x, (-1 : ℝ))) ∪ (t.image fun x => (x, (0 : ℝ)))) :
+      Set (E × ℝ)))
+  have hEq :
+      convexHull ℝ (raySpaceCone (↑s : Set E) (conicHull (↑t : Set E))) =
+        raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E)) (conicHull (↑t : Set E)) :=
+    convexHull_raySpaceCone_eq_raySpaceCone_extendedConvexHull
+      (A := (↑s : Set E)) (B := (↑t : Set E))
+  rw [← hEq]
+  apply le_antisymm
+  · refine convexHull_min ?_ (convex_conicHull G)
+    intro p hp
+    rcases hp with hOrd | hHor
+    · rcases hOrd with ⟨x, hx, a, ha, rfl⟩
+      have hxG : ((x, (-1 : ℝ)) : E × ℝ) ∈ G := by
+        exact Finset.mem_union.mpr <| Or.inl <| Finset.mem_image.mpr ⟨x, hx, rfl⟩
+      have hbase : ((x, (-1 : ℝ)) : E × ℝ) ∈ conicHull G :=
+        subset_conicHull hxG
+      simpa [G] using (isCone_conicHull G).smul_mem hbase ha.le
+    · rcases hHor with ⟨hw, hzero⟩
+      have hp0 : p.2 = 0 := by simpa using hzero
+      have hpEq : p = (p.1, (0 : ℝ)) := by
+        ext <;> simp [hp0]
+      let L : E →ₗ[ℝ] E × ℝ := LinearMap.inl ℝ E ℝ
+      have hw' : ((p.1, (0 : ℝ)) : E × ℝ) ∈ L '' conicHull (↑t : Set E) := by
+        exact ⟨p.1, hw, rfl⟩
+      rw [RW.LinearMap.image_conicHull (E := E) (F := E × ℝ) L (↑t : Set E)] at hw'
+      have hLG : L '' (↑t : Set E) ⊆ G := by
+        intro p hp
+        rcases hp with ⟨x, hx, rfl⟩
+        exact Finset.mem_union.mpr <| Or.inr <| Finset.mem_image.mpr ⟨x, hx, rfl⟩
+      rw [hpEq]
+      exact conicHull_mono hLG hw'
+  · refine conicHull_minimal
+      (K := convexHull ℝ (raySpaceCone (↑s : Set E) (conicHull (↑t : Set E))))
+      (convex_convexHull ℝ _)
+      (isCone_convexHull (isCone_raySpaceCone (isCone_conicHull (↑t : Set E))))
+      ?_
+    intro p hp
+    rcases Finset.mem_union.mp hp with hp | hp
+    · rcases Finset.mem_image.mp hp with ⟨x, hx, rfl⟩
+      exact subset_convexHull ℝ _ <| (mem_raySpaceCone_neg_one_iff).2 hx
+    · rcases Finset.mem_image.mp hp with ⟨x, hx, rfl⟩
+      exact subset_convexHull ℝ _ <| Or.inr ⟨subset_conicHull hx, rfl⟩
+
+open Classical in
+/-- A nonempty closed polyhedral set has a finitely generated ray-space cone:
+its ordinary generators sit at height `-1`, and its horizon generators sit at
+height `0`. -/
+theorem IsClosedPolyhedral.isFinitelyGeneratedCone_raySpaceCone
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (raySpaceCone C (horizonCone C)) := by
+  obtain ⟨s, t, hs, hrep⟩ := hC.exists_nonempty_generators_of_nonempty hCne
+  have htclosed : IsClosed (conicHull (↑t : Set E)) :=
+    isClosed_conicHull_finset (E := E) t
+  have hCeq : C = extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+    simpa [extendedConvexHull, htclosed.closure_eq] using hrep
+  have hhor :
+      horizonCone C = conicHull (↑t : Set E) := by
+    rw [hCeq]
+    exact horizonCone_extendedConvexHull_finset_eq_conicHull s t hs htclosed
+  refine
+    ⟨(s.image fun x => (x, (-1 : ℝ))) ∪ (t.image fun x => (x, (0 : ℝ))), ?_⟩
+  calc
+    raySpaceCone C (horizonCone C)
+        = raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E))
+            (conicHull (↑t : Set E)) := by
+              rw [hhor, hCeq]
+    _ = conicHull
+          (↑((s.image fun x => (x, (-1 : ℝ))) ∪ (t.image fun x => (x, (0 : ℝ)))) :
+            Set (E × ℝ)) :=
+          raySpaceCone_extendedConvexHull_eq_conicHull_rayGenerators s t
+
+theorem IsClosedPolyhedral.raySpaceCone_isClosedPolyhedral
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (raySpaceCone C (horizonCone C)) :=
+  (hC.isFinitelyGeneratedCone_raySpaceCone hCne).isClosedPolyhedral
+
+theorem IsClosedPolyhedral.raySpaceCone_isClosedPolyhedral_of_isCone
+    [FiniteDimensional ℝ E]
+    {K : Set E} (hK : IsClosedPolyhedral K) (hKcone : IsCone K) :
+    IsClosedPolyhedral (raySpaceCone K K) := by
+  rw [raySpaceCone_eq_prod_Iic_zero_of_isCone hKcone]
+  exact hK.prod IsClosedPolyhedral.Iic_zero
+
+open Classical in
+/-- A finitely generated ray-space cone has an extended-convex-hull ordinary
+slice. This is the converse direction of the ray-space representation used in
+Corollary 3.53. -/
+theorem IsFinitelyGeneratedCone.isExtendedFinitelyGenerated_of_eq_raySpaceCone
+    {C K : Set E} (hCK : IsFinitelyGeneratedCone (raySpaceCone C K)) :
+    IsExtendedFinitelyGenerated C := by
+  rcases hCK with ⟨u, hu⟩
+  let s : Finset E :=
+    (u.filter fun p : E × ℝ => p.2 < 0).image fun p => ((-p.2)⁻¹ • p.1)
+  let t : Finset E :=
+    (u.filter fun p : E × ℝ => p.2 = 0).image Prod.fst
+  have hconeEq :
+      raySpaceCone C K = raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E))
+        (conicHull (↑t : Set E)) := by
+    rw [hu]
+    have hconvTarget :
+        Convex ℝ (raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E))
+          (conicHull (↑t : Set E))) := by
+      rw [← convexHull_raySpaceCone_eq_raySpaceCone_extendedConvexHull
+        (A := (↑s : Set E)) (B := (↑t : Set E))]
+      exact convex_convexHull ℝ _
+    apply le_antisymm
+    · refine conicHull_minimal
+        (K := raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E)) (conicHull (↑t : Set E)))
+        hconvTarget
+        (isCone_raySpaceCone (isCone_conicHull (↑t : Set E)))
+        ?_
+      intro p hp
+      have hpRay : p ∈ raySpaceCone C K := by
+        rw [hu]
+        exact subset_conicHull hp
+      rcases hpRay with hpOrd | hpHor
+      · rcases hpOrd with ⟨x, hx, a, ha, hpEq⟩
+        have hpOrd' : p ∈ ordinaryRayCone C := by
+          exact ⟨x, hx, a, ha, hpEq⟩
+        have hxS : x ∈ (↑s : Set E) := by
+          apply Finset.mem_image.mpr
+          refine ⟨p, ?_, ?_⟩
+          · refine Finset.mem_filter.mpr ⟨hp, ?_⟩
+            simpa [hpEq] using (show p.2 < 0 from snd_lt_zero_of_mem_ordinaryRayCone hpOrd')
+          · have hp1 : p.1 = a • x := by
+              simpa [hpEq] using congrArg Prod.fst hpEq
+            have hp2 : p.2 = -a := by
+              simpa [hpEq] using congrArg Prod.snd hpEq
+            rw [hp1, hp2]
+            simp [smul_smul, ha.ne', inv_mul_cancel₀]
+        have hxExt : x ∈ extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+          exact Set.mem_add.2
+            ⟨x, subset_convexHull (𝕜 := ℝ) (s := (↑s : Set E)) hxS,
+              0, zero_mem_conicHull (↑t : Set E), by simp⟩
+        exact Or.inl ⟨x, hxExt, a, ha, hpEq⟩
+      · have hpZero : p.2 = 0 := by simpa using hpHor.2
+        have hpT : p.1 ∈ (↑t : Set E) := by
+          apply Finset.mem_image.mpr
+          refine ⟨p, ?_, rfl⟩
+          exact Finset.mem_filter.mpr ⟨hp, hpZero⟩
+        exact Or.inr ⟨subset_conicHull hpT, hpZero⟩
+    · have hsub :
+          ↑((s.image fun x => (x, (-1 : ℝ))) ∪ (t.image fun x => (x, (0 : ℝ)))) ⊆
+            conicHull (↑u : Set (E × ℝ)) := by
+          intro p hp
+          rcases Finset.mem_union.mp hp with hp | hp
+          · rcases Finset.mem_image.mp hp with ⟨x, hxS, rfl⟩
+            rcases Finset.mem_image.mp hxS with ⟨q, hq, hqx⟩
+            rcases Finset.mem_filter.mp hq with ⟨hqU, hqNeg⟩
+            have hqRay : q ∈ raySpaceCone C K := by
+              rw [hu]
+              exact subset_conicHull hqU
+            rcases hqRay with hqOrd | hqHor
+            · let a : ℝ := -q.2
+              have ha : 0 < a := by
+                dsimp [a]
+                linarith
+              have hqCone : q ∈ conicHull (↑u : Set (E × ℝ)) := subset_conicHull hqU
+              have hscaled : a⁻¹ • q ∈ conicHull (↑u : Set (E × ℝ)) :=
+                (isCone_conicHull (↑u : Set (E × ℝ))).smul_mem hqCone <| by
+                  exact inv_nonneg.mpr ha.le
+              have hqsec : (a⁻¹ : ℝ) * q.2 = -1 := by
+                have hqa : q.2 = -a := by simp [a]
+                rw [hqa]
+                simp [ha.ne']
+              have hqpair : a⁻¹ • q = ((x, (-1 : ℝ)) : E × ℝ) := by
+                ext
+                · simpa [a, Prod.smul_mk] using hqx
+                · simpa [Prod.smul_mk] using hqsec
+              simpa [hqpair] using hscaled
+            · have : q.2 = 0 := by simpa using hqHor.2
+              linarith
+          · rcases Finset.mem_image.mp hp with ⟨x, hxT, rfl⟩
+            rcases Finset.mem_image.mp hxT with ⟨q, hq, hq1⟩
+            rcases Finset.mem_filter.mp hq with ⟨hqU, hqZero⟩
+            have hqCone : q ∈ conicHull (↑u : Set (E × ℝ)) := subset_conicHull hqU
+            have hqpair : q = ((x, (0 : ℝ)) : E × ℝ) := by
+              ext
+              · simpa using hq1
+              · simpa using hqZero
+            simpa [hqpair] using hqCone
+      rw [raySpaceCone_extendedConvexHull_eq_conicHull_rayGenerators s t]
+      exact conicHull_minimal
+        (K := conicHull (↑u : Set (E × ℝ)))
+        (convex_conicHull _)
+        (isCone_conicHull _)
+        hsub
+  refine ⟨s, t, ?_⟩
+  ext x
+  constructor
+  · intro hx
+    have hxRay : ((x, (-1 : ℝ)) : E × ℝ) ∈ raySpaceCone C K :=
+      (mem_raySpaceCone_neg_one_iff).2 hx
+    have hxRay' :
+        ((x, (-1 : ℝ)) : E × ℝ) ∈
+          raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E)) (conicHull (↑t : Set E)) := by
+      rw [← hconeEq]
+      exact hxRay
+    exact (mem_raySpaceCone_neg_one_iff).1 hxRay'
+  · intro hx
+    have hxRay :
+        ((x, (-1 : ℝ)) : E × ℝ) ∈
+          raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E)) (conicHull (↑t : Set E)) :=
+      (mem_raySpaceCone_neg_one_iff).2 hx
+    have hxRay' : ((x, (-1 : ℝ)) : E × ℝ) ∈ raySpaceCone C K := by
+      rw [hconeEq]
+      exact hxRay
+    exact (mem_raySpaceCone_neg_one_iff).1 hxRay'
+
+theorem IsFinitelyGeneratedCone.isPolyhedral_of_eq_raySpaceCone
+    {C K : Set E} (hCK : IsFinitelyGeneratedCone (raySpaceCone C K)) :
+    IsPolyhedral C :=
+  hCK.isExtendedFinitelyGenerated_of_eq_raySpaceCone
+
+theorem IsFinitelyGeneratedCone.isClosedPolyhedral_of_eq_raySpaceCone_horizon
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hCK : IsFinitelyGeneratedCone (raySpaceCone C (horizonCone C))) :
+    IsClosedPolyhedral C := by
+  have hclosedRay : IsClosed (raySpaceCone C (horizonCone C)) := hCK.isClosed
+  have hclosedC : IsClosed C := by
+    rcases (isClosed_raySpaceCone_iff (C := C) (K := horizonCone C)
+      (isCone_horizonCone C)).1 hclosedRay with ⟨hC, _, _⟩
+    exact hC
+  exact hCK.isPolyhedral_of_eq_raySpaceCone.isClosedPolyhedral_of_isClosed hclosedC
+
+theorem isClosedPolyhedral_iff_isFinitelyGeneratedCone_raySpaceCone_horizon
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hCne : C.Nonempty) :
+    IsClosedPolyhedral C ↔ IsFinitelyGeneratedCone (raySpaceCone C (horizonCone C)) := by
+  constructor
+  · intro hC
+    exact hC.isFinitelyGeneratedCone_raySpaceCone hCne
+  · intro hRay
+    exact hRay.isClosedPolyhedral_of_eq_raySpaceCone_horizon
+
+/-- A nonempty intersection of closed polyhedral sets is closed polyhedral as
+soon as the corresponding ray-space cone intersection is finitely generated. -/
+theorem IsClosedPolyhedral.inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {C D : Set E} (hC : IsClosedPolyhedral C) (hD : IsClosedPolyhedral D)
+    (hCDne : (C ∩ D).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone C (horizonCone C) ∩ raySpaceCone D (horizonCone D))) :
+    IsClosedPolyhedral (C ∩ D) := by
+  have hhoriz :
+      horizonCone (C ∩ D) = horizonCone C ∩ horizonCone D :=
+    horizonCone_inter_eq_inter_horizonCone
+      hC.convex hD.convex hC.isClosed hD.isClosed hCDne
+  have hRay' : IsFinitelyGeneratedCone (raySpaceCone (C ∩ D) (horizonCone (C ∩ D))) := by
+    rw [hhoriz]
+    simpa [raySpaceCone_inter] using hRay
+  exact
+    (isClosedPolyhedral_iff_isFinitelyGeneratedCone_raySpaceCone_horizon
+      (C := C ∩ D) hCDne).2 hRay'
+
+theorem isClosedPolyhedral_iff_isFinitelyGeneratedCone_raySpaceCone_of_isCone
+    [FiniteDimensional ℝ E]
+    {K : Set E} (hKcone : IsCone K) :
+    IsClosedPolyhedral K ↔ IsFinitelyGeneratedCone (raySpaceCone K K) := by
+  constructor
+  · intro hK
+    exact (hK.isFinitelyGeneratedCone_of_isCone hKcone).raySpaceCone_of_isCone hKcone
+  · intro hRay
+    have hclosedRay : IsClosed (raySpaceCone K K) := hRay.isClosed
+    rcases (isClosed_raySpaceCone_iff (C := K) (K := K) hKcone).1 hclosedRay with
+      ⟨hKclosed, _, hhor⟩
+    have hKhorizon : horizonCone K = K := by
+      apply le_antisymm hhor
+      intro x hx
+      exact mem_horizonCone_of_forall_smul_add_mem (C := K) (x := 0) (w := x) <| by
+        intro τ hτ
+        rcases eq_or_lt_of_le hτ with rfl | hτpos
+        · simpa using hKcone.1
+        · simpa using hKcone.2 hx hτpos
+    have hRay' : IsFinitelyGeneratedCone (raySpaceCone K (horizonCone K)) := by
+      simpa [hKhorizon] using hRay
+    exact
+      (isClosedPolyhedral_iff_isFinitelyGeneratedCone_raySpaceCone_horizon
+        (C := K) ⟨0, hKcone.1⟩).2 hRay'
 
 end RW

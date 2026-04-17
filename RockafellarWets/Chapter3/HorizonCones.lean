@@ -146,4 +146,33 @@ theorem horizonCone_iInter_eq_iInter_horizonCone {ι : Type*} {C : ι → Set E}
     intro i
     exact smul_add_mem_of_mem_horizonCone (C := C i) (hconv i) (hclosed i) (hx' i) (hw' i) hτ
 
+/-- The horizon cone of a nonempty intersection of two closed convex sets is
+the intersection of the individual horizon cones. -/
+theorem horizonCone_inter_eq_inter_horizonCone
+    {C D : Set E} (hconvC : Convex ℝ C) (hconvD : Convex ℝ D)
+    (hclosedC : IsClosed C) (hclosedD : IsClosed D)
+    (hne : (C ∩ D).Nonempty) :
+    horizonCone (C ∩ D) = horizonCone C ∩ horizonCone D := by
+  let S : Bool → Set E := fun b => if b then C else D
+  have hinter : (⋂ b, S b) = C ∩ D := by
+    ext x
+    simp [S, and_comm]
+  have hhoriz :
+      (⋂ b, horizonCone (S b)) = horizonCone C ∩ horizonCone D := by
+    ext w
+    simp [S, and_comm]
+  have hmain :
+      horizonCone (⋂ b, S b) = ⋂ b, horizonCone (S b) := by
+    apply horizonCone_iInter_eq_iInter_horizonCone
+    · intro b
+      by_cases hb : b
+      · simp [S, hb, hconvC]
+      · simp [S, hb, hconvD]
+    · intro b
+      by_cases hb : b
+      · simp [S, hb, hclosedC]
+      · simp [S, hb, hclosedD]
+    · simpa [hinter] using hne
+  rw [← hinter, hmain, hhoriz]
+
 end RW

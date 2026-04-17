@@ -37,6 +37,20 @@ theorem IsConvexPiecewiseLinear.hasClosedPolyhedralEpigraph_horizonFunction
   hf.hasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_horizonFunction
     (epigraph_nonempty_of_isProper hf.isProper)
 
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_horizonFunction
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsConvexPiecewiseLinear (horizonFunction f) := by
+  refine ⟨?_, hf.hasClosedPolyhedralEpigraph_horizonFunction (epigraph_nonempty_of_isProper hproper)⟩
+  constructor
+  · refine ⟨0, ?_⟩
+    rw [horizonFunction_zero_eq_zero_of_convex
+      hf.convex hf.lowerSemicontinuous hproper]
+    simp
+  · intro w
+    exact bot_lt_horizonFunction_of_convex
+      hf.convex hf.lowerSemicontinuous hproper w
+
 /-- The first operation clause in Proposition `3.55(b)`: the horizon function
 of a proper convex piecewise-linear function is again proper with closed
 polyhedral epigraph. -/
@@ -67,6 +81,19 @@ theorem IsConvexPiecewiseLinear.sublinear_horizonFunction
     bot_lt_horizonFunction_of_convex
       hf.convex_epigraph hf.lowerSemicontinuous hf.isProper w
 
+theorem HasClosedPolyhedralEpigraph.sublinear_horizonFunction
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    Sublinear (horizonFunction f) := by
+  refine sublinear_of_positivelyHomogeneous_of_convex_epigraph_of_ne_bot
+    (positivelyHomogeneous_horizonFunction f)
+    (convex_epigraph_horizonFunction hf.convex)
+    ?_
+  intro w
+  exact ne_of_gt <|
+    bot_lt_horizonFunction_of_convex
+      hf.convex hf.lowerSemicontinuous hproper w
+
 theorem HasPolyhedralEpigraph.epiSumIntegrand
     {f₁ f₂ : E → EReal}
     (hf₁ : HasPolyhedralEpigraph f₁) (hf₂ : HasPolyhedralEpigraph f₂)
@@ -87,6 +114,26 @@ theorem HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSumIntegrand
       (f₁ := f₁) (f₂ := f₂) hf₁ hf₂ hproper₁.2 hproper₂.2
   exact HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph_of_lowerSemicontinuous
     hpoly (lowerSemicontinuous_epiSumIntegrand hlsc₁ hlsc₂ hproper₁ hproper₂)
+
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSumIntegrand
+    [FiniteDimensional ℝ E]
+    {f₁ f₂ : E → EReal}
+    (hf₁ : HasClosedPolyhedralEpigraph f₁) (hf₂ : HasClosedPolyhedralEpigraph f₂)
+    (hproper₁ : IsProper f₁) (hproper₂ : IsProper f₂) :
+    HasClosedPolyhedralEpigraph (RW.epiSumIntegrand f₁ f₂) := by
+  exact HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSumIntegrand
+    hf₁.hasPolyhedralEpigraph hf₂.hasPolyhedralEpigraph
+    hf₁.lowerSemicontinuous hf₂.lowerSemicontinuous
+    hproper₁ hproper₂
+
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_epiSumIntegrand
+    [FiniteDimensional ℝ E]
+    {f₁ f₂ : E → EReal}
+    (hf₁ : HasClosedPolyhedralEpigraph f₁) (hf₂ : HasClosedPolyhedralEpigraph f₂)
+    (hproper₁ : IsProper f₁) (hproper₂ : IsProper f₂) :
+    IsConvexPiecewiseLinear (RW.epiSumIntegrand f₁ f₂) := by
+  refine ⟨isProper_epiSumIntegrand hproper₁ hproper₂, ?_⟩
+  exact hf₁.hasClosedPolyhedralEpigraph_epiSumIntegrand hf₂ hproper₁ hproper₂
 
 section Parametric
 
@@ -125,6 +172,17 @@ theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_valueFunction_of
     (f := f) hlsc (isLevelBoundedInXLocallyUniformly_of_horizonFunction_pos hpos)]
   exact hf.linear_image valueProjection
 
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_valueFunction_of_lsc_localUniform
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E × F → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (hLB : IsLevelBoundedInXLocallyUniformly f) :
+    HasClosedPolyhedralEpigraph (valueFunction f) := by
+  let hlsc : LowerSemicontinuous f := hf.lowerSemicontinuous
+  change IsClosedPolyhedral (epigraph (valueFunction f))
+  rw [epigraph_valueFunction_eq_valueProjection_image_epigraph_of_lsc_localUniform
+    (f := f) hlsc hLB]
+  exact hf.linear_image valueProjection
+
 theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_valueFunction_of_horizonFunction_pos
     [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
     {f : E × F → EReal} (hf : HasPolyhedralEpigraph f) (hlsc : LowerSemicontinuous f)
@@ -146,6 +204,23 @@ theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_valueFunction_of_hor
   refine ⟨?_, hf.hasClosedPolyhedralEpigraph_valueFunction_of_horizonFunction_pos hproper hpos⟩
   exact isProper_valueFunction_of_lsc_localUniform hlsc hproper
     (isLevelBoundedInXLocallyUniformly_of_horizonFunction_pos hpos)
+
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_valueFunction_of_lsc_localUniform
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E × F → EReal} (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hLB : IsLevelBoundedInXLocallyUniformly f) :
+    IsConvexPiecewiseLinear (valueFunction f) := by
+  let hlsc : LowerSemicontinuous f := hf.lowerSemicontinuous
+  refine ⟨isProper_valueFunction_of_lsc_localUniform hlsc hproper hLB, ?_⟩
+  exact hf.hasClosedPolyhedralEpigraph_valueFunction_of_lsc_localUniform hLB
+
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_valueFunction_of_lsc_localUniform
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E × F → EReal} (hf : IsConvexPiecewiseLinear f)
+    (hLB : IsLevelBoundedInXLocallyUniformly f) :
+    IsConvexPiecewiseLinear (valueFunction f) := by
+  exact hf.hasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_valueFunction_of_lsc_localUniform
+    hf.isProper hLB
 
 end Parametric
 
@@ -179,6 +254,32 @@ theorem HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSum_of_pos
     (f₁ := f₁) (f₂ := f₂) hf₁ hf₂ hlsc₁ hlsc₂ hproper₁ hproper₂
   exact horizonFunction_epiSumIntegrand_pos_of_pos
     hf₁.convex hf₂.convex hlsc₁ hlsc₂ hproper₁ hproper₂ hpos
+
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSum_of_horizon_pos
+    [FiniteDimensional ℝ E]
+    {f₁ f₂ : E → EReal}
+    (hf₁ : HasClosedPolyhedralEpigraph f₁) (hf₂ : HasClosedPolyhedralEpigraph f₂)
+    (hproper₁ : IsProper f₁) (hproper₂ : IsProper f₂)
+    (hpos : ∀ ⦃w : E⦄, w ≠ 0 →
+      0 < horizonFunction (RW.epiSumIntegrand f₁ f₂) (w, (0 : E))) :
+    HasClosedPolyhedralEpigraph (epiSum f₁ f₂) := by
+  exact HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSum_of_horizon_pos
+    hf₁.hasPolyhedralEpigraph hf₂.hasPolyhedralEpigraph
+    hf₁.lowerSemicontinuous hf₂.lowerSemicontinuous
+    hproper₁ hproper₂ hpos
+
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSum_of_pos
+    [FiniteDimensional ℝ E]
+    {f₁ f₂ : E → EReal}
+    (hf₁ : HasClosedPolyhedralEpigraph f₁) (hf₂ : HasClosedPolyhedralEpigraph f₂)
+    (hproper₁ : IsProper f₁) (hproper₂ : IsProper f₂)
+    (hpos : ∀ ⦃w : E⦄, w ≠ 0 →
+      0 < horizonFunction f₁ (-w) + horizonFunction f₂ w) :
+    HasClosedPolyhedralEpigraph (epiSum f₁ f₂) := by
+  exact HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSum_of_pos
+    hf₁.hasPolyhedralEpigraph hf₂.hasPolyhedralEpigraph
+    hf₁.lowerSemicontinuous hf₂.lowerSemicontinuous
+    hproper₁ hproper₂ hpos
 
 theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_epiSum_of_horizon_pos
     [FiniteDimensional ℝ E]
@@ -225,6 +326,44 @@ theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_epiSum_of_isCoercive
   exact horizonFunction_epiSum_pos_of_isCoercive
     hf₁.convex hf₂.convex hlsc₁ hlsc₂ hproper₁ hproper₂ hcoercive₂
 
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_epiSum_of_horizon_pos
+    [FiniteDimensional ℝ E]
+    {f₁ f₂ : E → EReal}
+    (hf₁ : HasClosedPolyhedralEpigraph f₁) (hf₂ : HasClosedPolyhedralEpigraph f₂)
+    (hproper₁ : IsProper f₁) (hproper₂ : IsProper f₂)
+    (hpos : ∀ ⦃w : E⦄, w ≠ 0 →
+      0 < horizonFunction (RW.epiSumIntegrand f₁ f₂) (w, (0 : E))) :
+    IsConvexPiecewiseLinear (epiSum f₁ f₂) := by
+  exact HasPolyhedralEpigraph.isConvexPiecewiseLinear_epiSum_of_horizon_pos
+    hf₁.hasPolyhedralEpigraph hf₂.hasPolyhedralEpigraph
+    hf₁.lowerSemicontinuous hf₂.lowerSemicontinuous
+    hproper₁ hproper₂ hpos
+
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_epiSum_of_pos
+    [FiniteDimensional ℝ E]
+    {f₁ f₂ : E → EReal}
+    (hf₁ : HasClosedPolyhedralEpigraph f₁) (hf₂ : HasClosedPolyhedralEpigraph f₂)
+    (hproper₁ : IsProper f₁) (hproper₂ : IsProper f₂)
+    (hpos : ∀ ⦃w : E⦄, w ≠ 0 →
+      0 < horizonFunction f₁ (-w) + horizonFunction f₂ w) :
+    IsConvexPiecewiseLinear (epiSum f₁ f₂) := by
+  exact HasPolyhedralEpigraph.isConvexPiecewiseLinear_epiSum_of_pos
+    hf₁.hasPolyhedralEpigraph hf₂.hasPolyhedralEpigraph
+    hf₁.lowerSemicontinuous hf₂.lowerSemicontinuous
+    hproper₁ hproper₂ hpos
+
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_epiSum_of_isCoercive
+    [FiniteDimensional ℝ E]
+    {f₁ f₂ : E → EReal}
+    (hf₁ : HasClosedPolyhedralEpigraph f₁) (hf₂ : HasClosedPolyhedralEpigraph f₂)
+    (hproper₁ : IsProper f₁) (hproper₂ : IsProper f₂)
+    (hcoercive₂ : RW.IsCoercive f₂) :
+    IsConvexPiecewiseLinear (epiSum f₁ f₂) := by
+  exact HasPolyhedralEpigraph.isConvexPiecewiseLinear_epiSum_of_isCoercive
+    hf₁.hasPolyhedralEpigraph hf₂.hasPolyhedralEpigraph
+    hf₁.lowerSemicontinuous hf₂.lowerSemicontinuous
+    hproper₁ hproper₂ hcoercive₂
+
 theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_epiSum_of_horizon_pos
     [FiniteDimensional ℝ E]
     {f₁ f₂ : E → EReal}
@@ -259,6 +398,26 @@ theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_epiSum_of_isCoercive
     (hf₁.hasClosedPolyhedralEpigraph.hasPolyhedralEpigraph)
     (hf₂.hasClosedPolyhedralEpigraph.hasPolyhedralEpigraph)
     hf₁.lowerSemicontinuous hf₂.lowerSemicontinuous hf₁.isProper hf₂.isProper hcoercive₂
+
+private noncomputable def separatedAddLinearEquiv :
+    (E × E) ≃L[ℝ] (E × E) :=
+  ContinuousLinearEquiv.mk
+    { toFun := fun p => (p.2, p.1 + p.2)
+      invFun := fun p => (p.2 - p.1, p.1)
+      left_inv := by
+        intro p
+        ext <;> simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm]
+      right_inv := by
+        intro p
+        ext <;> simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm]
+      map_add' := by
+        intro p q
+        ext <;> simp [add_assoc, add_left_comm, add_comm]
+      map_smul' := by
+        intro a p
+        ext <;> simp [smul_add, sub_eq_add_neg, add_assoc, add_left_comm, add_comm] }
+    (continuous_snd.prodMk (continuous_fst.add continuous_snd))
+    ((continuous_snd.sub continuous_fst).prodMk continuous_fst)
 
 section AffinePerturbations
 
@@ -856,6 +1015,365 @@ theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_precompose_linearEquiv
   exact ⟨isProper_precompose_linearEquiv hf.isProper e,
     (hf.hasClosedPolyhedralEpigraph).hasClosedPolyhedralEpigraph_precompose_linearEquiv e⟩
 
+/-- The scalar-height epigraph integrand attached to a proper function with
+closed polyhedral epigraph is again convex piecewise-linear. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_epigraphHeightIntegrand
+    [FiniteDimensional ℝ E]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsConvexPiecewiseLinear (epigraphHeightIntegrand f) := by
+  have hInd : IsConvexPiecewiseLinear (indicatorVA (epigraph f)) :=
+    IsClosedPolyhedral.isConvexPiecewiseLinear_indicatorVA
+      (hC := (hf : IsClosedPolyhedral (epigraph f)))
+      (hCne := epigraph_nonempty_of_isProper hproper)
+  have hSwap :
+      IsConvexPiecewiseLinear (fun p : ℝ × E => indicatorVA (epigraph f) (p.2, p.1)) := by
+    simpa using IsConvexPiecewiseLinear.isConvexPiecewiseLinear_precompose_linearEquiv hInd
+      (ContinuousLinearEquiv.prodComm ℝ ℝ E)
+  simpa [epigraphHeightIntegrand] using
+    IsConvexPiecewiseLinear.isConvexPiecewiseLinear_addAffine hSwap (LinearMap.fst ℝ ℝ E) 0
+
+/-- The scalar-height epigraph integrand attached to a convex piecewise-linear
+function is again convex piecewise-linear. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_epigraphHeightIntegrand
+    [FiniteDimensional ℝ E]
+    {f : E → EReal} (hf : IsConvexPiecewiseLinear f) :
+    IsConvexPiecewiseLinear (epigraphHeightIntegrand f) :=
+  hf.hasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_epigraphHeightIntegrand hf.isProper
+
+/-- If the intersection `epi f ∩ epi g` is polyhedral, then the scalar-height
+model for `f ⊔ g` has a polyhedral epigraph. This isolates the remaining
+set-side intersection input behind the `max` part of Proposition `3.55(b)`. -/
+theorem hasPolyhedralEpigraph_supHeightIntegrand_of_isPolyhedral_inter_epigraph
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal} (hinter : IsPolyhedral (epigraph f ∩ epigraph g)) :
+    HasPolyhedralEpigraph (supHeightIntegrand f g) := by
+  have hind : HasPolyhedralEpigraph (indicatorVA (epigraph f ∩ epigraph g)) :=
+    hinter.hasPolyhedralEpigraph_indicatorVA
+  have hswap :
+      HasPolyhedralEpigraph
+        (fun p : ℝ × E => indicatorVA (epigraph f ∩ epigraph g) (p.2, p.1)) := by
+    simpa using
+      hind.hasPolyhedralEpigraph_precompose_linearEquiv
+        (ContinuousLinearEquiv.prodComm ℝ ℝ E)
+  simpa [supHeightIntegrand, indicatorVA_inter, epigraph_sup, ← add_assoc] using
+    hswap.hasPolyhedralEpigraph_addAffine (LinearMap.fst ℝ ℝ E) 0
+
+/-- If the intersection `epi f ∩ epi g` is closed polyhedral, then the
+scalar-height model for `f ⊔ g` has a closed polyhedral epigraph. -/
+theorem hasClosedPolyhedralEpigraph_supHeightIntegrand_of_isClosedPolyhedral_inter_epigraph
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal} (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    HasClosedPolyhedralEpigraph (supHeightIntegrand f g) := by
+  have hind : HasClosedPolyhedralEpigraph (indicatorVA (epigraph f ∩ epigraph g)) :=
+    hinter.hasClosedPolyhedralEpigraph_indicatorVA
+  have hswap :
+      HasClosedPolyhedralEpigraph
+        (fun p : ℝ × E => indicatorVA (epigraph f ∩ epigraph g) (p.2, p.1)) := by
+    simpa using
+      hind.hasClosedPolyhedralEpigraph_precompose_linearEquiv
+        (ContinuousLinearEquiv.prodComm ℝ ℝ E)
+  simpa [supHeightIntegrand, indicatorVA_inter, epigraph_sup, ← add_assoc] using
+    hswap.hasClosedPolyhedralEpigraph_addAffine (LinearMap.fst ℝ ℝ E) 0
+
+/-- The pointwise supremum of two convex piecewise-linear functions with a
+common finite-domain point admits the scalar-height value-function model from
+`valueFunction_sup_eq`, and that model already satisfies the proper/lsc/local
+uniform hypotheses of Theorem 3.31. -/
+theorem IsConvexPiecewiseLinear.supHeightIntegrand_regular_of_nonempty_effectiveDomain_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal} (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    IsProper (supHeightIntegrand f g) ∧
+      LowerSemicontinuous (supHeightIntegrand f g) ∧
+      IsLevelBoundedInXLocallyUniformly (supHeightIntegrand f g) ∧
+      valueFunction (E := ℝ) (F := E) (supHeightIntegrand f g) =
+        fun x => f x ⊔ g x := by
+  have hreg := hf.sup_regular_of_nonempty_effectiveDomain_inter hg hdom
+  refine ⟨isProper_supHeightIntegrand (f := f) (g := g) hreg.1, ?_, ?_, valueFunction_sup_eq f g⟩
+  · exact lowerSemicontinuous_supHeightIntegrand (f := f) (g := g) hreg.2.1
+  · exact isLevelBoundedInXLocallyUniformly_supHeightIntegrand (f := f) (g := g) hreg.2.1 hreg.1
+
+theorem HasClosedPolyhedralEpigraph.supHeightIntegrand_regular_of_nonempty_effectiveDomain_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    IsProper (supHeightIntegrand f g) ∧
+      LowerSemicontinuous (supHeightIntegrand f g) ∧
+      IsLevelBoundedInXLocallyUniformly (supHeightIntegrand f g) ∧
+      valueFunction (E := ℝ) (F := E) (supHeightIntegrand f g) =
+        fun x => f x ⊔ g x := by
+  have hreg :=
+    hf.sup_regular_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
+  refine ⟨isProper_supHeightIntegrand (f := f) (g := g) hreg.1, ?_, ?_, valueFunction_sup_eq f g⟩
+  · exact lowerSemicontinuous_supHeightIntegrand (f := f) (g := g) hreg.2.1
+  · exact isLevelBoundedInXLocallyUniformly_supHeightIntegrand (f := f) (g := g) hreg.2.1 hreg.1
+
+/-- If the scalar-height model for `f ⊔ g` has a polyhedral epigraph, then the
+pointwise supremum itself has a closed polyhedral epigraph. This isolates the
+remaining structural step in the `max` part of Proposition `3.55(b)`. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_supHeightIntegrand_polyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hpoly : HasPolyhedralEpigraph (supHeightIntegrand f g)) :
+    HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) := by
+  have hreg :=
+    hf.supHeightIntegrand_regular_of_nonempty_effectiveDomain_inter
+      hg hproperf hproperg hdom
+  have hclosedInt : HasClosedPolyhedralEpigraph (supHeightIntegrand f g) :=
+    hpoly.hasClosedPolyhedralEpigraph_of_lowerSemicontinuous hreg.2.1
+  have hval :
+      HasClosedPolyhedralEpigraph
+        (valueFunction (E := ℝ) (F := E) (supHeightIntegrand f g)) :=
+    hclosedInt.hasClosedPolyhedralEpigraph_valueFunction_of_lsc_localUniform
+      hreg.2.2.1
+  simpa [hreg.2.2.2] using hval
+
+/-- A polyhedral scalar-height model is enough to conclude that `f ⊔ g` is
+convex piecewise-linear. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_supHeightIntegrand_polyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hpoly : HasPolyhedralEpigraph (supHeightIntegrand f g)) :
+    IsConvexPiecewiseLinear (fun x => f x ⊔ g x) := by
+  have hreg :=
+    hf.sup_regular_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
+  refine ⟨hreg.1, ?_⟩
+  exact
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_supHeightIntegrand_polyhedral
+      hg hproperf hproperg hdom hpoly
+
+/-- Top-level reduction of the CPL `max` theorem to polyhedrality of the
+scalar-height model. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_supHeightIntegrand_polyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hpoly : HasPolyhedralEpigraph (supHeightIntegrand f g)) :
+    IsConvexPiecewiseLinear (fun x => f x ⊔ g x) := by
+  have hclosedf : HasClosedPolyhedralEpigraph f := hf.hasClosedPolyhedralEpigraph
+  exact
+    hclosedf.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_supHeightIntegrand_polyhedral
+      hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hpoly
+
+/-- A polyhedral intersection theorem for `epi f ∩ epi g` is enough to conclude
+that `f ⊔ g` has a closed polyhedral epigraph. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_polyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsPolyhedral (epigraph f ∩ epigraph g)) :
+    HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) := by
+  exact
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_supHeightIntegrand_polyhedral
+      hg hproperf hproperg hdom
+      (hasPolyhedralEpigraph_supHeightIntegrand_of_isPolyhedral_inter_epigraph hinter)
+
+/-- A polyhedral intersection theorem for `epi f ∩ epi g` is enough to conclude
+that `f ⊔ g` is convex piecewise-linear. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_inter_polyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsPolyhedral (epigraph f ∩ epigraph g)) :
+    IsConvexPiecewiseLinear (fun x => f x ⊔ g x) := by
+  exact
+    hf.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_supHeightIntegrand_polyhedral
+      hg hdom
+      (hasPolyhedralEpigraph_supHeightIntegrand_of_isPolyhedral_inter_epigraph hinter)
+
+/-- A closed-polyhedral intersection theorem for `epi f ∩ epi g` is enough to
+conclude that `f ⊔ g` has a closed polyhedral epigraph. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) := by
+  have hreg :=
+    hf.supHeightIntegrand_regular_of_nonempty_effectiveDomain_inter
+      hg hproperf hproperg hdom
+  have hclosedInt : HasClosedPolyhedralEpigraph (supHeightIntegrand f g) :=
+    hasClosedPolyhedralEpigraph_supHeightIntegrand_of_isClosedPolyhedral_inter_epigraph hinter
+  have hval :
+      HasClosedPolyhedralEpigraph
+        (valueFunction (E := ℝ) (F := E) (supHeightIntegrand f g)) :=
+    hclosedInt.hasClosedPolyhedralEpigraph_valueFunction_of_lsc_localUniform
+      hreg.2.2.1
+  simpa [hreg.2.2.2] using hval
+
+/-- A closed-polyhedral intersection theorem for `epi f ∩ epi g` is enough to
+conclude that `f ⊔ g` is convex piecewise-linear. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    IsConvexPiecewiseLinear (fun x => f x ⊔ g x) := by
+  have hreg := hf.sup_regular_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
+  refine ⟨hreg.1, ?_⟩
+  exact
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+
+/-- A closed-polyhedral theorem for the product epigraphs intersected with the
+diagonal already implies the closed-polyhedral epigraph theorem for `f ⊔ g`. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) := by
+  have hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g) :=
+    IsClosedPolyhedral.inter_of_prod_inter_diagonal
+      (E := E × ℝ) (C := epigraph f) (D := epigraph g) hdiag
+  exact
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+
+/-- Product-epigraph intersection with the diagonal is enough to conclude that
+`f ⊔ g` is convex piecewise-linear at the closed-polyhedral middle layer. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    IsConvexPiecewiseLinear (fun x => f x ⊔ g x) := by
+  have hreg := hf.sup_regular_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
+  refine ⟨hreg.1, ?_⟩
+  exact
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_prod_inter_diagonal
+      hg hproperf hproperg hdom hdiag
+
+/-- A finitely generated ray-space cone intersection for `epi f` and `epi g`
+is enough to conclude that `f ⊔ g` has a closed polyhedral epigraph. This
+packages the new set-side ray-space reduction directly at the function layer. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) := by
+  have hreg := hf.sup_regular_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
+  have hne_inter : (epigraph f ∩ epigraph g).Nonempty := by
+    simpa [epigraph_sup] using epigraph_nonempty_of_isProper hreg.1
+  have hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g) :=
+    hf.inter_of_isFinitelyGeneratedCone_raySpaceCone_inter hg hne_inter hRay
+  exact
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+
+/-- Top-level CPL consequence of a closed-polyhedral theorem for
+`epi f ∩ epi g`. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    IsConvexPiecewiseLinear (fun x => f x ⊔ g x) := by
+  have hclosedf : HasClosedPolyhedralEpigraph f := hf.hasClosedPolyhedralEpigraph
+  exact
+    hclosedf.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hinter
+
+/-- Product-epigraph intersection with the diagonal is enough to conclude that
+`f ⊔ g` is convex piecewise-linear. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    IsConvexPiecewiseLinear (fun x => f x ⊔ g x) := by
+  have hclosedf : HasClosedPolyhedralEpigraph f := hf.hasClosedPolyhedralEpigraph
+  exact
+    HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_prod_inter_diagonal
+      hclosedf hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hdiag
+
+/-- Top-level CPL consequence of the ray-space finite-generation criterion for
+`epi f ∩ epi g`. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    IsConvexPiecewiseLinear (fun x => f x ⊔ g x) := by
+  have hclosedf : HasClosedPolyhedralEpigraph f := hf.hasClosedPolyhedralEpigraph
+  refine ⟨hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hdom, ?_⟩
+  exact
+    hclosedf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+      hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hRay
+
+/-- Closed polyhedral epigraphs are stable under separated addition on a
+product space. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_separatedAdd
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g) :
+    HasClosedPolyhedralEpigraph (fun p : E × E => f p.1 + g p.2) := by
+  have hsep : HasClosedPolyhedralEpigraph (RW.epiSumIntegrand f g) :=
+    HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph_epiSumIntegrand
+      (hf.hasPolyhedralEpigraph) (hg.hasPolyhedralEpigraph)
+      hf.lowerSemicontinuous hg.lowerSemicontinuous hproperf hproperg
+  simpa [separatedAddLinearEquiv, RW.epiSumIntegrand, sub_eq_add_neg, add_assoc, add_left_comm,
+    add_comm] using
+    hsep.hasClosedPolyhedralEpigraph_precompose_linearEquiv
+      (separatedAddLinearEquiv (E := E))
+
+/-- Convex piecewise-linearity is stable under separated addition on a product
+space. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_separatedAdd
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g) :
+    IsConvexPiecewiseLinear (fun p : E × E => f p.1 + g p.2) := by
+  refine ⟨?_, hf.hasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_separatedAdd
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper⟩
+  simpa [separatedAddLinearEquiv, RW.epiSumIntegrand, sub_eq_add_neg, add_assoc, add_left_comm,
+    add_comm] using
+    isProper_precompose_linearEquiv
+      (isProper_epiSumIntegrand hf.isProper hg.isProper)
+      (separatedAddLinearEquiv (E := E))
+
 end LinearEquivalences
 
 section LinearSurjections
@@ -1014,6 +1532,356 @@ theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_precompose_linearMap_of_
 
 end LinearSurjections
 
+section LinearInjections
+
+variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+
+private theorem range_epigraphPrecomposeLinearMap (L : F →ₗ[ℝ] E) :
+    let M : (F × ℝ) →ₗ[ℝ] (E × ℝ) :=
+      (L.comp (LinearMap.fst ℝ F ℝ)).prod (LinearMap.snd ℝ F ℝ)
+    (LinearMap.range M : Set (E × ℝ)) =
+      ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ)) := by
+  let M : (F × ℝ) →ₗ[ℝ] (E × ℝ) :=
+    (L.comp (LinearMap.fst ℝ F ℝ)).prod (LinearMap.snd ℝ F ℝ)
+  ext z
+  rcases z with ⟨x, t⟩
+  constructor
+  · rintro ⟨⟨y, s⟩, hM⟩
+    have hfst : L y = x := by
+      simpa [M] using congrArg Prod.fst hM
+    exact ⟨⟨y, hfst⟩, by simp⟩
+  · rintro ⟨hx, -⟩
+    rcases hx with ⟨y, rfl⟩
+    exact ⟨(y, t), by simp [M]⟩
+
+/-- Properness of a linear precomposition follows from properness of `f` and
+the existence of one finite point of `f` in the range of the map. -/
+theorem isProper_precompose_linearMap_of_nonempty_effectiveDomain_inter_range
+    {f : E → EReal} (hproper : IsProper f) (L : F →ₗ[ℝ] E)
+    (hdom : (effectiveDomain f ∩ (LinearMap.range L : Set E)).Nonempty) :
+    IsProper (fun y : F => f (L y)) := by
+  refine ⟨?_, ?_⟩
+  · rcases hdom with ⟨x, hxdom, hxrange⟩
+    rcases hxrange with ⟨y, rfl⟩
+    exact ⟨y, hxdom⟩
+  · intro y
+    exact hproper.2 (L y)
+
+/-- Precomposition by an injective linear map preserves polyhedral epigraphs,
+provided the epigraph intersects the range cylinder in a polyhedral set. -/
+theorem HasPolyhedralEpigraph.hasPolyhedralEpigraph_precompose_linearMap_of_injective_of_inter_range
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasPolyhedralEpigraph f) (L : F →ₗ[ℝ] E)
+    (hL : Function.Injective L)
+    (hinter :
+      IsPolyhedral
+        (epigraph f ∩ ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ)))) :
+    HasPolyhedralEpigraph (fun y : F => f (L y)) := by
+  let M : (F × ℝ) →ₗ[ℝ] (E × ℝ) :=
+    (L.comp (LinearMap.fst ℝ F ℝ)).prod (LinearMap.snd ℝ F ℝ)
+  have hpre : M ⁻¹' epigraph f = epigraph (fun y : F => f (L y)) := by
+    ext z
+    rcases z with ⟨y, t⟩
+    simp [M, mem_epigraph_iff]
+  have hMinj : Function.Injective M := by
+    intro p q hpq
+    rcases p with ⟨y, s⟩
+    rcases q with ⟨z, t⟩
+    have hfst : L y = L z := by
+      simpa [M] using congrArg Prod.fst hpq
+    have hsnd : s = t := by
+      simpa [M] using congrArg Prod.snd hpq
+    exact by
+      ext
+      · exact hL hfst
+      · exact hsnd
+  have hRange : (LinearMap.range M : Set (E × ℝ)) =
+      ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ)) :=
+    range_epigraphPrecomposeLinearMap (E := E) L
+  have hinter' : IsPolyhedral (epigraph f ∩ (LinearMap.range M : Set (E × ℝ))) := by
+    simpa [hRange] using hinter
+  change IsPolyhedral (epigraph (fun y : F => f (L y)))
+  rw [← hpre]
+  exact
+    IsPolyhedral.preimage_linearMap_of_injective_of_inter_range
+      M hinter' (LinearMap.ker_eq_bot.mpr hMinj)
+
+/-- Precomposition by an injective linear map preserves closed polyhedral
+epigraphs, provided the epigraph intersects the range cylinder in a closed
+polyhedral set. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_precompose_linearMap_of_injective_of_inter_range
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f) (L : F →ₗ[ℝ] E)
+    (hL : Function.Injective L)
+    (hinter :
+      IsClosedPolyhedral
+        (epigraph f ∩ ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ)))) :
+    HasClosedPolyhedralEpigraph (fun y : F => f (L y)) := by
+  let M : (F × ℝ) →ₗ[ℝ] (E × ℝ) :=
+    (L.comp (LinearMap.fst ℝ F ℝ)).prod (LinearMap.snd ℝ F ℝ)
+  have hpre : M ⁻¹' epigraph f = epigraph (fun y : F => f (L y)) := by
+    ext z
+    rcases z with ⟨y, t⟩
+    simp [M, mem_epigraph_iff]
+  have hMinj : Function.Injective M := by
+    intro p q hpq
+    rcases p with ⟨y, s⟩
+    rcases q with ⟨z, t⟩
+    have hfst : L y = L z := by
+      simpa [M] using congrArg Prod.fst hpq
+    have hsnd : s = t := by
+      simpa [M] using congrArg Prod.snd hpq
+    exact by
+      ext
+      · exact hL hfst
+      · exact hsnd
+  have hRange : (LinearMap.range M : Set (E × ℝ)) =
+      ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ)) :=
+    range_epigraphPrecomposeLinearMap (E := E) L
+  have hinter' :
+      IsClosedPolyhedral (epigraph f ∩ (LinearMap.range M : Set (E × ℝ))) := by
+    simpa [hRange] using hinter
+  change IsClosedPolyhedral (epigraph (fun y : F => f (L y)))
+  rw [← hpre]
+  exact
+    IsClosedPolyhedral.preimage_linearMap_of_injective_of_inter_range
+      M hinter' (LinearMap.ker_eq_bot.mpr hMinj)
+
+/-- Precomposition by an injective linear map preserves convex
+piecewise-linearity when the epigraph meets the range cylinder in a closed
+polyhedral set and the effective domain meets the range. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_of_injective_of_inter_range
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (L : F →ₗ[ℝ] E) (hL : Function.Injective L)
+    (hdom : (effectiveDomain f ∩ (LinearMap.range L : Set E)).Nonempty)
+    (hinter :
+      IsClosedPolyhedral
+        (epigraph f ∩ ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ)))) :
+    IsConvexPiecewiseLinear (fun y : F => f (L y)) := by
+  refine ⟨isProper_precompose_linearMap_of_nonempty_effectiveDomain_inter_range hproper L hdom, ?_⟩
+  exact hf.hasClosedPolyhedralEpigraph_precompose_linearMap_of_injective_of_inter_range
+    L hL hinter
+
+/-- Top-level CPL version of injective linear precomposition under the same
+range-intersection hypotheses. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_precompose_linearMap_of_injective_of_inter_range
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : IsConvexPiecewiseLinear f)
+    (L : F →ₗ[ℝ] E) (hL : Function.Injective L)
+    (hdom : (effectiveDomain f ∩ (LinearMap.range L : Set E)).Nonempty)
+    (hinter :
+      IsClosedPolyhedral
+        (epigraph f ∩ ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ)))) :
+    IsConvexPiecewiseLinear (fun y : F => f (L y)) := by
+  exact
+    HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_of_injective_of_inter_range
+      hf.hasClosedPolyhedralEpigraph hf.isProper L hL hdom hinter
+
+private def diagonalRangeCylinder : Set ((E × E) × ℝ) :=
+  let Δ : E →ₗ[ℝ] E × E :=
+    (LinearMap.id : E →ₗ[ℝ] E).prod (LinearMap.id : E →ₗ[ℝ] E)
+  ((LinearMap.range Δ : Set (E × E)) ×ˢ (Set.univ : Set ℝ))
+
+/-- Properness of two functions with a common finite-domain point implies
+properness of their pointwise sum. -/
+theorem isProper_add_of_nonempty_effectiveDomain_inter
+    {f g : E → EReal}
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
+    IsProper (fun x : E => f x + g x) := by
+  refine ⟨?_, ?_⟩
+  · rcases hdom with ⟨x, hxF, hxG⟩
+    refine ⟨x, ?_⟩
+    exact EReal.add_lt_top (ne_of_lt <| (mem_effectiveDomain_iff f x).1 hxF)
+      (ne_of_lt <| (mem_effectiveDomain_iff g x).1 hxG)
+  · intro x
+    exact (EReal.bot_lt_add_iff).2 ⟨hproperf.2 x, hproperg.2 x⟩
+
+/-- If the epigraph of the separated sum meets the diagonal range cylinder in a
+closed polyhedral set, then the pointwise sum has a closed polyhedral epigraph.
+-/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    HasClosedPolyhedralEpigraph (fun x : E => f x + g x) := by
+  let Δ : E →ₗ[ℝ] E × E :=
+    (LinearMap.id : E →ₗ[ℝ] E).prod (LinearMap.id : E →ₗ[ℝ] E)
+  have hΔinj : Function.Injective Δ := by
+    intro x y hxy
+    exact congrArg Prod.fst hxy
+  have hsep : HasClosedPolyhedralEpigraph (fun p : E × E => f p.1 + g p.2) :=
+    hf.hasClosedPolyhedralEpigraph_separatedAdd hg hproperf hproperg
+  simpa [diagonalRangeCylinder, Δ] using
+    hsep.hasClosedPolyhedralEpigraph_precompose_linearMap_of_injective_of_inter_range
+      Δ hΔinj hdiag
+
+/-- A diagonal-range closed-polyhedral theorem for the separated sum is enough
+to conclude that the pointwise sum is convex piecewise-linear. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_add_of_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    IsConvexPiecewiseLinear (fun x : E => f x + g x) := by
+  refine ⟨isProper_add_of_nonempty_effectiveDomain_inter hf.isProper hg.isProper hdom, ?_⟩
+  exact
+    hf.hasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+      hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdiag
+
+end LinearInjections
+
+section AffineLinearInjections
+
+variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+
+private theorem image_add_right_inter_epigraph_shiftedRange
+    {f : E → EReal} (L : F →ₗ[ℝ] E) (u : E) :
+    (fun p : E × ℝ => p + ((-u), (0 : ℝ))) ''
+        (epigraph f ∩
+          (((fun x : E => x + u) '' (LinearMap.range L : Set E)) ×ˢ (Set.univ : Set ℝ))) =
+      epigraph (fun x : E => f (x + u)) ∩
+        ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ)) := by
+  ext z
+  rcases z with ⟨x, t⟩
+  constructor
+  · rintro ⟨⟨x', s⟩, ⟨hxepi, hxrange, hs⟩, hz⟩
+    have hx : x' + -u = x := by
+      simpa [add_assoc, add_left_comm, add_comm] using congrArg Prod.fst hz
+    have hs' : s = t := by
+      simpa using congrArg Prod.snd hz
+    have hx' : x' = x + u := by
+      have hx'' := congrArg (fun y : E => y + u) hx
+      simpa [add_assoc, add_left_comm, add_comm] using hx''
+    rcases hxrange with ⟨y, hy, hyx'⟩
+    have hyx : y = x := by
+      rw [hx'] at hyx'
+      exact add_right_cancel hyx'
+    subst x'
+    subst s
+    subst y
+    refine ⟨?_, ?_⟩
+    · simpa [mem_epigraph_iff, add_assoc, add_left_comm, add_comm] using hxepi
+    · exact ⟨hy, by simp⟩
+  · rintro ⟨hxepi, hxrange⟩
+    refine ⟨(x + u, t), ?_, ?_⟩
+    · refine ⟨?_, ?_, by simp⟩
+      · simpa [mem_epigraph_iff, add_assoc, add_left_comm, add_comm] using hxepi
+      · refine ⟨x, hxrange.1, ?_⟩
+        simp [add_assoc, add_left_comm, add_comm]
+    · ext <;> simp [add_assoc, add_left_comm, add_comm]
+
+/-- Precomposition by an affine injective linear change `y ↦ L y + u`
+preserves polyhedral epigraphs, provided the epigraph intersects the shifted
+range cylinder in a polyhedral set. -/
+theorem HasPolyhedralEpigraph.hasPolyhedralEpigraph_precompose_linearMap_add_of_injective_of_inter_shiftedRange
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasPolyhedralEpigraph f)
+    (L : F →ₗ[ℝ] E) (hL : Function.Injective L) (u : E)
+    (hinter :
+      IsPolyhedral
+        (epigraph f ∩
+          (((fun x : E => x + u) '' (LinearMap.range L : Set E)) ×ˢ (Set.univ : Set ℝ)))) :
+    HasPolyhedralEpigraph (fun y : F => f (L y + u)) := by
+  have hg : HasPolyhedralEpigraph (fun x : E => f (x + u)) :=
+    hf.hasPolyhedralEpigraph_precompose_add u
+  have hinter' :
+      IsPolyhedral
+        (epigraph (fun x : E => f (x + u)) ∩
+          ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ))) := by
+    let τ : (E × ℝ) →ᵃ[ℝ] (E × ℝ) :=
+      { toFun := fun p => p + ((-u), (0 : ℝ))
+        linear := LinearMap.id
+        map_vadd' := by
+          intro p v
+          ext <;> simp [add_assoc, add_left_comm, add_comm] }
+    rw [← image_add_right_inter_epigraph_shiftedRange (f := f) (L := L) (u := u)]
+    exact hinter.affine_image τ
+  simpa [Function.comp] using
+    hg.hasPolyhedralEpigraph_precompose_linearMap_of_injective_of_inter_range
+      L hL hinter'
+
+/-- Precomposition by an affine injective linear change `y ↦ L y + u`
+preserves closed polyhedral epigraphs, provided the epigraph intersects the
+shifted range cylinder in a closed polyhedral set. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_precompose_linearMap_add_of_injective_of_inter_shiftedRange
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (L : F →ₗ[ℝ] E) (hL : Function.Injective L) (u : E)
+    (hinter :
+      IsClosedPolyhedral
+        (epigraph f ∩
+          (((fun x : E => x + u) '' (LinearMap.range L : Set E)) ×ˢ (Set.univ : Set ℝ)))) :
+    HasClosedPolyhedralEpigraph (fun y : F => f (L y + u)) := by
+  have hg : HasClosedPolyhedralEpigraph (fun x : E => f (x + u)) :=
+    hf.hasClosedPolyhedralEpigraph_precompose_add u
+  have hinter' :
+      IsClosedPolyhedral
+        (epigraph (fun x : E => f (x + u)) ∩
+          ((LinearMap.range L : Set E) ×ˢ (Set.univ : Set ℝ))) := by
+    rw [← image_add_right_inter_epigraph_shiftedRange (f := f) (L := L) (u := u)]
+    exact hinter.image_add_right ((-u), (0 : ℝ))
+  simpa [Function.comp] using
+    hg.hasClosedPolyhedralEpigraph_precompose_linearMap_of_injective_of_inter_range
+      L hL hinter'
+
+/-- Precomposition by an affine injective linear change `y ↦ L y + u`
+preserves convex piecewise-linearity when the epigraph meets the shifted range
+cylinder in a closed polyhedral set and the effective domain meets that shifted
+range. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_add_of_injective_of_inter_shiftedRange
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (L : F →ₗ[ℝ] E) (hL : Function.Injective L) (u : E)
+    (hdom :
+      (effectiveDomain f ∩
+        ((fun x : E => x + u) '' (LinearMap.range L : Set E))).Nonempty)
+    (hinter :
+      IsClosedPolyhedral
+        (epigraph f ∩
+          (((fun x : E => x + u) '' (LinearMap.range L : Set E)) ×ˢ (Set.univ : Set ℝ)))) :
+    IsConvexPiecewiseLinear (fun y : F => f (L y + u)) := by
+  have hg_proper : IsProper (fun x : E => f (x + u)) :=
+    isProper_precompose_add hproper u
+  have hdom' :
+      (effectiveDomain (fun x : E => f (x + u)) ∩ (LinearMap.range L : Set E)).Nonempty := by
+    rcases hdom with ⟨x, hxdom, hxrange⟩
+    rcases hxrange with ⟨y, hy, rfl⟩
+    refine ⟨y, ?_, hy⟩
+    simpa using hxdom
+  refine ⟨isProper_precompose_linearMap_of_nonempty_effectiveDomain_inter_range
+    hg_proper L hdom', ?_⟩
+  exact
+    hf.hasClosedPolyhedralEpigraph_precompose_linearMap_add_of_injective_of_inter_shiftedRange
+      L hL u hinter
+
+/-- Top-level CPL version of affine injective precomposition under the same
+shifted-range intersection hypotheses. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_precompose_linearMap_add_of_injective_of_inter_shiftedRange
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : IsConvexPiecewiseLinear f)
+    (L : F →ₗ[ℝ] E) (hL : Function.Injective L) (u : E)
+    (hdom :
+      (effectiveDomain f ∩
+        ((fun x : E => x + u) '' (LinearMap.range L : Set E))).Nonempty)
+    (hinter :
+      IsClosedPolyhedral
+        (epigraph f ∩
+          (((fun x : E => x + u) '' (LinearMap.range L : Set E)) ×ˢ (Set.univ : Set ℝ)))) :
+    IsConvexPiecewiseLinear (fun y : F => f (L y + u)) := by
+  exact HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_add_of_injective_of_inter_shiftedRange
+    hf.hasClosedPolyhedralEpigraph hf.isProper L hL u hdom hinter
+
+end AffineLinearInjections
+
 section AffineDomainChanges
 
 variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -1062,6 +1930,15 @@ theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearEquiv_add
   simpa [Function.comp] using
     hg.isConvexPiecewiseLinear_precompose_linearEquiv hg_lsc hg_proper e
 
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_precompose_linearEquiv_add
+    [FiniteDimensional ℝ E]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f) (e : F ≃L[ℝ] E) (u : E) :
+    HasClosedPolyhedralEpigraph (fun y : F => f (e y + u)) := by
+  have hg : HasPolyhedralEpigraph (fun y : F => f (e y + u)) :=
+    hf.hasPolyhedralEpigraph.hasPolyhedralEpigraph_precompose_linearEquiv_add e u
+  exact hg.hasClosedPolyhedralEpigraph_of_lowerSemicontinuous
+    (lowerSemicontinuous_precompose_linearEquiv_add hf.lowerSemicontinuous e u)
+
 end AffineDomainChanges
 
 section AffineLinearSurjections
@@ -1092,6 +1969,27 @@ theorem isProper_precompose_linearMap_add_of_surjective
   simpa [Function.comp] using
     isProper_precompose_linearMap_of_surjective hg L hL
 
+/-- Properness of an affine linear precomposition `y ↦ L y + u` follows from
+properness of `f` and the existence of one finite point of `f` on the shifted
+range of `L`. -/
+theorem isProper_precompose_linearMap_add_of_nonempty_effectiveDomain_inter_shiftedRange
+    {f : E → EReal} (hproper : IsProper f)
+    (L : F →ₗ[ℝ] E) (u : E)
+    (hdom :
+      (effectiveDomain f ∩
+        ((fun x : E => x + u) '' (LinearMap.range L : Set E))).Nonempty) :
+    IsProper (fun y : F => f (L y + u)) := by
+  have hg : IsProper (fun x : E => f (x + u)) :=
+    isProper_precompose_add hproper u
+  have hdom' :
+      (effectiveDomain (fun x : E => f (x + u)) ∩ (LinearMap.range L : Set E)).Nonempty := by
+    rcases hdom with ⟨x, hxdom, hxrange⟩
+    rcases hxrange with ⟨y, hy, rfl⟩
+    refine ⟨y, ?_, hy⟩
+    simpa using hxdom
+  simpa [Function.comp] using
+    isProper_precompose_linearMap_of_nonempty_effectiveDomain_inter_range hg L hdom'
+
 /-- Precomposition by an affine surjective linear change `y ↦ L y + u`
 preserves lower semicontinuity. -/
 theorem lowerSemicontinuous_precompose_linearMap_add
@@ -1120,6 +2018,28 @@ theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_add_o
   simpa [Function.comp] using
     hg.isConvexPiecewiseLinear_precompose_linearMap_of_surjective
       hg_lsc hg_proper L hL
+
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_precompose_linearMap_add_of_surjective
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (L : F →ₗ[ℝ] E) (hL : LinearMap.range L = ⊤) (u : E) :
+    HasClosedPolyhedralEpigraph (fun y : F => f (L y + u)) := by
+  have hg : HasPolyhedralEpigraph (fun y : F => f (L y + u)) :=
+    hf.hasPolyhedralEpigraph.hasPolyhedralEpigraph_precompose_linearMap_add_of_surjective L hL u
+  exact hg.hasClosedPolyhedralEpigraph_of_lowerSemicontinuous
+    (lowerSemicontinuous_precompose_linearMap_add hf.lowerSemicontinuous L u)
+
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_affineChange_of_surjective
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (L : F →ₗ[ℝ] E) (hL : LinearMap.range L = ⊤) (u : E)
+    {a : ℝ} (ha : 0 < a) (l : F →ₗ[ℝ] ℝ) (c : ℝ) :
+    HasClosedPolyhedralEpigraph (fun y : F => (a : EReal) * f (L y + u) + (l y + c : ℝ)) := by
+  have hg : HasClosedPolyhedralEpigraph (fun y : F => f (L y + u)) :=
+    hf.hasClosedPolyhedralEpigraph_precompose_linearMap_add_of_surjective L hL u
+  have hh : HasClosedPolyhedralEpigraph (fun y : F => (a : EReal) * f (L y + u)) :=
+    hg.hasClosedPolyhedralEpigraph_const_mul ha
+  exact hh.hasClosedPolyhedralEpigraph_addAffine l c
 
 /-- Affine surjective changes on the domain, positive vertical scaling, and
 finite affine perturbations on the codomain preserve convex
@@ -1173,6 +2093,19 @@ theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_affineChange
   have hh_proper : IsProper (fun y : F => (a : EReal) * f (e y + u)) :=
     isProper_const_mul hg_proper ha
   exact hh.isConvexPiecewiseLinear_addAffine hh_lsc hh_proper l c
+
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_affineChange
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (e : F ≃L[ℝ] E) (u : E) {a : ℝ} (ha : 0 < a)
+    (l : F →ₗ[ℝ] ℝ) (c : ℝ) :
+    HasClosedPolyhedralEpigraph (fun y : F => (a : EReal) * f (e y + u) + (l y + c : ℝ)) := by
+  have hg : HasClosedPolyhedralEpigraph (fun y : F => f (e y + u)) :=
+    hf.hasClosedPolyhedralEpigraph_precompose_linearEquiv_add e u
+  have hh : HasClosedPolyhedralEpigraph (fun y : F => (a : EReal) * f (e y + u)) :=
+    hg.hasClosedPolyhedralEpigraph_const_mul ha
+  exact hh.hasClosedPolyhedralEpigraph_addAffine l c
 
 end FullAffineChanges
 

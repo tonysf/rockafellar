@@ -146,6 +146,11 @@ theorem indicatorVA_isProper_iff (C : Set E) :
     exact ⟨⟨x, by simp [indicatorVA, hx]⟩,
            fun y => by simp only [indicatorVA]; split <;> simp⟩
 
+theorem indicatorVA_inter (C D : Set E) :
+    indicatorVA (C ∩ D) = fun x => indicatorVA C x + indicatorVA D x := by
+  funext x
+  by_cases hC : x ∈ C <;> by_cases hD : x ∈ D <;> simp [indicatorVA, hC, hD]
+
 /-! ## Epigraph properties -/
 
 theorem mem_epigraph_iff (f : E → EReal) (x : E) (α : ℝ) :
