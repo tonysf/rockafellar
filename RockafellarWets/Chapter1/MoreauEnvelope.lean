@@ -13,6 +13,7 @@ This file formalizes:
 import RockafellarWets.Chapter1.Defs
 import Mathlib.Algebra.Order.Group.CompleteLattice
 import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.Normed.Operator.NormedSpace
 import Mathlib.Topology.MetricSpace.Basic
 
 open Set Filter Topology Classical
@@ -51,6 +52,10 @@ def infConvolution (f₁ f₂ : E → ℝ) (x : E) : ℝ :=
 infixl:70 " □ " => infConvolution
 
 /-! ## Basic properties -/
+
+section MoreauAlgebra
+
+omit [InnerProductSpace ℝ E]
 
 /-- The Moreau envelope is bounded above by `f` (take `w = x`). -/
 theorem moreauEnvelope_le_apply (f : E → ℝ) {lam : ℝ} (hlam : lam > 0) (x : E)
@@ -204,6 +209,13 @@ theorem moreauEnvelope_infConvolution_assoc_of_bddBelow
   exact moreauEnvelope_infConvolution_assoc_of_slice_bddBelow
     f₁ f₂ hlam x h12 h2q (hleft x) (hright x)
 
+end MoreauAlgebra
+
+section LinearCancellation
+
+omit [InnerProductSpace ℝ E]
+variable [NormedSpace ℝ E]
+
 /-- The linear-functional infimum of an infimal convolution splits into the sum
 of the linear-functional infima of the two summands, provided those shifted
 summands are bounded below. This is the algebraic identity used in the proof of
@@ -303,6 +315,76 @@ theorem iInf_sub_linear_infConvolution_eq
         = ⨅ x : E, ⨅ w : E, A w + B (x - w) := by
             simp [hPointwise]
     _ = (⨅ w : E, A w) + (⨅ w : E, B w) := le_antisymm hUpper hLower
+
+/-- Algebraic common-summand cancellation for linear-functional infima. If two
+infimal convolutions with the same second summand agree, then the shifted
+linear infima of the first summands agree as well, provided all three shifted
+functions are bounded below. This is the cancellation identity extracted from
+the proof of Theorem `3.34`. -/
+theorem iInf_sub_linear_eq_of_infConvolution_eq
+    (f₁ f₂ g : E → ℝ) (l : E →ₗ[ℝ] ℝ)
+    (hEq : f₁ □ g = f₂ □ g)
+    (hbdd₁ : BddBelow (Set.range fun w : E => f₁ w - l w))
+    (hbdd₂ : BddBelow (Set.range fun w : E => f₂ w - l w))
+    (hbddg : BddBelow (Set.range fun w : E => g w - l w)) :
+    (⨅ w : E, f₁ w - l w) = (⨅ w : E, f₂ w - l w) := by
+  have hsplit₁ := iInf_sub_linear_infConvolution_eq f₁ g l hbdd₁ hbddg
+  have hsplit₂ := iInf_sub_linear_infConvolution_eq f₂ g l hbdd₂ hbddg
+  have hEqInf :
+      (⨅ x : E, (f₁ □ g) x - l x) = (⨅ x : E, (f₂ □ g) x - l x) := by
+    simp [hEq]
+  have hsum :
+      (⨅ w : E, f₁ w - l w) + (⨅ w : E, g w - l w) =
+        (⨅ w : E, f₂ w - l w) + (⨅ w : E, g w - l w) := by
+    calc
+      (⨅ w : E, f₁ w - l w) + (⨅ w : E, g w - l w)
+          = (⨅ x : E, (f₁ □ g) x - l x) := hsplit₁.symm
+      _ = (⨅ x : E, (f₂ □ g) x - l x) := hEqInf
+      _ = (⨅ w : E, f₂ w - l w) + (⨅ w : E, g w - l w) := hsplit₂
+  exact add_right_cancel hsum
+
+/-- An affine norm lower bound dominates subtraction of a continuous linear
+functional once the slope is at least the operator norm. -/
+theorem bddBelow_sub_continuousLinear_of_affineNormLowerBound
+    (f : E → ℝ) (l : E →L[ℝ] ℝ) {γ β : ℝ}
+    (hminor : ∀ x : E, γ * ‖x‖ + β ≤ f x) (hγ : ‖l‖ ≤ γ) :
+    BddBelow (Set.range fun x : E => f x - l x) := by
+  refine ⟨β, ?_⟩
+  rintro _ ⟨x, rfl⟩
+  have hlx : l x ≤ γ * ‖x‖ := by
+    calc
+      l x ≤ ‖l x‖ := le_abs_self _
+      _ ≤ ‖l‖ * ‖x‖ := by
+            simpa [Real.norm_eq_abs] using l.le_opNorm x
+      _ ≤ γ * ‖x‖ := mul_le_mul_of_nonneg_right hγ (norm_nonneg _)
+  have hminorx : γ * ‖x‖ + β ≤ f x := hminor x
+  linarith
+
+/-- The linear-functional infimum splitting identity, specialized to continuous
+linear functionals. -/
+theorem iInf_sub_continuousLinear_infConvolution_eq
+    (f₁ f₂ : E → ℝ) (l : E →L[ℝ] ℝ)
+    (hbdd₁ : BddBelow (Set.range fun w : E => f₁ w - l w))
+    (hbdd₂ : BddBelow (Set.range fun w : E => f₂ w - l w)) :
+    (⨅ x : E, (f₁ □ f₂) x - l x) =
+      (⨅ w : E, f₁ w - l w) + (⨅ w : E, f₂ w - l w) := by
+  simpa using iInf_sub_linear_infConvolution_eq f₁ f₂ l.toLinearMap hbdd₁ hbdd₂
+
+/-- Common-summand cancellation for shifted continuous-linear infima when the
+shared summand has an affine norm lower bound strong enough to dominate the
+linear functional. -/
+theorem iInf_sub_continuousLinear_eq_of_infConvolution_eq_of_affineNormLowerBound
+    (f₁ f₂ g : E → ℝ) (l : E →L[ℝ] ℝ) {γ β : ℝ}
+    (hEq : f₁ □ g = f₂ □ g)
+    (hbdd₁ : BddBelow (Set.range fun w : E => f₁ w - l w))
+    (hbdd₂ : BddBelow (Set.range fun w : E => f₂ w - l w))
+    (hminor : ∀ x : E, γ * ‖x‖ + β ≤ g x) (hγ : ‖l‖ ≤ γ) :
+    (⨅ w : E, f₁ w - l w) = (⨅ w : E, f₂ w - l w) := by
+  exact iInf_sub_linear_eq_of_infConvolution_eq
+    f₁ f₂ g l.toLinearMap hEq hbdd₁ hbdd₂
+    (bddBelow_sub_continuousLinear_of_affineNormLowerBound g l hminor hγ)
+
+end LinearCancellation
 
 /-- **Exercise 1.28(a)** (one direction): Every point in the Minkowski sum
 of epigraphs lies in the epigraph of the infimal convolution, provided the

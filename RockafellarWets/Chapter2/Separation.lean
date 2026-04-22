@@ -84,7 +84,7 @@ theorem continuous_of_convexOn_open
 
 section Separation
 
-variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 /-- A **supporting hyperplane** for a convex set `S` at a boundary point `x₀`
 is defined by a nonzero functional `φ` such that `φ(x) ≤ φ(x₀)` for all
