@@ -20,6 +20,11 @@ namespace RW
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
+/-- The epigraph of a horizon function is a cone. -/
+theorem isCone_epigraph_horizonFunction (f : E → EReal) :
+    IsCone (epigraph (horizonFunction f)) :=
+  isCone_epigraph_of_positivelyHomogeneous (positivelyHomogeneous_horizonFunction f)
+
 theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_horizonFunction
     [FiniteDimensional ℝ E] {f : E → EReal}
     (hf : HasClosedPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
@@ -30,6 +35,122 @@ theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_horizonFunction
     rw [epigraph_horizonFunction_eq_horizonCone_epigraph hne]
     exact hhorizon)
 
+/-- The epigraph of the horizon function of a closed-polyhedral-epigraph
+function is a finitely generated cone. -/
+theorem HasClosedPolyhedralEpigraph.horizonFunction_epigraph_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    IsFinitelyGeneratedCone (epigraph (horizonFunction f)) := by
+  simpa [epigraph_horizonFunction_eq_horizonCone_epigraph hne] using
+    hf.horizonCone_epigraph_isFinitelyGeneratedCone hne
+
+/-- The ray-space cone of the horizon-function epigraph is finitely generated. -/
+theorem HasClosedPolyhedralEpigraph.raySpaceCone_horizonFunction_epigraph_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (epigraph (horizonFunction f)) (epigraph (horizonFunction f))) :=
+  (hf.horizonFunction_epigraph_isFinitelyGeneratedCone hne).raySpaceCone_of_isCone
+    (isCone_epigraph_horizonFunction f)
+
+/-- The epigraph of the horizon function of a closed-polyhedral-epigraph
+function is a finitely generated cone. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_epigraph_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    ∃ t : Finset (E × ℝ),
+      epigraph (horizonFunction f) = conicHull (↑t : Set (E × ℝ)) := by
+  exact (hf.horizonFunction_epigraph_isFinitelyGeneratedCone hne).exists_generators
+
+/-- The epigraph of the horizon function of a closed-polyhedral-epigraph
+function has an explicit finite conic-coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    ∃ t : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ epigraph (horizonFunction f) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p := by
+  exact (hf.horizonFunction_epigraph_isFinitelyGeneratedCone hne).exists_generator_formula
+
+/-- The ray-space cone of the horizon-function epigraph has finite generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_epigraph_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      raySpaceCone (epigraph (horizonFunction f)) (epigraph (horizonFunction f)) =
+        conicHull (↑u : Set ((E × ℝ) × ℝ)) :=
+  (hf.raySpaceCone_horizonFunction_epigraph_isFinitelyGeneratedCone hne).exists_generators
+
+/-- The ray-space cone of the horizon-function epigraph has an explicit finite
+conic-coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      ∀ {p : (E × ℝ) × ℝ},
+        p ∈ raySpaceCone (epigraph (horizonFunction f)) (epigraph (horizonFunction f)) ↔
+          ∃ c : ((E × ℝ) × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set ((E × ℝ) × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  IsFinitelyGeneratedCone.exists_generator_formula
+    (hf.raySpaceCone_horizonFunction_epigraph_isFinitelyGeneratedCone hne)
+
+/-- Properness supplies the epigraph nonemptiness needed for finite generators
+of the horizon-function epigraph. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_epigraph_generators_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset (E × ℝ),
+      epigraph (horizonFunction f) = conicHull (↑t : Set (E × ℝ)) :=
+  hf.exists_horizonFunction_epigraph_generators
+    (epigraph_nonempty_of_isProper hproper)
+
+/-- Properness supplies the epigraph nonemptiness needed for the finite
+coefficient formula of the horizon-function epigraph. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_epigraph_generator_formula_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ epigraph (horizonFunction f) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.exists_horizonFunction_epigraph_generator_formula
+    (epigraph_nonempty_of_isProper hproper)
+
+/-- Properness supplies the epigraph nonemptiness needed for finite generators
+of the horizon-function epigraph ray-space cone. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_epigraph_generators_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      raySpaceCone (epigraph (horizonFunction f)) (epigraph (horizonFunction f)) =
+        conicHull (↑u : Set ((E × ℝ) × ℝ)) :=
+  hf.exists_raySpaceCone_horizonFunction_epigraph_generators
+    (epigraph_nonempty_of_isProper hproper)
+
+/-- Properness supplies the epigraph nonemptiness needed for the finite
+coefficient formula of the horizon-function epigraph ray-space cone. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_epigraph_generator_formula_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      ∀ {p : (E × ℝ) × ℝ},
+        p ∈ raySpaceCone (epigraph (horizonFunction f)) (epigraph (horizonFunction f)) ↔
+          ∃ c : ((E × ℝ) × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set ((E × ℝ) × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.exists_raySpaceCone_horizonFunction_epigraph_generator_formula
+    (epigraph_nonempty_of_isProper hproper)
+
 theorem IsConvexPiecewiseLinear.hasClosedPolyhedralEpigraph_horizonFunction
     [FiniteDimensional ℝ E] {f : E → EReal}
     (hf : IsConvexPiecewiseLinear f) :
@@ -37,11 +158,65 @@ theorem IsConvexPiecewiseLinear.hasClosedPolyhedralEpigraph_horizonFunction
   hf.hasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_horizonFunction
     (epigraph_nonempty_of_isProper hf.isProper)
 
+/-- The horizon-function epigraph of a convex piecewise-linear function is a
+finitely generated cone. -/
+theorem IsConvexPiecewiseLinear.exists_horizonFunction_epigraph_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ t : Finset (E × ℝ),
+      epigraph (horizonFunction f) = conicHull (↑t : Set (E × ℝ)) :=
+  hf.hasClosedPolyhedralEpigraph.exists_horizonFunction_epigraph_generators_of_isProper
+    hf.isProper
+
+/-- The horizon-function epigraph of a convex piecewise-linear function has an
+explicit finite conic-coefficient formula. -/
+theorem IsConvexPiecewiseLinear.exists_horizonFunction_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ t : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ epigraph (horizonFunction f) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.hasClosedPolyhedralEpigraph.exists_horizonFunction_epigraph_generator_formula_of_isProper
+    hf.isProper
+
+/-- The horizon-function epigraph ray-space cone of a convex piecewise-linear
+function has finite generators. -/
+theorem IsConvexPiecewiseLinear.exists_raySpaceCone_horizonFunction_epigraph_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      raySpaceCone (epigraph (horizonFunction f)) (epigraph (horizonFunction f)) =
+        conicHull (↑u : Set ((E × ℝ) × ℝ)) :=
+  hf.hasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_epigraph_generators_of_isProper
+    hf.isProper
+
+/-- The horizon-function epigraph ray-space cone of a convex piecewise-linear
+function has an explicit finite conic-coefficient formula. -/
+theorem IsConvexPiecewiseLinear.exists_raySpaceCone_horizonFunction_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      ∀ {p : (E × ℝ) × ℝ},
+        p ∈ raySpaceCone (epigraph (horizonFunction f)) (epigraph (horizonFunction f)) ↔
+          ∃ c : ((E × ℝ) × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set ((E × ℝ) × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.hasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_epigraph_generator_formula_of_isProper
+    hf.isProper
+
 theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_horizonFunction
     [FiniteDimensional ℝ E] {f : E → EReal}
     (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
     IsConvexPiecewiseLinear (horizonFunction f) := by
-  refine ⟨?_, hf.hasClosedPolyhedralEpigraph_horizonFunction (epigraph_nonempty_of_isProper hproper)⟩
+  refine
+    ⟨?_,
+      hf.hasClosedPolyhedralEpigraph_horizonFunction
+        (epigraph_nonempty_of_isProper hproper)⟩
   constructor
   · refine ⟨0, ?_⟩
     rw [horizonFunction_zero_eq_zero_of_convex
@@ -93,6 +268,454 @@ theorem HasClosedPolyhedralEpigraph.sublinear_horizonFunction
   exact ne_of_gt <|
     bot_lt_horizonFunction_of_convex
       hf.convex hf.lowerSemicontinuous hproper w
+
+/-- The effective domain of the horizon function of a proper closed convex
+function is a cone. -/
+theorem isCone_effectiveDomain_horizonFunction_of_convex
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f))
+    (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    IsCone (effectiveDomain (horizonFunction f)) := by
+  refine ⟨?_, ?_⟩
+  · rw [mem_effectiveDomain_iff, horizonFunction_zero_eq_zero_of_convex hconv hlsc hproper]
+    exact EReal.coe_lt_top 0
+  · intro w hw c hc
+    rw [mem_effectiveDomain_iff] at hw ⊢
+    rw [(positivelyHomogeneous_horizonFunction f).2 hc]
+    exact lt_top_iff_ne_top.mpr <| by
+      rw [EReal.mul_ne_top]
+      refine ⟨Or.inl (EReal.coe_ne_bot c), Or.inl ?_, Or.inl (EReal.coe_ne_top c),
+        Or.inr (ne_of_lt hw)⟩
+      exact_mod_cast hc.le
+
+/-- The effective domain of the horizon function of a closed-polyhedral-epigraph
+proper function is closed polyhedral. -/
+theorem HasClosedPolyhedralEpigraph.horizonFunction_effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsClosedPolyhedral (effectiveDomain (horizonFunction f)) :=
+  (hf.isConvexPiecewiseLinear_horizonFunction hproper).effectiveDomain_isClosedPolyhedral
+
+/-- The effective domain of the horizon function of a closed-polyhedral-epigraph
+proper function is a cone. -/
+theorem HasClosedPolyhedralEpigraph.horizonFunction_effectiveDomain_isCone
+    {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsCone (effectiveDomain (horizonFunction f)) :=
+  isCone_effectiveDomain_horizonFunction_of_convex
+    hf.convex hf.lowerSemicontinuous hproper
+
+/-- The effective domain of the horizon function of a closed-polyhedral-epigraph
+proper function is a finitely generated cone. -/
+theorem HasClosedPolyhedralEpigraph.horizonFunction_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsFinitelyGeneratedCone (effectiveDomain (horizonFunction f)) :=
+  (hf.horizonFunction_effectiveDomain_isClosedPolyhedral hproper).isFinitelyGeneratedCone_of_isCone
+    (hf.horizonFunction_effectiveDomain_isCone hproper)
+
+/-- The effective domain of the horizon function has actual finite conic
+generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_effectiveDomain_conicGenerators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset E,
+      effectiveDomain (horizonFunction f) = conicHull (↑t : Set E) :=
+  (hf.horizonFunction_effectiveDomain_isFinitelyGeneratedCone hproper).exists_generators
+
+/-- The effective domain of the horizon function admits a finite conic
+coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_effectiveDomain_conicGenerator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ effectiveDomain (horizonFunction f) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  (hf.horizonFunction_effectiveDomain_isFinitelyGeneratedCone hproper).exists_generator_formula
+
+/-- The effective domain of the horizon function is its own horizon cone. -/
+theorem HasClosedPolyhedralEpigraph.horizonCone_horizonFunction_effectiveDomain_eq_self
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    horizonCone (effectiveDomain (horizonFunction f)) =
+      effectiveDomain (horizonFunction f) :=
+  (hf.horizonFunction_effectiveDomain_isFinitelyGeneratedCone hproper).horizonCone_eq_self
+
+/-- The ray-space cone of the horizon-function effective domain is finitely
+generated. -/
+theorem HasClosedPolyhedralEpigraph.raySpaceCone_horizonFunction_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain (horizonFunction f))
+        (effectiveDomain (horizonFunction f))) :=
+  (hf.horizonFunction_effectiveDomain_isFinitelyGeneratedCone hproper).raySpaceCone_of_isCone
+    (hf.horizonFunction_effectiveDomain_isCone hproper)
+
+/-- The ray-space cone of the horizon-function effective domain has finite
+generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain (horizonFunction f))
+          (effectiveDomain (horizonFunction f)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  (hf.raySpaceCone_horizonFunction_effectiveDomain_isFinitelyGeneratedCone
+    hproper).exists_generators
+
+/-- The ray-space cone of the horizon-function effective domain admits a finite
+conic-coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain (horizonFunction f))
+            (effectiveDomain (horizonFunction f)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  (hf.raySpaceCone_horizonFunction_effectiveDomain_isFinitelyGeneratedCone
+    hproper).exists_generator_formula
+
+/-- The effective domain of the horizon function of a closed-polyhedral-epigraph
+proper function admits finite ordinary and direction generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ s t : Finset E,
+      effectiveDomain (horizonFunction f) =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  (hf.isConvexPiecewiseLinear_horizonFunction hproper).exists_effectiveDomain_generators
+
+/-- The effective domain of the horizon function admits finite generators with
+a nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_horizonFunction_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain (horizonFunction f) =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  (hf.isConvexPiecewiseLinear_horizonFunction hproper).exists_nonempty_effectiveDomain_generators
+
+/-- The effective domain of the horizon function inherits the finite
+convex-plus-conic coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain (horizonFunction f) ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  IsConvexPiecewiseLinear.exists_effectiveDomain_generator_formula
+    (hf.isConvexPiecewiseLinear_horizonFunction hproper)
+
+/-- The finite coefficient formula for the effective domain of the horizon
+function can be chosen with a nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_horizonFunction_effectiveDomain_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain (horizonFunction f) ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_generator_formula
+    (hf.isConvexPiecewiseLinear_horizonFunction hproper)
+
+/-- The effective domain of the horizon function of a convex piecewise-linear
+function is closed polyhedral. -/
+theorem IsConvexPiecewiseLinear.horizonFunction_effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsClosedPolyhedral (effectiveDomain (horizonFunction f)) :=
+  hf.isConvexPiecewiseLinear_horizonFunction.effectiveDomain_isClosedPolyhedral
+
+/-- The effective domain of the horizon function of a convex piecewise-linear
+function is a cone. -/
+theorem IsConvexPiecewiseLinear.horizonFunction_effectiveDomain_isCone
+    {f : E → EReal} (hf : IsConvexPiecewiseLinear f) :
+    IsCone (effectiveDomain (horizonFunction f)) :=
+  hf.hasClosedPolyhedralEpigraph.horizonFunction_effectiveDomain_isCone hf.isProper
+
+/-- The effective domain of the horizon function of a convex piecewise-linear
+function is a finitely generated cone. -/
+theorem IsConvexPiecewiseLinear.horizonFunction_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsFinitelyGeneratedCone (effectiveDomain (horizonFunction f)) :=
+  hf.hasClosedPolyhedralEpigraph.horizonFunction_effectiveDomain_isFinitelyGeneratedCone
+    hf.isProper
+
+/-- The effective domain of the horizon function of a convex piecewise-linear
+function has actual finite conic generators. -/
+theorem IsConvexPiecewiseLinear.exists_horizonFunction_effectiveDomain_conicGenerators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ t : Finset E,
+      effectiveDomain (horizonFunction f) = conicHull (↑t : Set E) :=
+  hf.hasClosedPolyhedralEpigraph.exists_horizonFunction_effectiveDomain_conicGenerators
+    hf.isProper
+
+/-- The effective domain of the horizon function of a convex piecewise-linear
+function admits a finite conic coefficient formula. -/
+theorem IsConvexPiecewiseLinear.exists_horizonFunction_effectiveDomain_conicGenerator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ effectiveDomain (horizonFunction f) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  hf.hasClosedPolyhedralEpigraph.exists_horizonFunction_effectiveDomain_conicGenerator_formula
+    hf.isProper
+
+/-- The effective domain of the horizon function is its own horizon cone for a
+convex piecewise-linear function. -/
+theorem IsConvexPiecewiseLinear.horizonCone_horizonFunction_effectiveDomain_eq_self
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    horizonCone (effectiveDomain (horizonFunction f)) =
+      effectiveDomain (horizonFunction f) :=
+  hf.hasClosedPolyhedralEpigraph.horizonCone_horizonFunction_effectiveDomain_eq_self
+    hf.isProper
+
+/-- The ray-space cone of the horizon-function effective domain is finitely
+generated for a convex piecewise-linear function. -/
+theorem IsConvexPiecewiseLinear.raySpaceCone_horizonFunction_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain (horizonFunction f))
+        (effectiveDomain (horizonFunction f))) :=
+  hf.hasClosedPolyhedralEpigraph.raySpaceCone_horizonFunction_effectiveDomain_isFinitelyGeneratedCone
+    hf.isProper
+
+/-- The ray-space cone of the horizon-function effective domain has finite
+generators for a convex piecewise-linear function. -/
+theorem IsConvexPiecewiseLinear.exists_raySpaceCone_horizonFunction_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain (horizonFunction f))
+          (effectiveDomain (horizonFunction f)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  hf.hasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_effectiveDomain_generators
+    hf.isProper
+
+/-- The ray-space cone of the horizon-function effective domain admits a finite
+conic-coefficient formula for a convex piecewise-linear function. -/
+theorem IsConvexPiecewiseLinear.exists_raySpaceCone_horizonFunction_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain (horizonFunction f))
+            (effectiveDomain (horizonFunction f)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.hasClosedPolyhedralEpigraph.exists_raySpaceCone_horizonFunction_effectiveDomain_generator_formula
+    hf.isProper
+
+/-- The effective domain of the horizon function of a convex piecewise-linear
+function admits finite ordinary and direction generators. -/
+theorem IsConvexPiecewiseLinear.exists_horizonFunction_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ s t : Finset E,
+      effectiveDomain (horizonFunction f) =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hf.isConvexPiecewiseLinear_horizonFunction.exists_effectiveDomain_generators
+
+/-- The effective domain of the horizon function admits finite generators with
+a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_horizonFunction_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain (horizonFunction f) =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hf.isConvexPiecewiseLinear_horizonFunction.exists_nonempty_effectiveDomain_generators
+
+/-- The effective domain of the horizon function inherits the finite
+convex-plus-conic coefficient formula. -/
+theorem IsConvexPiecewiseLinear.exists_horizonFunction_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain (horizonFunction f) ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  IsConvexPiecewiseLinear.exists_effectiveDomain_generator_formula
+    hf.isConvexPiecewiseLinear_horizonFunction
+
+/-- The finite coefficient formula for the effective domain of the horizon
+function can be chosen with a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_horizonFunction_effectiveDomain_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain (horizonFunction f) ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_generator_formula
+    hf.isConvexPiecewiseLinear_horizonFunction
+
+/-- The indicator of the horizon-function effective domain is convex
+piecewise-linear for a proper closed-polyhedral-epigraph function. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_indicatorVA_horizonFunction_effectiveDomain
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsConvexPiecewiseLinear (indicatorVA (effectiveDomain (horizonFunction f))) :=
+  (hf.isConvexPiecewiseLinear_horizonFunction hproper).isConvexPiecewiseLinear_indicatorVA_effectiveDomain
+
+/-- The indicator of the horizon-function effective domain is convex
+piecewise-linear for a convex piecewise-linear function. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_indicatorVA_horizonFunction_effectiveDomain
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsConvexPiecewiseLinear (indicatorVA (effectiveDomain (horizonFunction f))) :=
+  hf.isConvexPiecewiseLinear_horizonFunction.isConvexPiecewiseLinear_indicatorVA_effectiveDomain
+
+/-- Lower level sets of the horizon function inherit the finite epigraph-slice
+coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonFunction_levelSet_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (α : ℝ) :
+    ∃ s t : Finset (E × ℝ),
+      ∀ {x : E},
+        x ∈ levelSet (horizonFunction f) α ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ p ∈ s, 0 ≤ w p) ∧
+            ∑ p ∈ s, w p = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ p, 0 ≤ c p) ∧
+              (∑ p ∈ s, w p • p) + c.sum (fun p r => r • p) = (x, α) :=
+  (hf.isConvexPiecewiseLinear_horizonFunction hproper).exists_levelSet_generator_formula α
+
+/-- Lower level sets of the horizon function inherit a finite coefficient
+formula with a nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_horizonFunction_levelSet_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (α : ℝ) :
+    ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ levelSet (horizonFunction f) α ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ p ∈ s, 0 ≤ w p) ∧
+            ∑ p ∈ s, w p = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ p, 0 ≤ c p) ∧
+              (∑ p ∈ s, w p • p) + c.sum (fun p r => r • p) = (x, α) :=
+  (hf.isConvexPiecewiseLinear_horizonFunction hproper).exists_nonempty_levelSet_generator_formula α
+
+/-- A nonempty lower level set of the horizon function admits a finite
+coefficient formula with a nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_horizonFunction_levelSet_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) {α : ℝ}
+    (hlevel : (levelSet (horizonFunction f) α).Nonempty) :
+    ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ levelSet (horizonFunction f) α ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ p ∈ s, 0 ≤ w p) ∧
+            ∑ p ∈ s, w p = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ p, 0 ≤ c p) ∧
+              (∑ p ∈ s, w p • p) + c.sum (fun p r => r • p) = (x, α) :=
+  IsConvexPiecewiseLinear.exists_nonempty_levelSet_generator_formula_of_nonempty
+    (hf.isConvexPiecewiseLinear_horizonFunction hproper) hlevel
+
+/-- Lower level sets of the horizon function of a convex piecewise-linear
+function inherit the finite epigraph-slice coefficient formula. -/
+theorem IsConvexPiecewiseLinear.exists_horizonFunction_levelSet_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (α : ℝ) :
+    ∃ s t : Finset (E × ℝ),
+      ∀ {x : E},
+        x ∈ levelSet (horizonFunction f) α ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ p ∈ s, 0 ≤ w p) ∧
+            ∑ p ∈ s, w p = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ p, 0 ≤ c p) ∧
+              (∑ p ∈ s, w p • p) + c.sum (fun p r => r • p) = (x, α) :=
+  hf.isConvexPiecewiseLinear_horizonFunction.exists_levelSet_generator_formula α
+
+/-- Lower level sets of the horizon function of a convex piecewise-linear
+function inherit a finite coefficient formula with a nonempty ordinary
+generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_horizonFunction_levelSet_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (α : ℝ) :
+    ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ levelSet (horizonFunction f) α ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ p ∈ s, 0 ≤ w p) ∧
+            ∑ p ∈ s, w p = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ p, 0 ≤ c p) ∧
+              (∑ p ∈ s, w p • p) + c.sum (fun p r => r • p) = (x, α) :=
+  hf.isConvexPiecewiseLinear_horizonFunction.exists_nonempty_levelSet_generator_formula α
+
+/-- A nonempty lower level set of the horizon function of a convex
+piecewise-linear function admits a finite coefficient formula with a nonempty
+ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_horizonFunction_levelSet_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) {α : ℝ}
+    (hlevel : (levelSet (horizonFunction f) α).Nonempty) :
+    ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ levelSet (horizonFunction f) α ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ p ∈ s, 0 ≤ w p) ∧
+            ∑ p ∈ s, w p = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ p, 0 ≤ c p) ∧
+              (∑ p ∈ s, w p • p) + c.sum (fun p r => r • p) = (x, α) :=
+  IsConvexPiecewiseLinear.exists_nonempty_levelSet_generator_formula_of_nonempty
+    hf.isConvexPiecewiseLinear_horizonFunction hlevel
 
 theorem HasPolyhedralEpigraph.epiSumIntegrand
     {f₁ f₂ : E → EReal}
@@ -898,6 +1521,38 @@ theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_affineRescaleTranslate
     isProper_const_mul hproper₁ ha
   exact hf₂.isConvexPiecewiseLinear_addAffine hlsc₂ hproper₂ l c
 
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_affineRescaleTranslate
+    [FiniteDimensional ℝ E] {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    {a : ℝ} (ha : 0 < a) (u : E) (l : E →ₗ[ℝ] ℝ) (c : ℝ) :
+    HasClosedPolyhedralEpigraph
+      (fun x => (a : EReal) * f (x + u) + (l x + c : ℝ)) := by
+  have hf₁ : HasClosedPolyhedralEpigraph (fun x => f (x + u)) :=
+    hf.hasClosedPolyhedralEpigraph_precompose_add u
+  have hf₂ : HasClosedPolyhedralEpigraph (fun x => (a : EReal) * f (x + u)) :=
+    hf₁.hasClosedPolyhedralEpigraph_const_mul ha
+  exact hf₂.hasClosedPolyhedralEpigraph_addAffine l c
+
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_affineRescaleTranslate
+    [FiniteDimensional ℝ E] {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (hproper : IsProper f)
+    {a : ℝ} (ha : 0 < a) (u : E) (l : E →ₗ[ℝ] ℝ) (c : ℝ) :
+    IsConvexPiecewiseLinear
+      (fun x => (a : EReal) * f (x + u) + (l x + c : ℝ)) := by
+  have hf₁_proper : IsProper (fun x => f (x + u)) :=
+    isProper_precompose_add hproper u
+  have hf₂_proper : IsProper (fun x => (a : EReal) * f (x + u)) :=
+    isProper_const_mul hf₁_proper ha
+  exact ⟨isProper_addAffine hf₂_proper l c,
+    hf.hasClosedPolyhedralEpigraph_affineRescaleTranslate ha u l c⟩
+
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_affineRescaleTranslate
+    [FiniteDimensional ℝ E] {f : E → EReal} (hf : IsConvexPiecewiseLinear f)
+    {a : ℝ} (ha : 0 < a) (u : E) (l : E →ₗ[ℝ] ℝ) (c : ℝ) :
+    IsConvexPiecewiseLinear
+      (fun x => (a : EReal) * f (x + u) + (l x + c : ℝ)) := by
+  exact hf.hasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_affineRescaleTranslate
+    hf.isProper ha u l c
+
 end CombinedOperations
 
 section LinearEquivalences
@@ -1110,6 +1765,42 @@ theorem HasClosedPolyhedralEpigraph.supHeightIntegrand_regular_of_nonempty_effec
   · exact lowerSemicontinuous_supHeightIntegrand (f := f) (g := g) hreg.2.1
   · exact isLevelBoundedInXLocallyUniformly_supHeightIntegrand (f := f) (g := g) hreg.2.1 hreg.1
 
+/-- Direct epigraph form of the pointwise supremum operation: if the
+intersection of the epigraphs is closed polyhedral, then the pointwise
+supremum has a closed polyhedral epigraph. -/
+theorem hasClosedPolyhedralEpigraph_iSup_of_iInter_closedPolyhedral
+    {ι : Type*} {f : ι → E → EReal}
+    (hinter : IsClosedPolyhedral (⋂ i, epigraph (f i))) :
+    HasClosedPolyhedralEpigraph (fun x : E => ⨆ i, f i x) := by
+  change IsClosedPolyhedral (epigraph (fun x : E => ⨆ i, f i x))
+  rwa [epigraph_iSup]
+
+/-- Binary direct epigraph form of the pointwise supremum operation. -/
+theorem hasClosedPolyhedralEpigraph_sup_of_inter_closedPolyhedral
+    {f g : E → EReal}
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    HasClosedPolyhedralEpigraph (fun x : E => f x ⊔ g x) := by
+  change IsClosedPolyhedral (epigraph (fun x : E => f x ⊔ g x))
+  rwa [epigraph_sup]
+
+/-- If an arbitrary pointwise supremum is proper and its epigraph intersection
+is closed polyhedral, then it is convex piecewise-linear. -/
+theorem isConvexPiecewiseLinear_iSup_of_iInter_closedPolyhedral
+    {ι : Type*} {f : ι → E → EReal}
+    (hproper : IsProper (fun x : E => ⨆ i, f i x))
+    (hinter : IsClosedPolyhedral (⋂ i, epigraph (f i))) :
+    IsConvexPiecewiseLinear (fun x : E => ⨆ i, f i x) :=
+  ⟨hproper, hasClosedPolyhedralEpigraph_iSup_of_iInter_closedPolyhedral hinter⟩
+
+/-- Binary direct epigraph form of the pointwise maximum operation at the CPL
+layer. -/
+theorem isConvexPiecewiseLinear_sup_of_inter_closedPolyhedral
+    {f g : E → EReal}
+    (hproper : IsProper (fun x : E => f x ⊔ g x))
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    IsConvexPiecewiseLinear (fun x : E => f x ⊔ g x) :=
+  ⟨hproper, hasClosedPolyhedralEpigraph_sup_of_inter_closedPolyhedral hinter⟩
+
 /-- If the scalar-height model for `f ⊔ g` has a polyhedral epigraph, then the
 pointwise supremum itself has a closed polyhedral epigraph. This isolates the
 remaining structural step in the `max` part of Proposition `3.55(b)`. -/
@@ -1231,6 +1922,114 @@ theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_sup_of_nonempty_effe
     hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
       hg hproperf hproperg hdom hinter
 
+/-- The same closed-polyhedral intersection hypothesis that yields a
+closed-polyhedral epigraph for `f ⊔ g` also makes the effective-domain
+intersection `dom f ∩ dom g` closed polyhedral. -/
+theorem HasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+  simpa [effectiveDomain_sup] using hsup.effectiveDomain_isClosedPolyhedral
+
+/-- Under the same closed-polyhedral epigraph-intersection hypothesis, the
+effective-domain intersection admits finite ordinary and direction
+generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+  simpa [effectiveDomain_sup] using hsup.exists_effectiveDomain_generators
+
+/-- If the effective-domain intersection is nonempty, the same hypothesis gives
+an ordinary generator description with a nonempty finite point set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+  simpa [effectiveDomain_sup] using
+    hsup.exists_nonempty_effectiveDomain_generators_of_nonempty
+      (by simpa [effectiveDomain_sup] using hdom)
+
+/-- The effective-domain intersection also inherits the finite coefficient
+formula from the closed-polyhedral `sup` epigraph. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+  simpa [effectiveDomain_sup] using hsup.exists_effectiveDomain_generator_formula
+
+/-- If `dom f ∩ dom g` is nonempty, the same coefficient formula can be chosen
+with a nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+  simpa [effectiveDomain_sup] using
+    hsup.exists_nonempty_effectiveDomain_generator_formula_of_nonempty
+      (by simpa [effectiveDomain_sup] using hdom)
+
 /-- A closed-polyhedral theorem for the product epigraphs intersected with the
 diagonal already implies the closed-polyhedral epigraph theorem for `f ⊔ g`. -/
 theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_prod_inter_diagonal
@@ -1270,6 +2069,130 @@ theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_sup_of_nonempty_effe
     hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_prod_inter_diagonal
       hg hproperf hproperg hdom hdiag
 
+/-- The product-diagonal closed-polyhedral criterion also makes the common
+effective domain closed polyhedral. -/
+theorem HasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) := by
+  have hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g) :=
+    IsClosedPolyhedral.inter_of_prod_inter_diagonal
+      (E := E × ℝ) (C := epigraph f) (D := epigraph g) hdiag
+  exact
+    hf.effectiveDomain_inter_isClosedPolyhedral_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+
+/-- Under the product-diagonal closed-polyhedral criterion, the common
+effective domain admits finite ordinary and direction generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g) :=
+    IsClosedPolyhedral.inter_of_prod_inter_diagonal
+      (E := E × ℝ) (C := epigraph f) (D := epigraph g) hdiag
+  exact
+    hf.exists_effectiveDomain_inter_generators_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+
+/-- Under the product-diagonal closed-polyhedral criterion, a nonempty common
+effective domain admits finite generators with a nonempty ordinary generator
+set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g) :=
+    IsClosedPolyhedral.inter_of_prod_inter_diagonal
+      (E := E × ℝ) (C := epigraph f) (D := epigraph g) hdiag
+  exact
+    hf.exists_nonempty_effectiveDomain_inter_generators_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+
+/-- Under the product-diagonal closed-polyhedral criterion, the common
+effective domain inherits a finite coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g) :=
+    IsClosedPolyhedral.inter_of_prod_inter_diagonal
+      (E := E × ℝ) (C := epigraph f) (D := epigraph g) hdiag
+  exact
+    hf.exists_effectiveDomain_inter_generator_formula_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+
+/-- Under the product-diagonal closed-polyhedral criterion, the finite
+coefficient formula for the common effective domain can be chosen with a
+nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g) :=
+    IsClosedPolyhedral.inter_of_prod_inter_diagonal
+      (E := E × ℝ) (C := epigraph f) (D := epigraph g) hdiag
+  exact
+    hf.exists_nonempty_effectiveDomain_inter_generator_formula_of_inter_closedPolyhedral
+      hg hproperf hproperg hdom hinter
+
 /-- A finitely generated ray-space cone intersection for `epi f` and `epi g`
 is enough to conclude that `f ⊔ g` has a closed polyhedral epigraph. This
 packages the new set-side ray-space reduction directly at the function layer. -/
@@ -1293,6 +2216,130 @@ theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_sup_of_nonempty_
     hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
       hg hproperf hproperg hdom hinter
 
+/-- The ray-space finite-generation criterion for `epi f ∩ epi g` also makes
+`dom f ∩ dom g` closed polyhedral. -/
+theorem HasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_sup] using hsup.effectiveDomain_isClosedPolyhedral
+
+/-- Under the ray-space finite-generation criterion for `epi f ∩ epi g`, the
+effective-domain intersection admits finite ordinary and direction generators.
+-/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_sup] using hsup.exists_effectiveDomain_generators
+
+/-- Under the ray-space finite-generation criterion for `epi f ∩ epi g`, a
+nonempty effective-domain intersection admits finite generators with a nonempty
+ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_sup] using
+    hsup.exists_nonempty_effectiveDomain_generators_of_nonempty
+      (by simpa [effectiveDomain_sup] using hdom)
+
+/-- Under the ray-space finite-generation criterion for `epi f ∩ epi g`, the
+effective-domain intersection inherits the finite coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_sup] using hsup.exists_effectiveDomain_generator_formula
+
+/-- Under the ray-space finite-generation criterion for `epi f ∩ epi g`, the
+finite coefficient formula for a nonempty effective-domain intersection can be
+chosen with a nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hsup :
+      HasClosedPolyhedralEpigraph (fun x => f x ⊔ g x) :=
+    hf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_sup] using
+    hsup.exists_nonempty_effectiveDomain_generator_formula_of_nonempty
+      (by simpa [effectiveDomain_sup] using hdom)
+
 /-- Top-level CPL consequence of a closed-polyhedral theorem for
 `epi f ∩ epi g`. -/
 theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
@@ -1306,6 +2353,89 @@ theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiv
   exact
     hclosedf.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_inter_closedPolyhedral
       hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hinter
+
+/-- Top-level CPL version: a closed-polyhedral theorem for `epi f ∩ epi g`
+makes the common effective domain closed polyhedral. -/
+theorem IsConvexPiecewiseLinear.effectiveDomain_inter_isClosedPolyhedral_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) :=
+  hf.hasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_inter_closedPolyhedral
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hinter
+
+/-- Top-level CPL version: a closed-polyhedral theorem for `epi f ∩ epi g`
+gives finite generators for the common effective domain. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generators_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hf.hasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_inter_closedPolyhedral
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hinter
+
+/-- Top-level CPL version: a nonempty common effective domain admits finite
+generators with a nonempty ordinary generator set under the closed-polyhedral
+epigraph-intersection hypothesis. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generators_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hf.hasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_inter_closedPolyhedral
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hinter
+
+/-- Top-level CPL version: the common effective domain inherits the finite
+coefficient formula from a closed-polyhedral theorem for `epi f ∩ epi g`. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generator_formula_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  hf.hasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_inter_closedPolyhedral
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hinter
+
+/-- Top-level CPL version: the finite coefficient formula for the common
+effective domain can be chosen with a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generator_formula_of_inter_closedPolyhedral
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hinter : IsClosedPolyhedral (epigraph f ∩ epigraph g)) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  hf.hasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_inter_closedPolyhedral
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hinter
 
 /-- Product-epigraph intersection with the diagonal is enough to conclude that
 `f ⊔ g` is convex piecewise-linear. -/
@@ -1324,6 +2454,106 @@ theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiv
     HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_prod_inter_diagonal
       hclosedf hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hdiag
 
+/-- Top-level CPL version: the product-diagonal closed-polyhedral criterion
+makes the common effective domain closed polyhedral. -/
+theorem IsConvexPiecewiseLinear.effectiveDomain_inter_isClosedPolyhedral_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) :=
+  hf.hasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_prod_inter_diagonal
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hdiag
+
+/-- Top-level CPL version: the product-diagonal closed-polyhedral criterion
+gives finite generators for the common effective domain. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generators_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hf.hasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_prod_inter_diagonal
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hdiag
+
+/-- Top-level CPL version: under the product-diagonal closed-polyhedral
+criterion, a nonempty common effective domain admits finite generators with a
+nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generators_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hf.hasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_prod_inter_diagonal
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hdiag
+
+/-- Top-level CPL version: under the product-diagonal closed-polyhedral
+criterion, the common effective domain inherits a finite coefficient formula.
+-/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generator_formula_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  hf.hasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_prod_inter_diagonal
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hdiag
+
+/-- Top-level CPL version: under the product-diagonal closed-polyhedral
+criterion, the common effective-domain coefficient formula can be chosen with
+a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generator_formula_of_prod_inter_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (((epigraph f) ×ˢ (epigraph g)) ∩
+          {p : (E × ℝ) × (E × ℝ) | p.1 = p.2})) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  hf.hasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_prod_inter_diagonal
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hdiag
+
 /-- Top-level CPL consequence of the ray-space finite-generation criterion for
 `epi f ∩ epi g`. -/
 theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
@@ -1341,6 +2571,106 @@ theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_sup_of_nonempty_effectiv
   exact
     hclosedf.hasClosedPolyhedralEpigraph_sup_of_nonempty_effectiveDomain_inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
       hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: the ray-space finite-generation criterion for
+`epi f ∩ epi g` makes `dom f ∩ dom g` closed polyhedral. -/
+theorem IsConvexPiecewiseLinear.effectiveDomain_inter_isClosedPolyhedral_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) :=
+  hf.hasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the ray-space finite-generation criterion for
+`epi f ∩ epi g`, the effective-domain intersection admits finite generators. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generators_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hf.hasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the ray-space finite-generation criterion for
+`epi f ∩ epi g`, a nonempty effective-domain intersection admits finite
+generators with a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generators_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hf.hasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the ray-space finite-generation criterion for
+`epi f ∩ epi g`, the effective-domain intersection inherits the finite
+coefficient formula. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generator_formula_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  hf.hasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the ray-space finite-generation criterion for
+`epi f ∩ epi g`, the finite coefficient formula can be chosen with a nonempty
+ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generator_formula_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph f) (horizonCone (epigraph f)) ∩
+          raySpaceCone (epigraph g) (horizonCone (epigraph g)))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  hf.hasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_isFinitelyGeneratedCone_raySpaceCone_inter
+    hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hRay
 
 /-- Closed polyhedral epigraphs are stable under separated addition on a
 product space. -/
@@ -1683,6 +3013,15 @@ private def diagonalRangeCylinder : Set ((E × E) × ℝ) :=
     (LinearMap.id : E →ₗ[ℝ] E).prod (LinearMap.id : E →ₗ[ℝ] E)
   ((LinearMap.range Δ : Set (E × E)) ×ˢ (Set.univ : Set ℝ))
 
+private theorem diagonalRangeCylinder_isClosedPolyhedral
+    [FiniteDimensional ℝ E] :
+    IsClosedPolyhedral (diagonalRangeCylinder (E := E)) := by
+  let Δ : E →ₗ[ℝ] E × E :=
+    (LinearMap.id : E →ₗ[ℝ] E).prod (LinearMap.id : E →ₗ[ℝ] E)
+  have hrange : IsClosedPolyhedral (LinearMap.range Δ : Set (E × E)) :=
+    IsClosedPolyhedral.range_linearMap (E := E × E) Δ
+  simpa [diagonalRangeCylinder, Δ] using hrange.prod (IsClosedPolyhedral.univ (E := ℝ))
+
 /-- Properness of two functions with a common finite-domain point implies
 properness of their pointwise sum. -/
 theorem isProper_add_of_nonempty_effectiveDomain_inter
@@ -1697,6 +3036,28 @@ theorem isProper_add_of_nonempty_effectiveDomain_inter
       (ne_of_lt <| (mem_effectiveDomain_iff g x).1 hxG)
   · intro x
     exact (EReal.bot_lt_add_iff).2 ⟨hproperf.2 x, hproperg.2 x⟩
+
+/-- For proper functions, the finite domain of the pointwise sum is exactly
+the intersection of the finite domains. Properness rules out the
+`⊤ + ⊥` ambiguity. -/
+theorem effectiveDomain_add_eq_inter_of_isProper
+    {f g : E → EReal}
+    (hproperf : IsProper f) (hproperg : IsProper g) :
+    effectiveDomain (fun x : E => f x + g x) =
+      effectiveDomain f ∩ effectiveDomain g := by
+  ext x
+  simp only [effectiveDomain, mem_setOf_eq, mem_inter_iff]
+  constructor
+  · intro hx
+    have hsum_ne_top : f x + g x ≠ ⊤ := lt_top_iff_ne_top.mp hx
+    have hf_ne_bot : f x ≠ ⊥ := ne_of_gt (hproperf.2 x)
+    have hg_ne_bot : g x ≠ ⊥ := ne_of_gt (hproperg.2 x)
+    have hfinite :
+        f x ≠ ⊤ ∧ g x ≠ ⊤ :=
+      (EReal.add_ne_top_iff_ne_top₂ hf_ne_bot hg_ne_bot).1 hsum_ne_top
+    exact ⟨lt_top_iff_ne_top.mpr hfinite.1, lt_top_iff_ne_top.mpr hfinite.2⟩
+  · intro hx
+    exact EReal.add_lt_top (lt_top_iff_ne_top.mp hx.1) (lt_top_iff_ne_top.mp hx.2)
 
 /-- If the epigraph of the separated sum meets the diagonal range cylinder in a
 closed polyhedral set, then the pointwise sum has a closed polyhedral epigraph.
@@ -1722,6 +3083,338 @@ theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_add_of_inter_ran
       Δ hΔinj hdiag
 
 /-- A diagonal-range closed-polyhedral theorem for the separated sum is enough
+to conclude that the pointwise sum is convex piecewise-linear at the
+closed-epigraph layer. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_add_of_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    IsConvexPiecewiseLinear (fun x : E => f x + g x) := by
+  refine ⟨isProper_add_of_nonempty_effectiveDomain_inter hproperf hproperg hdom, ?_⟩
+  exact
+    hf.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+      hg hproperf hproperg hdiag
+
+/-- The direct diagonal-range criterion for pointwise addition also makes the
+common finite domain closed polyhedral. -/
+theorem HasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+      hg hproperf hproperg hdiag
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.effectiveDomain_isClosedPolyhedral
+
+/-- Under the direct diagonal-range criterion for pointwise addition, the
+common finite domain admits finite ordinary and direction generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+      hg hproperf hproperg hdiag
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.exists_effectiveDomain_generators
+
+/-- Under the direct diagonal-range criterion for pointwise addition, a
+nonempty common finite domain admits finite generators with a nonempty
+ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+      hg hproperf hproperg hdiag
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.exists_nonempty_effectiveDomain_generators_of_nonempty
+      (by simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using hdom)
+
+/-- Under the direct diagonal-range criterion for pointwise addition, the
+common finite domain inherits a finite coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+      hg hproperf hproperg hdiag
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.exists_effectiveDomain_generator_formula
+
+/-- Under the direct diagonal-range criterion for pointwise addition, the
+common finite-domain coefficient formula can be chosen with a nonempty
+ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+      hg hproperf hproperg hdiag
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.exists_nonempty_effectiveDomain_generator_formula_of_nonempty
+      (by simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using hdom)
+
+/-- Ray-space finite-generation version of the diagonal-intersection criterion
+for pointwise addition. This is the addition analogue of the ray-space
+finite-generation criterion used for pointwise suprema. -/
+theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    HasClosedPolyhedralEpigraph (fun x : E => f x + g x) := by
+  have hsep : HasClosedPolyhedralEpigraph (fun p : E × E => f p.1 + g p.2) :=
+    hf.hasClosedPolyhedralEpigraph_separatedAdd hg hproperf hproperg
+  have hdiagClosed : IsClosedPolyhedral (diagonalRangeCylinder (E := E)) :=
+    diagonalRangeCylinder_isClosedPolyhedral (E := E)
+  have hsumProper : IsProper (fun x : E => f x + g x) :=
+    isProper_add_of_nonempty_effectiveDomain_inter hproperf hproperg hdom
+  have hdiagNonempty :
+      (epigraph (fun p : E × E => f p.1 + g p.2) ∩
+        diagonalRangeCylinder (E := E)).Nonempty := by
+    rcases epigraph_nonempty_of_isProper hsumProper with ⟨p, hp⟩
+    rcases p with ⟨x, t⟩
+    refine ⟨((x, x), t), ?_, ?_⟩
+    · simpa [mem_epigraph_iff] using hp
+    · simp [diagonalRangeCylinder]
+  have hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩
+          diagonalRangeCylinder (E := E)) :=
+    IsClosedPolyhedral.inter_of_isFinitelyGeneratedCone_raySpaceCone_inter
+      hsep hdiagClosed hdiagNonempty hRay
+  exact
+    hf.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
+      hg hproperf hproperg hdiag
+
+/-- Closed-epigraph-layer CPL consequence of the ray-space finite-generation
+criterion for pointwise addition. -/
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    IsConvexPiecewiseLinear (fun x : E => f x + g x) := by
+  refine ⟨isProper_add_of_nonempty_effectiveDomain_inter hproperf hproperg hdom, ?_⟩
+  exact
+    hf.hasClosedPolyhedralEpigraph_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+
+/-- Under the diagonal ray-space criterion for pointwise addition, the common
+finite domain is closed polyhedral. -/
+theorem HasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.effectiveDomain_isClosedPolyhedral
+
+/-- Under the diagonal ray-space criterion for pointwise addition, the common
+finite domain admits finite ordinary and direction generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.exists_effectiveDomain_generators
+
+/-- Under the diagonal ray-space criterion for pointwise addition, the common
+finite domain admits finite generators with a nonempty ordinary generator set.
+-/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.exists_nonempty_effectiveDomain_generators_of_nonempty
+      (by simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using hdom)
+
+/-- Under the diagonal ray-space criterion for pointwise addition, the common
+finite domain inherits a finite coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.exists_effectiveDomain_generator_formula
+
+/-- Under the diagonal ray-space criterion for pointwise addition, the common
+finite domain inherits a finite coefficient formula with a nonempty ordinary
+generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  have hsum :
+      HasClosedPolyhedralEpigraph (fun x : E => f x + g x) :=
+    hf.hasClosedPolyhedralEpigraph_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+      hg hproperf hproperg hdom hRay
+  simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using
+    hsum.exists_nonempty_effectiveDomain_generator_formula_of_nonempty
+      (by simpa [effectiveDomain_add_eq_inter_of_isProper hproperf hproperg] using hdom)
+
+/-- A diagonal-range closed-polyhedral theorem for the separated sum is enough
 to conclude that the pointwise sum is convex piecewise-linear. -/
 theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_add_of_inter_range_diagonal
     [FiniteDimensional ℝ E]
@@ -1732,10 +3425,238 @@ theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_add_of_inter_range_diago
       IsClosedPolyhedral
         (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
     IsConvexPiecewiseLinear (fun x : E => f x + g x) := by
-  refine ⟨isProper_add_of_nonempty_effectiveDomain_inter hf.isProper hg.isProper hdom, ?_⟩
   exact
-    hf.hasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_add_of_inter_range_diagonal
-      hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdiag
+    hf.hasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_add_of_inter_range_diagonal
+      hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hdiag
+
+/-- Top-level CPL version: the direct diagonal-range criterion for pointwise
+addition makes the common finite domain closed polyhedral. -/
+theorem IsConvexPiecewiseLinear.effectiveDomain_inter_isClosedPolyhedral_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) :=
+  HasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_add_inter_range_diagonal
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdiag
+
+/-- Top-level CPL version: the direct diagonal-range criterion for pointwise
+addition gives finite generators for the common finite domain. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generators_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_add_inter_range_diagonal
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdiag
+
+/-- Top-level CPL version: under the direct diagonal-range criterion for
+pointwise addition, a nonempty common finite domain admits finite generators
+with a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generators_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_add_inter_range_diagonal
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdom hdiag
+
+/-- Top-level CPL version: under the direct diagonal-range criterion for
+pointwise addition, the common finite domain inherits a finite coefficient
+formula. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generator_formula_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_add_inter_range_diagonal
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdiag
+
+/-- Top-level CPL version: under the direct diagonal-range criterion for
+pointwise addition, the common finite-domain coefficient formula can be chosen
+with a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generator_formula_of_add_inter_range_diagonal
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hdiag :
+      IsClosedPolyhedral
+        (epigraph (fun p : E × E => f p.1 + g p.2) ∩ diagonalRangeCylinder (E := E))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_add_inter_range_diagonal
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdom hdiag
+
+/-- Top-level CPL version of the ray-space finite-generation criterion for
+pointwise addition. -/
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    IsConvexPiecewiseLinear (fun x : E => f x + g x) := by
+  exact
+    hf.hasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_add_of_nonempty_effectiveDomain_inter_of_diagonal_raySpaceCone_inter
+      hg.hasClosedPolyhedralEpigraph hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the diagonal ray-space criterion for pointwise
+addition, the common finite domain is closed polyhedral. -/
+theorem IsConvexPiecewiseLinear.effectiveDomain_inter_isClosedPolyhedral_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    IsClosedPolyhedral (effectiveDomain f ∩ effectiveDomain g) :=
+  HasClosedPolyhedralEpigraph.effectiveDomain_inter_isClosedPolyhedral_of_add_diagonal_raySpaceCone_inter
+      hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+      hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the diagonal ray-space criterion for pointwise
+addition, the common finite domain admits finite generators. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generators_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    ∃ s t : Finset E,
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generators_of_add_diagonal_raySpaceCone_inter
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the diagonal ray-space criterion for pointwise
+addition, the common finite domain admits finite generators with a nonempty
+ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generators_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      effectiveDomain f ∩ effectiveDomain g =
+        extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generators_of_add_diagonal_raySpaceCone_inter
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the diagonal ray-space criterion for pointwise
+addition, the common finite domain inherits a finite coefficient formula. -/
+theorem IsConvexPiecewiseLinear.exists_effectiveDomain_inter_generator_formula_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  HasClosedPolyhedralEpigraph.exists_effectiveDomain_inter_generator_formula_of_add_diagonal_raySpaceCone_inter
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdom hRay
+
+/-- Top-level CPL version: under the diagonal ray-space criterion for pointwise
+addition, the common finite domain inherits a nonempty finite coefficient
+formula. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_inter_generator_formula_of_add_diagonal_raySpaceCone_inter
+    [FiniteDimensional ℝ E]
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
+    (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty)
+    (hRay :
+      IsFinitelyGeneratedCone
+        (raySpaceCone (epigraph (fun p : E × E => f p.1 + g p.2))
+            (horizonCone (epigraph (fun p : E × E => f p.1 + g p.2))) ∩
+          raySpaceCone (diagonalRangeCylinder (E := E))
+            (horizonCone (diagonalRangeCylinder (E := E))))) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ effectiveDomain f ∩ effectiveDomain g ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_inter_generator_formula_of_add_diagonal_raySpaceCone_inter
+    hf.hasClosedPolyhedralEpigraph hg.hasClosedPolyhedralEpigraph
+    hf.isProper hg.isProper hdom hRay
 
 end LinearInjections
 
@@ -1931,13 +3852,24 @@ theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearEquiv_add
     hg.isConvexPiecewiseLinear_precompose_linearEquiv hg_lsc hg_proper e
 
 theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_precompose_linearEquiv_add
-    [FiniteDimensional ℝ E]
     {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f) (e : F ≃L[ℝ] E) (u : E) :
     HasClosedPolyhedralEpigraph (fun y : F => f (e y + u)) := by
-  have hg : HasPolyhedralEpigraph (fun y : F => f (e y + u)) :=
-    hf.hasPolyhedralEpigraph.hasPolyhedralEpigraph_precompose_linearEquiv_add e u
-  exact hg.hasClosedPolyhedralEpigraph_of_lowerSemicontinuous
-    (lowerSemicontinuous_precompose_linearEquiv_add hf.lowerSemicontinuous e u)
+  have hg : HasClosedPolyhedralEpigraph (fun x : E => f (x + u)) :=
+    hf.hasClosedPolyhedralEpigraph_precompose_add u
+  simpa [Function.comp] using hg.hasClosedPolyhedralEpigraph_precompose_linearEquiv e
+
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearEquiv_add
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (hproper : IsProper f) (e : F ≃L[ℝ] E) (u : E) :
+    IsConvexPiecewiseLinear (fun y : F => f (e y + u)) := by
+  exact ⟨isProper_precompose_linearEquiv_add hproper e u,
+    hf.hasClosedPolyhedralEpigraph_precompose_linearEquiv_add e u⟩
+
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_precompose_linearEquiv_add
+    {f : E → EReal} (hf : IsConvexPiecewiseLinear f) (e : F ≃L[ℝ] E) (u : E) :
+    IsConvexPiecewiseLinear (fun y : F => f (e y + u)) := by
+  exact hf.hasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearEquiv_add
+    hf.isProper e u
 
 end AffineDomainChanges
 
@@ -2028,6 +3960,23 @@ theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_precompose_linea
     hf.hasPolyhedralEpigraph.hasPolyhedralEpigraph_precompose_linearMap_add_of_surjective L hL u
   exact hg.hasClosedPolyhedralEpigraph_of_lowerSemicontinuous
     (lowerSemicontinuous_precompose_linearMap_add hf.lowerSemicontinuous L u)
+
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_add_of_surjective
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f)
+    (hproper : IsProper f)
+    (L : F →ₗ[ℝ] E) (hL : LinearMap.range L = ⊤) (u : E) :
+    IsConvexPiecewiseLinear (fun y : F => f (L y + u)) := by
+  exact ⟨isProper_precompose_linearMap_add_of_surjective hproper L hL u,
+    hf.hasClosedPolyhedralEpigraph_precompose_linearMap_add_of_surjective L hL u⟩
+
+theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_precompose_linearMap_add_of_surjective
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E → EReal} (hf : IsConvexPiecewiseLinear f)
+    (L : F →ₗ[ℝ] E) (hL : LinearMap.range L = ⊤) (u : E) :
+    IsConvexPiecewiseLinear (fun y : F => f (L y + u)) := by
+  exact hf.hasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_precompose_linearMap_add_of_surjective
+    hf.isProper L hL u
 
 theorem HasClosedPolyhedralEpigraph.hasClosedPolyhedralEpigraph_affineChange_of_surjective
     [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]

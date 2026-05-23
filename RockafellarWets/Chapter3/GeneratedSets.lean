@@ -30,6 +30,31 @@ theorem convex_extendedConvexHull (A B : Set E) :
     Convex ℝ (extendedConvexHull A B) := by
   exact (convex_convexHull ℝ A).add (convex_conicHull B)
 
+/-- For finite ordinary generators `s` and direction generators `t`,
+membership in the extended convex hull is equivalent to a finite convex
+combination from `s` plus a finite conic combination from `t`. This is the
+coefficient form used in Exercise `3.54`. -/
+theorem mem_extendedConvexHull_finset_iff
+    {s t : Finset E} {x : E} :
+    x ∈ extendedConvexHull (↑s : Set E) (↑t : Set E) ↔
+      ∃ w : E → ℝ,
+        (∀ y ∈ s, 0 ≤ w y) ∧
+        ∑ y ∈ s, w y = 1 ∧
+        ∃ c : E →₀ ℝ,
+          ↑c.support ⊆ (↑t : Set E) ∧
+          (∀ y, 0 ≤ c y) ∧
+          (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  constructor
+  · rintro ⟨u, hu, v, hv, rfl⟩
+    rcases (Finset.mem_convexHull').1 hu with ⟨w, hw0, hw1, hwu⟩
+    rcases (mem_conicHull_iff_exists_finsupp).1 hv with ⟨c, hcsub, hc0, hcv⟩
+    refine ⟨w, hw0, hw1, c, hcsub, hc0, ?_⟩
+    simpa [hwu, hcv]
+  · rintro ⟨w, hw0, hw1, c, hcsub, hc0, hsum⟩
+    refine Set.mem_add.2 ⟨∑ y ∈ s, w y • y, ?_, c.sum (fun y r => r • y), ?_, hsum⟩
+    · exact (Finset.mem_convexHull').2 ⟨w, hw0, hw1, rfl⟩
+    · exact (mem_conicHull_iff_exists_finsupp).2 ⟨c, hcsub, hc0, rfl⟩
+
 /-- Ray-space convexification of finitely generated direction data gives the
 extended convex hull on the ordinary slice. -/
 theorem convexHull_raySpaceCone_eq_raySpaceCone_extendedConvexHull
@@ -255,10 +280,21 @@ theorem IsClosedPolyhedral.isClosed {C : Set E} (hC : IsClosedPolyhedral C) :
     exact s.finite_toSet.isCompact_convexHull
   exact isClosed_closure.add_left_of_isCompact hscomp
 
+/-- A closed polyhedral set is equal to its closure. -/
+theorem IsClosedPolyhedral.closure_eq_self {C : Set E} (hC : IsClosedPolyhedral C) :
+    closure C = C :=
+  hC.isClosed.closure_eq
+
 theorem IsClosedPolyhedral.convex {C : Set E} (hC : IsClosedPolyhedral C) :
     Convex ℝ C := by
   rcases hC with ⟨s, t, rfl⟩
   exact (convex_convexHull ℝ (↑s : Set E)).add (convex_conicHull (↑t : Set E)).closure
+
+/-- A closed polyhedral cone is its own horizon cone. -/
+theorem IsClosedPolyhedral.horizonCone_eq_self_of_isCone {K : Set E}
+    (hK : IsClosedPolyhedral K) (hKcone : IsCone K) :
+    horizonCone K = K :=
+  horizonCone_eq_self_of_isClosed_isCone hK.isClosed hKcone
 
 theorem IsClosedPolyhedral.exists_nonempty_generators_of_nonempty
     {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
@@ -348,6 +384,14 @@ theorem IsClosedPolyhedral.isFinitelyGeneratedCone_of_isCone
     isClosed_conicHull_finset (E := E) s
   simpa [hsclosed.closure_eq] using hs
 
+/-- In finite dimensions, a closed polyhedral cone has actual finite conic
+generators, without a closure operation in the representation. -/
+theorem IsClosedPolyhedral.exists_conicHull_generators_of_isCone
+    [FiniteDimensional ℝ E]
+    {K : Set E} (hK : IsClosedPolyhedral K) (hKcone : IsCone K) :
+    ∃ s : Finset E, K = conicHull (↑s : Set E) :=
+  hK.isFinitelyGeneratedCone_of_isCone hKcone
+
 theorem IsClosedPolyhedral.horizonCone_isClosedPolyhedral
     [FiniteDimensional ℝ E]
     {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
@@ -388,6 +432,14 @@ theorem IsClosedPolyhedral.horizonCone_isFinitelyGeneratedCone
     IsFinitelyGeneratedCone (RW.horizonCone C) :=
   (hC.horizonCone_isClosedPolyhedral hCne).isFinitelyGeneratedCone_of_isCone
     (isCone_horizonCone C)
+
+/-- In finite dimensions, the horizon cone of a nonempty closed polyhedral set
+has an actual finite conic-hull representation. -/
+theorem IsClosedPolyhedral.exists_horizon_conicHull_generators
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E, RW.horizonCone C = conicHull (↑t : Set E) :=
+  (hC.horizonCone_isFinitelyGeneratedCone hCne).exists_generators
 
 section Products
 
@@ -469,6 +521,46 @@ theorem IsExtendedFinitelyGenerated.exists_nonempty_generators_of_nonempty
   obtain rfl | hs := s.eq_empty_or_nonempty
   · simpa [extendedConvexHull] using hCne
   · exact ⟨s, t, hs, rfl⟩
+
+/-- An extended-finitely-generated set admits the finite coefficient
+description from `mem_extendedConvexHull_finset_iff`. -/
+theorem IsExtendedFinitelyGenerated.exists_generator_formula
+    {C : Set E} (hC : IsExtendedFinitelyGenerated C) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ C ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  rcases hC with ⟨s, t, hst⟩
+  refine ⟨s, t, ?_⟩
+  intro x
+  rw [hst]
+  exact mem_extendedConvexHull_finset_iff
+
+/-- A nonempty extended-finitely-generated set admits the same finite
+coefficient description with a nonempty ordinary generator set. -/
+theorem IsExtendedFinitelyGenerated.exists_nonempty_generator_formula_of_nonempty
+    {C : Set E} (hC : IsExtendedFinitelyGenerated C) (hCne : C.Nonempty) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ C ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x := by
+  rcases hC.exists_nonempty_generators_of_nonempty hCne with ⟨s, t, hs, hst⟩
+  refine ⟨s, t, hs, ?_⟩
+  intro x
+  rw [hst]
+  exact mem_extendedConvexHull_finset_iff
 
 theorem IsExtendedFinitelyGenerated.exists_horizon_generators_of_nonempty
     [FiniteDimensional ℝ E]
@@ -723,6 +815,17 @@ theorem IsFinitelyGeneratedCone.isClosedPolyhedral
     IsClosedPolyhedral K :=
   hK.isPolyhedral.isClosedPolyhedral_of_isClosed hK.isClosed
 
+/-- In finite dimensions, closed polyhedral cones are exactly finitely
+generated cones. -/
+theorem isClosedPolyhedral_iff_isFinitelyGeneratedCone_of_isCone
+    [FiniteDimensional ℝ E] {K : Set E} (hKcone : IsCone K) :
+    IsClosedPolyhedral K ↔ IsFinitelyGeneratedCone K := by
+  constructor
+  · intro hK
+    exact hK.isFinitelyGeneratedCone_of_isCone hKcone
+  · intro hK
+    exact hK.isClosedPolyhedral
+
 theorem IsPolyhedral.submodule
     [FiniteDimensional ℝ E] (S : Submodule ℝ E) :
     IsPolyhedral (S : Set E) :=
@@ -774,6 +877,42 @@ theorem IsClosedPolyhedral.submodule_span_finset (s : Finset E) :
     (IsPolyhedral.submodule_span_finset (E := E) s).isClosedPolyhedral_of_isClosed
       (C := (p : Set E)) p.closed_of_finiteDimensional
 
+theorem IsPolyhedral.empty : IsPolyhedral (∅ : Set E) := by
+  refine ⟨∅, ∅, ?_⟩
+  simp [extendedConvexHull]
+
+theorem IsClosedPolyhedral.empty : IsClosedPolyhedral (∅ : Set E) := by
+  refine ⟨∅, ∅, ?_⟩
+  simp
+
+private theorem image_add_right_Ici_zero (a : ℝ) :
+    (fun x : ℝ => x + a) '' Set.Ici (0 : ℝ) = Set.Ici a := by
+  ext x
+  constructor
+  · rintro ⟨y, hy, rfl⟩
+    have hy' : 0 ≤ y := by simpa using hy
+    show a ≤ y + a
+    linarith
+  · intro hx
+    have hx' : a ≤ x := by simpa using hx
+    refine ⟨x - a, ?_, by ring⟩
+    show 0 ≤ x - a
+    linarith
+
+private theorem image_add_right_Iic_zero (a : ℝ) :
+    (fun x : ℝ => x + a) '' Set.Iic (0 : ℝ) = Set.Iic a := by
+  ext x
+  constructor
+  · rintro ⟨y, hy, rfl⟩
+    have hy' : y ≤ 0 := by simpa using hy
+    show y + a ≤ a
+    linarith
+  · intro hx
+    have hx' : x ≤ a := by simpa using hx
+    refine ⟨x - a, ?_, by ring⟩
+    show x - a ≤ 0
+    linarith
+
 theorem IsPolyhedral.Ici_zero : IsPolyhedral (Set.Ici (0 : ℝ)) := by
   simpa [Finset.coe_singleton, conicHull_singleton_one_eq_Ici_zero] using
     (show IsPolyhedral (conicHull (↑({1} : Finset ℝ) : Set ℝ)) from
@@ -783,6 +922,13 @@ theorem IsPolyhedral.Ici_zero : IsPolyhedral (Set.Ici (0 : ℝ)) := by
 theorem IsClosedPolyhedral.Ici_zero : IsClosedPolyhedral (Set.Ici (0 : ℝ)) := by
   exact IsPolyhedral.Ici_zero.isClosedPolyhedral_of_isClosed isClosed_Ici
 
+theorem IsPolyhedral.Ici (a : ℝ) : IsPolyhedral (Set.Ici a) := by
+  simpa [image_add_right_Ici_zero] using
+    (IsPolyhedral.Ici_zero).affine_image (AffineEquiv.constVAdd ℝ ℝ a : ℝ →ᵃ[ℝ] ℝ)
+
+theorem IsClosedPolyhedral.Ici (a : ℝ) : IsClosedPolyhedral (Set.Ici a) := by
+  exact (IsPolyhedral.Ici a).isClosedPolyhedral_of_isClosed isClosed_Ici
+
 theorem IsPolyhedral.Iic_zero : IsPolyhedral (Set.Iic (0 : ℝ)) := by
   simpa [Finset.coe_singleton, conicHull_singleton_neg_one_eq_Iic_zero] using
     (show IsPolyhedral (conicHull (↑({-1} : Finset ℝ) : Set ℝ)) from
@@ -791,6 +937,13 @@ theorem IsPolyhedral.Iic_zero : IsPolyhedral (Set.Iic (0 : ℝ)) := by
 
 theorem IsClosedPolyhedral.Iic_zero : IsClosedPolyhedral (Set.Iic (0 : ℝ)) := by
   exact IsPolyhedral.Iic_zero.isClosedPolyhedral_of_isClosed isClosed_Iic
+
+theorem IsPolyhedral.Iic (a : ℝ) : IsPolyhedral (Set.Iic a) := by
+  simpa [image_add_right_Iic_zero] using
+    (IsPolyhedral.Iic_zero).affine_image (AffineEquiv.constVAdd ℝ ℝ a : ℝ →ᵃ[ℝ] ℝ)
+
+theorem IsClosedPolyhedral.Iic (a : ℝ) : IsClosedPolyhedral (Set.Iic a) := by
+  exact (IsPolyhedral.Iic a).isClosedPolyhedral_of_isClosed isClosed_Iic
 
 section ClosedImages
 
@@ -1144,6 +1297,74 @@ theorem IsPolyhedral.exists_nonempty_generators_of_nonempty
     ∃ s t : Finset E, s.Nonempty ∧ C = extendedConvexHull (↑s : Set E) (↑t : Set E) :=
   IsExtendedFinitelyGenerated.exists_nonempty_generators_of_nonempty hC hCne
 
+/-- A polyhedral set admits a finite convex-plus-conic coefficient formula. -/
+theorem IsPolyhedral.exists_generator_formula
+    {C : Set E} (hC : IsPolyhedral C) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ C ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  IsExtendedFinitelyGenerated.exists_generator_formula hC
+
+/-- A nonempty polyhedral set admits the same finite coefficient formula with a
+nonempty ordinary generator set. -/
+theorem IsPolyhedral.exists_nonempty_generator_formula_of_nonempty
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ C ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  IsExtendedFinitelyGenerated.exists_nonempty_generator_formula_of_nonempty hC hCne
+
+theorem IsClosedPolyhedral.exists_generators
+    [FiniteDimensional ℝ E] {C : Set E} (hC : IsClosedPolyhedral C) :
+    ∃ s t : Finset E, C = extendedConvexHull (↑s : Set E) (↑t : Set E) :=
+  hC.isPolyhedral
+
+/-- In finite dimension, a closed polyhedral set admits a finite
+convex-plus-conic coefficient formula. -/
+theorem IsClosedPolyhedral.exists_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E} (hC : IsClosedPolyhedral C) :
+    ∃ s t : Finset E,
+      ∀ {x : E},
+        x ∈ C ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  hC.isPolyhedral.exists_generator_formula
+
+/-- In finite dimension, a nonempty closed polyhedral set admits the same
+finite coefficient formula with a nonempty ordinary generator set. -/
+theorem IsClosedPolyhedral.exists_nonempty_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E] {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ C ↔
+          ∃ w : E → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : E →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set E) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = x :=
+  hC.isPolyhedral.exists_nonempty_generator_formula_of_nonempty hCne
+
 theorem IsPolyhedral.exists_raySpace_generators {C : Set E} (hC : IsPolyhedral C) :
     ∃ s t : Finset E,
       convexHull ℝ (raySpaceCone (↑s : Set E) (conicHull (↑t : Set E))) =
@@ -1167,6 +1388,46 @@ theorem IsPolyhedral.exists_horizon_generators_of_nonempty
     {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
     ∃ t : Finset E, horizonCone C = horizonCone (conicHull (↑t : Set E)) :=
   IsExtendedFinitelyGenerated.exists_horizon_generators_of_nonempty hC hCne
+
+theorem IsClosedPolyhedral.exists_raySpace_generators
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) :
+    ∃ s t : Finset E,
+      convexHull ℝ (raySpaceCone (↑s : Set E) (conicHull (↑t : Set E))) =
+        raySpaceCone C (conicHull (↑t : Set E)) :=
+  hC.isPolyhedral.exists_raySpace_generators
+
+theorem IsClosedPolyhedral.exists_raySpace_generators_of_nonempty
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ s t : Finset E, s.Nonempty ∧
+      convexHull ℝ (raySpaceCone (↑s : Set E) (conicHull (↑t : Set E))) =
+        raySpaceCone C (conicHull (↑t : Set E)) :=
+  hC.isPolyhedral.exists_raySpace_generators_of_nonempty hCne
+
+theorem IsClosedPolyhedral.exists_horizon_generators_of_nonempty
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E, horizonCone C = conicHull (↑t : Set E) :=
+  hC.horizonCone_isFinitelyGeneratedCone hCne
+
+/-- A nonempty closed polyhedral set has an explicit finite conic-coefficient
+formula for its horizon cone. -/
+theorem IsClosedPolyhedral.exists_horizonCone_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ horizonCone C ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w := by
+  rcases hC.exists_horizon_generators_of_nonempty hCne with ⟨t, ht⟩
+  refine ⟨t, ?_⟩
+  intro w
+  rw [ht]
+  exact mem_conicHull_iff_exists_finsupp
 
 open Classical in
 /-- The ray-space cone of an extended-convex-hull representation is itself a
@@ -1257,6 +1518,33 @@ theorem IsClosedPolyhedral.raySpaceCone_isClosedPolyhedral
     {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
     IsClosedPolyhedral (raySpaceCone C (horizonCone C)) :=
   (hC.isFinitelyGeneratedCone_raySpaceCone hCne).isClosedPolyhedral
+
+/-- A nonempty closed polyhedral set has an explicitly finitely generated
+ray-space cone. -/
+theorem IsClosedPolyhedral.exists_raySpaceCone_generators
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone C (horizonCone C) = conicHull (↑u : Set (E × ℝ)) :=
+  hC.isFinitelyGeneratedCone_raySpaceCone hCne
+
+/-- A nonempty closed polyhedral set has an explicit finite conic-coefficient
+formula for its ray-space cone. -/
+theorem IsClosedPolyhedral.exists_raySpaceCone_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone C (horizonCone C) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p := by
+  rcases hC.exists_raySpaceCone_generators hCne with ⟨u, hu⟩
+  refine ⟨u, ?_⟩
+  intro p
+  rw [hu]
+  exact mem_conicHull_iff_exists_finsupp
 
 theorem IsClosedPolyhedral.raySpaceCone_isClosedPolyhedral_of_isCone
     [FiniteDimensional ℝ E]

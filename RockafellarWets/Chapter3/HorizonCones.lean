@@ -109,6 +109,28 @@ theorem horizonCone_mono {C D : Set E} (hCD : C ⊆ D) :
   · exact zero_mem_horizonCone D
   · exact Set.mem_insert_of_mem 0 <| asymptoticCone_mono hCD hw
 
+/-- **Proposition 3.9** (intersection inclusion): the horizon cone of an
+arbitrary intersection is contained in the intersection of the horizon cones. -/
+theorem horizonCone_iInter_subset_iInter_horizonCone {ι : Type*}
+    (C : ι → Set E) :
+    horizonCone (⋂ i, C i) ⊆ ⋂ i, horizonCone (C i) := by
+  intro w hw
+  refine Set.mem_iInter.2 ?_
+  intro i
+  exact horizonCone_mono (show (⋂ i, C i) ⊆ C i from by
+    intro x hx
+    exact Set.mem_iInter.mp hx i) hw
+
+/-- **Proposition 3.9** (union inclusion): the union of the individual horizon
+cones is contained in the horizon cone of the union. -/
+theorem iUnion_horizonCone_subset_horizonCone_iUnion {ι : Type*}
+    (C : ι → Set E) :
+    (Set.iUnion fun i => horizonCone (C i)) ⊆ horizonCone (Set.iUnion C) := by
+  intro w hw
+  rw [Set.mem_iUnion] at hw
+  rcases hw with ⟨i, hw⟩
+  exact horizonCone_mono (Set.subset_iUnion C i) hw
+
 /-- The horizon cone of a finite union is the union of the horizon cones. -/
 theorem horizonCone_iUnion_eq_iUnion_horizonCone {ι : Type*} [Finite ι] [Nonempty ι]
     (C : ι → Set E) :

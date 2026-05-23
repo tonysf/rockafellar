@@ -11,6 +11,7 @@ This file formalizes the first layer of Section C:
 -/
 
 import RockafellarWets.Chapter3.PositiveHomogeneity
+import RockafellarWets.Chapter3.SetOperations
 import RockafellarWets.Chapter1.Semicontinuity
 
 open Set EReal Filter AffineSpace Topology
@@ -197,6 +198,177 @@ theorem horizonFunction_eq_indicatorVA_zero_of_epigraph_empty {f : E → EReal}
       simpa [indicatorVA, ha0]
   · simp [horizonFunction, hf, indicatorVA, hw]
 
+/-- The horizon cone of the nonnegative half-line is the half-line itself. -/
+theorem horizonCone_Ici_zero :
+    horizonCone (Set.Ici (0 : ℝ)) = Set.Ici (0 : ℝ) := by
+  have hcone : IsCone (Set.Ici (0 : ℝ)) := by
+    refine ⟨by simp, ?_⟩
+    intro x hx c hc
+    exact mul_nonneg hc.le hx
+  have hne : (Set.Ici (0 : ℝ)).Nonempty := ⟨0, by simp⟩
+  rw [horizonCone_eq_asymptoticCone hne]
+  calc
+    asymptoticCone ℝ (Set.Ici (0 : ℝ)) = closure (Set.Ici (0 : ℝ)) := by
+      exact asymptoticCone_eq_closure_of_forall_smul_mem fun c hc x hx =>
+        hcone.2 hx hc
+    _ = Set.Ici (0 : ℝ) := isClosed_Ici.closure_eq
+
+/-- Indicator functions commute with taking horizon functions:
+`(δ_C)∞ = δ_{C∞}`. -/
+theorem horizonFunction_indicatorVA [FiniteDimensional ℝ E] (C : Set E) :
+    horizonFunction (indicatorVA C) = indicatorVA (horizonCone C) := by
+  funext w
+  by_cases hw : w ∈ horizonCone C
+  · have hmem_zero :
+        (w, (0 : ℝ)) ∈ horizonCone (epigraph (indicatorVA C)) := by
+      have hprod :
+          (w, (0 : ℝ)) ∈ horizonCone (C ×ˢ Set.Ici (0 : ℝ)) :=
+        prod_horizonCone_zero_subset_horizonCone_prod
+          (C := C) (D := Set.Ici (0 : ℝ)) ⟨0, by simp⟩ ⟨hw, by simp⟩
+      simpa [epigraph_indicatorVA] using hprod
+    have hle : horizonFunction (indicatorVA C) w ≤ 0 :=
+      horizonFunction_le_of_mem_horizonCone_epigraph hmem_zero
+    have hge : 0 ≤ horizonFunction (indicatorVA C) w := by
+      rw [horizonFunction]
+      refine le_iInf ?_
+      intro a
+      have hprod :
+          (w, (a : ℝ)) ∈ horizonCone (C ×ˢ Set.Ici (0 : ℝ)) := by
+        simpa [epigraph_indicatorVA] using a.property
+      have ha : (a : ℝ) ∈ horizonCone (Set.Ici (0 : ℝ)) :=
+        (horizonCone_prod_subset (C := C) (D := Set.Ici (0 : ℝ)) hprod).2
+      have ha_nonneg : 0 ≤ (a : ℝ) := by
+        simpa [horizonCone_Ici_zero] using ha
+      exact_mod_cast ha_nonneg
+    rw [indicatorVA_apply_mem hw]
+    exact le_antisymm hle hge
+  · have htop : horizonFunction (indicatorVA C) w = ⊤ := by
+      rw [horizonFunction]
+      have hnone :
+          ¬ Nonempty {a : ℝ // (w, a) ∈ horizonCone (epigraph (indicatorVA C))} := by
+        rintro ⟨a, ha⟩
+        have hprod :
+            (w, (a : ℝ)) ∈ horizonCone (C ×ˢ Set.Ici (0 : ℝ)) := by
+          simpa [epigraph_indicatorVA] using ha
+        have hw' : w ∈ horizonCone C :=
+          (horizonCone_prod_subset (C := C) (D := Set.Ici (0 : ℝ)) hprod).1
+        exact hw hw'
+      letI : IsEmpty {a : ℝ // (w, a) ∈ horizonCone (epigraph (indicatorVA C))} :=
+        not_nonempty_iff.mp hnone
+      exact iInf_of_empty _
+    rw [indicatorVA_apply_not_mem hw, htop]
+
+/-- Epigraph form of `(δ_C)∞ = δ_{C∞}`. -/
+theorem epigraph_horizonFunction_indicatorVA [FiniteDimensional ℝ E] (C : Set E) :
+    epigraph (horizonFunction (indicatorVA C)) =
+      horizonCone C ×ˢ Set.Ici (0 : ℝ) := by
+  rw [horizonFunction_indicatorVA, epigraph_indicatorVA]
+
+/-- Effective-domain form of `(δ_C)∞ = δ_{C∞}`. -/
+theorem effectiveDomain_horizonFunction_indicatorVA [FiniteDimensional ℝ E] (C : Set E) :
+    effectiveDomain (horizonFunction (indicatorVA C)) = horizonCone C := by
+  rw [horizonFunction_indicatorVA, effectiveDomain_indicatorVA]
+
+/-- Zero-level-set form of `(δ_C)∞ = δ_{C∞}`. -/
+theorem levelSet_zero_horizonFunction_indicatorVA [FiniteDimensional ℝ E] (C : Set E) :
+    levelSet (horizonFunction (indicatorVA C)) (0 : EReal) = horizonCone C := by
+  rw [horizonFunction_indicatorVA]
+  ext x
+  by_cases hx : x ∈ horizonCone C <;> simp [levelSet, hx]
+
+/-- Pointwise form of `(δ_C)∞ = δ_{C∞}` on horizon directions. -/
+theorem horizonFunction_indicatorVA_apply_mem [FiniteDimensional ℝ E]
+    {C : Set E} {w : E} (hw : w ∈ horizonCone C) :
+    horizonFunction (indicatorVA C) w = 0 := by
+  rw [horizonFunction_indicatorVA, indicatorVA_apply_mem hw]
+
+/-- Pointwise form of `(δ_C)∞ = δ_{C∞}` off horizon directions. -/
+theorem horizonFunction_indicatorVA_apply_not_mem [FiniteDimensional ℝ E]
+    {C : Set E} {w : E} (hw : w ∉ horizonCone C) :
+    horizonFunction (indicatorVA C) w = ⊤ := by
+  rw [horizonFunction_indicatorVA, indicatorVA_apply_not_mem hw]
+
+/-- Convex-set specialization: the horizon function of an indicator is sublinear. -/
+theorem sublinear_horizonFunction_indicatorVA_of_convex [FiniteDimensional ℝ E]
+    {C : Set E} (hC : Convex ℝ C) :
+    Sublinear (horizonFunction (indicatorVA C)) := by
+  rw [horizonFunction_indicatorVA]
+  exact sublinear_indicatorVA_iff.mpr ⟨convex_horizonCone hC, isCone_horizonCone C⟩
+
+/-- Membership form of the effective-domain identity for indicator horizons. -/
+theorem mem_effectiveDomain_horizonFunction_indicatorVA_iff [FiniteDimensional ℝ E]
+    {C : Set E} {w : E} :
+    w ∈ effectiveDomain (horizonFunction (indicatorVA C)) ↔ w ∈ horizonCone C := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+
+/-- The effective domain of the horizon function of an indicator is a cone. -/
+theorem isCone_effectiveDomain_horizonFunction_indicatorVA [FiniteDimensional ℝ E]
+    (C : Set E) :
+    IsCone (effectiveDomain (horizonFunction (indicatorVA C))) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact isCone_horizonCone C
+
+/-- Convex-set specialization: the effective domain of an indicator horizon is
+convex. -/
+theorem convex_effectiveDomain_horizonFunction_indicatorVA_of_convex
+    [FiniteDimensional ℝ E] {C : Set E} (hC : Convex ℝ C) :
+    Convex ℝ (effectiveDomain (horizonFunction (indicatorVA C))) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact convex_horizonCone hC
+
+/-- Convex-set specialization: the epigraph of an indicator horizon is convex. -/
+theorem convex_epigraph_horizonFunction_indicatorVA_of_convex
+    [FiniteDimensional ℝ E] {C : Set E} (hC : Convex ℝ C) :
+    Convex ℝ (epigraph (horizonFunction (indicatorVA C))) :=
+  convex_epigraph_of_sublinear (sublinear_horizonFunction_indicatorVA_of_convex hC)
+
+/-- The epigraph of an indicator horizon is closed. -/
+theorem isClosed_epigraph_horizonFunction_indicatorVA [FiniteDimensional ℝ E]
+    (C : Set E) :
+    IsClosed (epigraph (horizonFunction (indicatorVA C))) := by
+  rw [epigraph_horizonFunction_indicatorVA]
+  exact (isClosed_horizonCone C).prod isClosed_Ici
+
+/-- The horizon function of an indicator is lower semicontinuous. -/
+theorem lowerSemicontinuous_horizonFunction_indicatorVA [FiniteDimensional ℝ E]
+    (C : Set E) :
+    LowerSemicontinuous (horizonFunction (indicatorVA C)) :=
+  lowerSemicontinuous_of_isClosed_epigraph_ereal _
+    (isClosed_epigraph_horizonFunction_indicatorVA C)
+
+/-- The effective domain of an indicator horizon is closed. -/
+theorem isClosed_effectiveDomain_horizonFunction_indicatorVA [FiniteDimensional ℝ E]
+    (C : Set E) :
+    IsClosed (effectiveDomain (horizonFunction (indicatorVA C))) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact isClosed_horizonCone C
+
+/-- The effective domain of an indicator horizon is nonempty. -/
+theorem effectiveDomain_horizonFunction_indicatorVA_nonempty [FiniteDimensional ℝ E]
+    (C : Set E) :
+    (effectiveDomain (horizonFunction (indicatorVA C))).Nonempty := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact ⟨0, zero_mem_horizonCone C⟩
+
+/-- The horizon function of an indicator is proper. -/
+theorem isProper_horizonFunction_indicatorVA [FiniteDimensional ℝ E]
+    (C : Set E) :
+    IsProper (horizonFunction (indicatorVA C)) := by
+  rw [horizonFunction_indicatorVA]
+  exact (indicatorVA_isProper_iff (horizonCone C)).2 ⟨0, zero_mem_horizonCone C⟩
+
+/-- The horizon function of an indicator vanishes at the origin. -/
+theorem horizonFunction_indicatorVA_zero [FiniteDimensional ℝ E] (C : Set E) :
+    horizonFunction (indicatorVA C) (0 : E) = 0 :=
+  horizonFunction_indicatorVA_apply_mem (C := C) (zero_mem_horizonCone C)
+
+/-- The origin lies in the effective domain of an indicator horizon. -/
+theorem zero_mem_effectiveDomain_horizonFunction_indicatorVA [FiniteDimensional ℝ E]
+    (C : Set E) :
+    (0 : E) ∈ effectiveDomain (horizonFunction (indicatorVA C)) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact zero_mem_horizonCone C
+
 /-- If `epi f` is convex, then so is `epi(f∞)`. This is the convex part of the
 epigraphical statement behind Theorem 3.21. -/
 theorem convex_epigraph_horizonFunction {f : E → EReal}
@@ -286,6 +458,46 @@ theorem positivelyHomogeneous_horizonFunction (f : E → EReal) :
           rw [← mul_assoc, hhalf]
         _ ≤ (c : EReal) * horizonFunction f w := hmul
     · exact smul_horizonFunction_le (f := f) (w := w) hc
+
+/-- The zero lower level set of a horizon function is a cone. -/
+theorem isCone_levelSet_zero_horizonFunction (f : E → EReal) :
+    IsCone (levelSet (horizonFunction f) (0 : EReal)) :=
+  PositivelyHomogeneous.isCone_levelSet_zero
+    (positivelyHomogeneous_horizonFunction f)
+
+/-- Strict positivity of the horizon function away from `0` makes its zero
+lower level set the singleton `{0}`. -/
+theorem levelSet_horizonFunction_zero_eq_singleton_zero_of_pos
+    {f : E → EReal}
+    (hpos : ∀ ⦃w : E⦄, w ≠ 0 → 0 < horizonFunction f w) :
+    levelSet (horizonFunction f) (0 : EReal) = ({0} : Set E) := by
+  apply le_antisymm
+  · intro w hw
+    by_contra hw0
+    have hstrict := hpos hw0
+    have hle : horizonFunction f w ≤ 0 := by
+      simpa [levelSet] using hw
+    exact not_le_of_gt hstrict hle
+  · intro w hw
+    simp at hw
+    subst hw
+    simpa [levelSet] using (positivelyHomogeneous_horizonFunction f).map_zero_le_zero
+
+/-- Positivity of the horizon function away from `0` is equivalent to its zero
+lower level set being the singleton `{0}`. -/
+theorem horizonFunction_pos_iff_levelSet_zero_eq_singleton_zero
+    (f : E → EReal) :
+    (∀ ⦃w : E⦄, w ≠ 0 → 0 < horizonFunction f w) ↔
+      levelSet (horizonFunction f) (0 : EReal) = ({0} : Set E) := by
+  constructor
+  · exact levelSet_horizonFunction_zero_eq_singleton_zero_of_pos
+  · intro hlevel w hw
+    have hw_not_level : w ∉ levelSet (horizonFunction f) (0 : EReal) := by
+      rw [hlevel]
+      simpa using hw
+    exact not_le.mp <| by
+      intro hle
+      exact hw_not_level (by simpa [levelSet] using hle)
 
 /-- A horizon direction of a lower level set yields the corresponding horizontal
 direction in the horizon cone of the epigraph. -/
@@ -402,6 +614,32 @@ theorem epigraph_nonempty_of_isProper {f : E → EReal} (hf : IsProper f) :
   refine ⟨(x, (f x).toReal), ?_⟩
   rw [mem_epigraph_iff]
   simpa [EReal.coe_toReal htop hbot] using (le_rfl : f x ≤ f x)
+
+/-- Proper-function form of the epigraph identity in Definition 3.17:
+`epi(f∞) = (epi f)∞`. -/
+theorem epigraph_horizonFunction_eq_horizonCone_epigraph_of_isProper {f : E → EReal}
+    (hf : IsProper f) :
+    epigraph (horizonFunction f) = horizonCone (epigraph f) :=
+  epigraph_horizonFunction_eq_horizonCone_epigraph (epigraph_nonempty_of_isProper hf)
+
+/-- Proper-function membership form of the horizon-function epigraph identity. -/
+theorem mem_epigraph_horizonFunction_iff_mem_horizonCone_epigraph_of_isProper
+    {f : E → EReal} (hf : IsProper f) {p : E × ℝ} :
+    p ∈ epigraph (horizonFunction f) ↔ p ∈ horizonCone (epigraph f) := by
+  rw [epigraph_horizonFunction_eq_horizonCone_epigraph_of_isProper hf]
+
+/-- For proper functions, membership of `(w,a)` in `(epi f)∞` is exactly the
+bound `f∞(w) ≤ a`. -/
+theorem mem_horizonCone_epigraph_iff_horizonFunction_le_of_isProper
+    {f : E → EReal} (hf : IsProper f) {w : E} {a : ℝ} :
+    (w, a) ∈ horizonCone (epigraph f) ↔ horizonFunction f w ≤ (a : EReal) := by
+  constructor
+  · exact horizonFunction_le_of_mem_horizonCone_epigraph
+  · intro hle
+    have hmem : (w, a) ∈ epigraph (horizonFunction f) := by
+      rw [mem_epigraph_iff]
+      exact hle
+    simpa [epigraph_horizonFunction_eq_horizonCone_epigraph_of_isProper hf] using hmem
 
 /-- If `f∞(w) ≤ 0`, then `(w,0)` belongs to the horizon cone of `epi f` as soon
 as `epi f` is nonempty. -/

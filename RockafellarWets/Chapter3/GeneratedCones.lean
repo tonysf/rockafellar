@@ -133,6 +133,13 @@ theorem conicHull_eq_convexHull_positiveHull (C : Set E) :
       (positiveHull_subset_conicHull C)
       (convex_conicHull C)
 
+/-- For a convex generating set, the conic hull is the same as the Chapter 3
+positive hull. -/
+theorem conicHull_eq_positiveHull_of_convex {C : Set E} (hC : Convex ℝ C) :
+    conicHull C = positiveHull C := by
+  rw [conicHull_eq_convexHull_positiveHull]
+  exact (convex_positiveHull hC).convexHull_eq
+
 /-- Conic hull turns unions into Minkowski sums. -/
 theorem conicHull_union_eq_add (C D : Set E) :
     conicHull (C ∪ D) = conicHull C + conicHull D := by
@@ -240,6 +247,32 @@ theorem horizonCone_conicHull_eq_closure (C : Set E) :
   rw [horizonCone_eq_asymptoticCone (show (conicHull C).Nonempty from ⟨0, zero_mem_conicHull C⟩)]
   exact asymptoticCone_eq_closure_of_forall_smul_mem fun c hc x hx =>
     (isCone_conicHull C).2 hx hc
+
+/-- The horizon cone of a convex positive hull is its closure. -/
+theorem horizonCone_positiveHull_eq_closure_of_convex {C : Set E} (hC : Convex ℝ C) :
+    horizonCone (positiveHull C) = closure (positiveHull C) := by
+  rw [← conicHull_eq_positiveHull_of_convex hC, horizonCone_conicHull_eq_closure]
+
+/-- The conic hull of the effective domain of the gauge of a convex set is the
+effective domain itself. -/
+theorem conicHull_effectiveDomain_gaugeFunction_eq_self_of_convex
+    {C : Set E} (hC : Convex ℝ C) :
+    conicHull (effectiveDomain (gaugeFunction C)) =
+      effectiveDomain (gaugeFunction C) := by
+  rw [effectiveDomain_gaugeFunction]
+  calc
+    conicHull (positiveHull C) = positiveHull (positiveHull C) :=
+      conicHull_eq_positiveHull_of_convex (convex_positiveHull hC)
+    _ = positiveHull C := positiveHull_eq_self isCone_positiveHull
+
+/-- The horizon cone of the effective domain of the gauge of a convex set is
+the closure of that effective domain. -/
+theorem horizonCone_effectiveDomain_gaugeFunction_eq_closure_of_convex
+    {C : Set E} (hC : Convex ℝ C) :
+    horizonCone (effectiveDomain (gaugeFunction C)) =
+      closure (effectiveDomain (gaugeFunction C)) := by
+  rw [effectiveDomain_gaugeFunction]
+  exact horizonCone_positiveHull_eq_closure_of_convex hC
 
 section Products
 
@@ -354,6 +387,28 @@ is the generation side of Theorem 3.52. -/
 def IsFinitelyGeneratedCone (K : Set E) : Prop :=
   ∃ s : Finset E, K = conicHull (↑s : Set E)
 
+theorem IsFinitelyGeneratedCone.exists_generators {K : Set E}
+    (hK : IsFinitelyGeneratedCone K) :
+    ∃ s : Finset E, K = conicHull (↑s : Set E) :=
+  hK
+
+/-- A finitely generated cone has an explicit finite conic-coefficient
+membership formula. -/
+theorem IsFinitelyGeneratedCone.exists_generator_formula {K : Set E}
+    (hK : IsFinitelyGeneratedCone K) :
+    ∃ s : Finset E,
+      ∀ {x : E},
+        x ∈ K ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑s : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = x := by
+  rcases hK with ⟨s, hs⟩
+  refine ⟨s, ?_⟩
+  intro x
+  rw [hs]
+  exact mem_conicHull_iff_exists_finsupp
+
 theorem IsFinitelyGeneratedCone.Iic_zero : IsFinitelyGeneratedCone (Set.Iic (0 : ℝ)) := by
   refine ⟨{-1}, ?_⟩
   simpa using conicHull_singleton_neg_one_eq_Iic_zero.symm
@@ -367,6 +422,29 @@ theorem IsFinitelyGeneratedCone.convex {K : Set E} (hK : IsFinitelyGeneratedCone
     Convex ℝ K := by
   rcases hK with ⟨s, rfl⟩
   exact convex_conicHull (↑s : Set E)
+
+/-- A finitely generated cone contains the origin. -/
+theorem IsFinitelyGeneratedCone.zero_mem {K : Set E} (hK : IsFinitelyGeneratedCone K) :
+    (0 : E) ∈ K :=
+  hK.isCone.1
+
+/-- A finitely generated cone is nonempty. -/
+theorem IsFinitelyGeneratedCone.nonempty {K : Set E} (hK : IsFinitelyGeneratedCone K) :
+    K.Nonempty :=
+  ⟨0, hK.zero_mem⟩
+
+/-- The horizon cone of a finitely generated cone is its closure. -/
+theorem IsFinitelyGeneratedCone.horizonCone_eq_closure {K : Set E}
+    (hK : IsFinitelyGeneratedCone K) :
+    horizonCone K = closure K := by
+  rcases hK with ⟨s, rfl⟩
+  exact horizonCone_conicHull_eq_closure (↑s : Set E)
+
+/-- A closed finitely generated cone is its own horizon cone. -/
+theorem IsFinitelyGeneratedCone.horizonCone_eq_self_of_isClosed {K : Set E}
+    (hK : IsFinitelyGeneratedCone K) (hKclosed : IsClosed K) :
+    horizonCone K = K := by
+  rw [hK.horizonCone_eq_closure, hKclosed.closure_eq]
 
 theorem IsFinitelyGeneratedCone.subset_convexHull_generators {K : Set E}
     (hK : IsFinitelyGeneratedCone K) :
@@ -653,11 +731,34 @@ theorem isClosed_conicHull_finset [FiniteDimensional ℝ E] (s : Finset E) :
   have hqcont : Continuous q := LinearMap.continuous_of_finiteDimensional q
   simpa [K, hpre] using hqclosed.preimage hqcont
 
+/-- In finite dimensions, the conic hull of a finite set is already closed. -/
+theorem closure_conicHull_finset [FiniteDimensional ℝ E] (s : Finset E) :
+    closure (conicHull (↑s : Set E)) = conicHull (↑s : Set E) :=
+  (isClosed_conicHull_finset (E := E) s).closure_eq
+
+/-- In finite dimensions, the horizon cone of a finitely generated conic hull
+is the conic hull itself. -/
+theorem horizonCone_conicHull_finset_eq_self [FiniteDimensional ℝ E] (s : Finset E) :
+    horizonCone (conicHull (↑s : Set E)) = conicHull (↑s : Set E) := by
+  rw [horizonCone_conicHull_eq_closure, closure_conicHull_finset]
+
 /-- In finite dimensions, every finitely generated cone is closed. -/
 theorem IsFinitelyGeneratedCone.isClosed [FiniteDimensional ℝ E]
     {K : Set E} (hK : IsFinitelyGeneratedCone K) :
     IsClosed K := by
   rcases hK with ⟨s, rfl⟩
   exact isClosed_conicHull_finset s
+
+/-- In finite dimensions, a finitely generated cone equals its closure. -/
+theorem IsFinitelyGeneratedCone.closure_eq_self [FiniteDimensional ℝ E]
+    {K : Set E} (hK : IsFinitelyGeneratedCone K) :
+    closure K = K :=
+  hK.isClosed.closure_eq
+
+/-- In finite dimensions, a finitely generated cone equals its horizon cone. -/
+theorem IsFinitelyGeneratedCone.horizonCone_eq_self [FiniteDimensional ℝ E]
+    {K : Set E} (hK : IsFinitelyGeneratedCone K) :
+    horizonCone K = K := by
+  rw [hK.horizonCone_eq_closure, hK.closure_eq_self]
 
 end RW

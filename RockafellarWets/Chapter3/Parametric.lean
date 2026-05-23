@@ -492,6 +492,57 @@ theorem isLevelBoundedInXLocallyUniformly_iff_horizonFunction_pos
   · exact horizonFunction_pos_of_isLevelBoundedInXLocallyUniformly hconv hlsc hproper
   · exact isLevelBoundedInXLocallyUniformly_of_horizonFunction_pos
 
+/-- Positivity of `f∞(x,0)` away from `0` is equivalent to the zero lower
+level set of `f∞` meeting the horizontal direction subspace only at `0`. -/
+theorem horizonFunction_pos_slice_iff_levelSet_inter_horizontal_zero
+    {f : E × F → EReal} :
+    (∀ ⦃x : E⦄, x ≠ 0 → 0 < horizonFunction f (x, (0 : F))) ↔
+      ((Set.univ : Set E) ×ˢ ({0} : Set F)) ∩
+          levelSet (horizonFunction f) (0 : EReal) =
+        ({0} : Set (E × F)) := by
+  constructor
+  · intro hpos
+    apply le_antisymm
+    · rintro ⟨x, u⟩ ⟨hu, hlevel⟩
+      have hu0 : u = 0 := by simpa using hu.2
+      subst u
+      by_cases hx0 : x = 0
+      · simp [hx0]
+      · have hstrict : 0 < horizonFunction f (x, (0 : F)) := hpos hx0
+        have hle : horizonFunction f (x, (0 : F)) ≤ 0 := by
+          simpa [levelSet] using hlevel
+        exact (not_le_of_gt hstrict hle).elim
+    · intro p hp
+      rcases Set.mem_singleton_iff.mp hp with rfl
+      refine ⟨by simp, ?_⟩
+      simpa [levelSet] using (positivelyHomogeneous_horizonFunction f).map_zero_le_zero
+  · intro hzero x hx0
+    exact not_le.mp <| by
+      intro hle
+      have hmem :
+          (x, (0 : F)) ∈
+            ((Set.univ : Set E) ×ˢ ({0} : Set F)) ∩
+              levelSet (horizonFunction f) (0 : EReal) := by
+        refine ⟨by simp, ?_⟩
+        simpa [levelSet] using hle
+      have hpair : (x, (0 : F)) = (0 : E × F) := by
+        exact Set.mem_singleton_iff.mp (by simpa [hzero] using hmem)
+      exact hx0 (by simpa using congrArg Prod.fst hpair)
+
+/-- Equivalent zero-level horizontal-slice form of Theorem 3.31. -/
+theorem isLevelBoundedInXLocallyUniformly_iff_levelSet_inter_horizontal_zero
+    [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+    {f : E × F → EReal}
+    (hconv : Convex ℝ (epigraph f)) (hlsc : LowerSemicontinuous f)
+    (hproper : IsProper f) :
+    IsLevelBoundedInXLocallyUniformly f ↔
+      ((Set.univ : Set E) ×ˢ ({0} : Set F)) ∩
+          levelSet (horizonFunction f) (0 : EReal) =
+        ({0} : Set (E × F)) :=
+  (isLevelBoundedInXLocallyUniformly_iff_horizonFunction_pos
+    hconv hlsc hproper).trans
+    horizonFunction_pos_slice_iff_levelSet_inter_horizontal_zero
+
 /-- Every point of the projected epigraph gives a point in the epigraph of the
 value function. -/
 theorem valueProjection_image_epigraph_subset_epigraph_valueFunction

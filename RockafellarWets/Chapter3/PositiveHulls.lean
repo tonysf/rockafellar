@@ -1387,6 +1387,13 @@ theorem nonneg_gaugeFunction (C : Set E) (x : E) :
       (nonneg_indicatorVA_add_one C)
       x
 
+/-- A gauge never takes the value `-∞`. -/
+theorem gaugeFunction_ne_bot (C : Set E) (x : E) :
+    gaugeFunction C x ≠ ⊥ := by
+  intro hbot
+  have hnonneg : (0 : EReal) ≤ gaugeFunction C x := nonneg_gaugeFunction C x
+  simpa [hbot] using hnonneg
+
 @[simp] theorem gaugeFunction_zero (C : Set E) :
     gaugeFunction C 0 = 0 := by
   have hle : gaugeFunction C 0 ≤ 0 := by
@@ -1396,6 +1403,45 @@ theorem nonneg_gaugeFunction (C : Set E) (x : E) :
         (x := 0) (a := 0)
         (zero_mem_positiveHull (epigraph (fun x => indicatorVA C x + 1))))
   exact le_antisymm hle (nonneg_gaugeFunction C 0)
+
+/-- Negative lower level sets of a gauge are empty. -/
+theorem levelSet_gaugeFunction_eq_empty_of_neg {C : Set E} {a : ℝ} (ha : a < 0) :
+    levelSet (gaugeFunction C) a = ∅ := by
+  ext x
+  constructor
+  · intro hx
+    have hnonneg : (0 : EReal) ≤ gaugeFunction C x := nonneg_gaugeFunction C x
+    have ha' : (a : EReal) < 0 := by
+      exact_mod_cast ha
+    exact False.elim <| (not_lt_of_ge (le_trans hnonneg hx)) ha'
+  · simp
+
+/-- Gauge sublevel sets are nonempty exactly at nonnegative heights. -/
+theorem levelSet_gaugeFunction_nonempty_iff_nonneg {C : Set E} {a : ℝ} :
+    (levelSet (gaugeFunction C) a).Nonempty ↔ 0 ≤ a := by
+  constructor
+  · rintro ⟨x, hx⟩
+    have hnonneg : (0 : EReal) ≤ gaugeFunction C x := nonneg_gaugeFunction C x
+    have ha : (0 : EReal) ≤ (a : EReal) := le_trans hnonneg hx
+    exact_mod_cast ha
+  · intro ha
+    refine ⟨0, ?_⟩
+    have ha' : (0 : EReal) ≤ (a : EReal) := by
+      exact_mod_cast ha
+    simpa [levelSet] using ha'
+
+/-- Gauge sublevel sets are empty exactly at negative heights. -/
+theorem levelSet_gaugeFunction_eq_empty_iff_neg {C : Set E} {a : ℝ} :
+    levelSet (gaugeFunction C) a = ∅ ↔ a < 0 := by
+  constructor
+  · intro hempty
+    by_contra hnot
+    have hnonempty : (levelSet (gaugeFunction C) a).Nonempty :=
+      levelSet_gaugeFunction_nonempty_iff_nonneg.2 (le_of_not_gt hnot)
+    rcases hnonempty with ⟨x, hx⟩
+    rw [hempty] at hx
+    exact hx
+  · exact levelSet_gaugeFunction_eq_empty_of_neg
 
 /-- Negating the first coordinate preserves membership in the positive hull of
 `epi (δ_C + 1)` when `C` is symmetric. -/
@@ -1519,6 +1565,48 @@ theorem effectiveDomain_gaugeFunction (C : Set E) :
     exact mem_positiveHull_of_mem_positiveHull_epigraph_indicatorVA_add_one hbmem
   · intro hx
     exact positiveHull_subset_effectiveDomain_gaugeFunction C hx
+
+/-- The gauge is finite at exactly the points of the positive hull. -/
+theorem gaugeFunction_lt_top_iff_mem_positiveHull {C : Set E} {x : E} :
+    gaugeFunction C x < ⊤ ↔ x ∈ positiveHull C := by
+  rw [← effectiveDomain_gaugeFunction C]
+  rfl
+
+/-- The gauge avoids `⊤` exactly on the positive hull. -/
+theorem gaugeFunction_ne_top_iff_mem_positiveHull {C : Set E} {x : E} :
+    gaugeFunction C x ≠ ⊤ ↔ x ∈ positiveHull C := by
+  rw [← effectiveDomain_gaugeFunction C, effectiveDomain_eq]
+  rfl
+
+/-- Outside the positive hull, the gauge is `⊤`. -/
+theorem gaugeFunction_eq_top_iff_not_mem_positiveHull {C : Set E} {x : E} :
+    gaugeFunction C x = ⊤ ↔ x ∉ positiveHull C := by
+  rw [← gaugeFunction_ne_top_iff_mem_positiveHull]
+  exact not_not.symm
+
+/-- Every gauge is proper in the extended-real sense used in Chapter 1. -/
+theorem isProper_gaugeFunction (C : Set E) :
+    IsProper (gaugeFunction C) := by
+  rw [isProper_iff]
+  refine ⟨?_, ?_⟩
+  · refine ⟨0, ?_⟩
+    rw [mem_effectiveDomain_iff, gaugeFunction_zero]
+    exact EReal.coe_lt_top 0
+  · intro x
+    have hbot_lt_zero : (⊥ : EReal) < 0 := by simp
+    exact lt_of_lt_of_le hbot_lt_zero (nonneg_gaugeFunction C x)
+
+/-- The effective domain of a gauge is a cone. -/
+theorem isCone_effectiveDomain_gaugeFunction (C : Set E) :
+    IsCone (effectiveDomain (gaugeFunction C)) := by
+  rw [effectiveDomain_gaugeFunction]
+  exact isCone_positiveHull
+
+/-- The effective domain of the gauge of a convex set is convex. -/
+theorem convex_effectiveDomain_gaugeFunction {C : Set E} (hC : Convex ℝ C) :
+    Convex ℝ (effectiveDomain (gaugeFunction C)) := by
+  rw [effectiveDomain_gaugeFunction]
+  exact convex_positiveHull hC
 
 /-- Points of `C` lie in the unit sublevel set of the gauge. -/
 theorem gaugeFunction_le_one_of_mem {C : Set E} {x : E} (hx : x ∈ C) :
@@ -1745,6 +1833,39 @@ theorem levelSet_gaugeFunction_zero {C : Set E}
     simpa using
       smul_add_mem_of_mem_horizonCone (C := C) hC hC_closed h0 hx
         (show 0 ≤ r⁻¹ by positivity)
+
+/-- Membership in the horizon cone is the same as having gauge at most zero. -/
+theorem gaugeFunction_le_zero_iff_mem_horizonCone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) {x : E} :
+    gaugeFunction C x ≤ 0 ↔ x ∈ horizonCone C := by
+  rw [← levelSet_gaugeFunction_zero hC hC_closed h0]
+  rfl
+
+/-- Equivalently, the gauge vanishes exactly on the horizon cone. -/
+theorem gaugeFunction_eq_zero_iff_mem_horizonCone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) {x : E} :
+    gaugeFunction C x = 0 ↔ x ∈ horizonCone C := by
+  constructor
+  · intro hx
+    exact (gaugeFunction_le_zero_iff_mem_horizonCone hC hC_closed h0).1 (by simp [hx])
+  · intro hx
+    exact le_antisymm
+      ((gaugeFunction_le_zero_iff_mem_horizonCone hC hC_closed h0).2 hx)
+      (nonneg_gaugeFunction C x)
+
+/-- Away from the horizon cone, the gauge is strictly positive. -/
+theorem gaugeFunction_pos_iff_not_mem_horizonCone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) {x : E} :
+    0 < gaugeFunction C x ↔ x ∉ horizonCone C := by
+  constructor
+  · intro hpos hx
+    have hle : gaugeFunction C x ≤ 0 :=
+      (gaugeFunction_le_zero_iff_mem_horizonCone hC hC_closed h0).2 hx
+    exact (not_lt_of_ge hle) hpos
+  · intro hxnot
+    by_contra hnotpos
+    have hle : gaugeFunction C x ≤ 0 := le_of_not_gt hnotpos
+    exact hxnot ((gaugeFunction_le_zero_iff_mem_horizonCone hC hC_closed h0).1 hle)
 
 /-- In the finite-dimensional bounded case, the zero sublevel set of the gauge
 collapses to `{0}`. -/

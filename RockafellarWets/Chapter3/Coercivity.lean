@@ -16,8 +16,11 @@ formulation.
 -/
 
 import RockafellarWets.Chapter1.MoreauEnvelope
+import RockafellarWets.Chapter2.Defs
 import RockafellarWets.Chapter2.Separation
 import RockafellarWets.Chapter3.HorizonFunctions
+import RockafellarWets.Chapter3.Parametric
+import RockafellarWets.Chapter3.PolyhedralFunctions
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 open Set EReal Bornology Topology Metric
@@ -324,6 +327,83 @@ theorem isLevelBounded_of_horizonFunction_pos [FiniteDimensional ℝ E]
   · have hempty : levelSet f α = ∅ := Set.not_nonempty_iff_eq_empty.mp hlevel
     simpa [hempty] using (isBounded_empty : Bornology.IsBounded (∅ : Set E))
 
+/-- Conversely, a proper lsc convex level-bounded function has strictly
+positive horizon function away from `0`. -/
+theorem horizonFunction_pos_of_isLevelBounded [FiniteDimensional ℝ E]
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f)) (hlsc : LowerSemicontinuous f)
+    (hproper : IsProper f) (hLB : IsLevelBounded f) :
+    ∀ ⦃w : E⦄, w ≠ 0 → 0 < horizonFunction f w := by
+  rcases hproper.1 with ⟨x₀, hx₀Top⟩
+  have hx₀Bot : f x₀ ≠ ⊥ := ne_of_gt (hproper.2 x₀)
+  let α : ℝ := (f x₀).toReal
+  have hx₀Level : x₀ ∈ levelSet f α := by
+    have hx₀Eq : f x₀ = ((α : ℝ) : EReal) := by
+      dsimp [α]
+      symm
+      exact EReal.coe_toReal (ne_of_lt hx₀Top) hx₀Bot
+    exact hx₀Eq.le
+  have hlevel : (levelSet f α).Nonempty := ⟨x₀, hx₀Level⟩
+  have hzero :
+      levelSet (horizonFunction f) (0 : EReal) = ({0} : Set E) := by
+    calc
+      levelSet (horizonFunction f) (0 : EReal) =
+          horizonCone (levelSet f α) := by
+            symm
+            exact horizonCone_levelSet_eq_levelSet_horizonFunction hconv hlsc hlevel
+      _ = ({0} : Set E) :=
+            (isBounded_iff_horizonCone_eq_singleton_zero (C := levelSet f α)).mp
+              (hLB α)
+  exact (horizonFunction_pos_iff_levelSet_zero_eq_singleton_zero f).2 hzero
+
+/-- **Corollary 3.27**, equivalence form: for a proper lsc convex function in
+finite dimension, level-boundedness is equivalent to strict positivity of the
+horizon function away from `0`. -/
+theorem isLevelBounded_iff_horizonFunction_pos [FiniteDimensional ℝ E]
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f)) (hlsc : LowerSemicontinuous f)
+    (hproper : IsProper f) :
+    IsLevelBounded f ↔
+      ∀ ⦃w : E⦄, w ≠ 0 → 0 < horizonFunction f w := by
+  constructor
+  · exact horizonFunction_pos_of_isLevelBounded hconv hlsc hproper
+  · exact isLevelBounded_of_horizonFunction_pos hconv hlsc
+
+/-- Closed-polyhedral-epigraph specialization: level-boundedness implies
+strict positivity of the horizon function away from `0`. -/
+theorem HasClosedPolyhedralEpigraph.horizonFunction_pos_of_isLevelBounded
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hLB : IsLevelBounded f) :
+    ∀ ⦃w : E⦄, w ≠ 0 → 0 < horizonFunction f w :=
+  RW.horizonFunction_pos_of_isLevelBounded
+    hf.convex hf.lowerSemicontinuous hproper hLB
+
+/-- Closed-polyhedral-epigraph specialization of Corollary 3.27. -/
+theorem HasClosedPolyhedralEpigraph.isLevelBounded_iff_horizonFunction_pos
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsLevelBounded f ↔
+      ∀ ⦃w : E⦄, w ≠ 0 → 0 < horizonFunction f w :=
+  RW.isLevelBounded_iff_horizonFunction_pos
+    hf.convex hf.lowerSemicontinuous hproper
+
+/-- Convex piecewise-linear specialization: level-boundedness implies strict
+positivity of the horizon function away from `0`. -/
+theorem IsConvexPiecewiseLinear.horizonFunction_pos_of_isLevelBounded
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hLB : IsLevelBounded f) :
+    ∀ ⦃w : E⦄, w ≠ 0 → 0 < horizonFunction f w :=
+  hf.hasClosedPolyhedralEpigraph.horizonFunction_pos_of_isLevelBounded
+    hf.isProper hLB
+
+/-- Convex piecewise-linear specialization of Corollary 3.27. -/
+theorem IsConvexPiecewiseLinear.isLevelBounded_iff_horizonFunction_pos
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsLevelBounded f ↔
+      ∀ ⦃w : E⦄, w ≠ 0 → 0 < horizonFunction f w :=
+  hf.hasClosedPolyhedralEpigraph.isLevelBounded_iff_horizonFunction_pos
+    hf.isProper
+
 /-- A level-coercive proper lsc convex function is level-bounded. -/
 theorem isLevelBounded_of_isLevelCoercive [FiniteDimensional ℝ E]
     {f : E → EReal} (hconv : Convex ℝ (epigraph f)) (hlsc : LowerSemicontinuous f)
@@ -332,6 +412,643 @@ theorem isLevelBounded_of_isLevelCoercive [FiniteDimensional ℝ E]
   apply isLevelBounded_of_horizonFunction_pos hconv hlsc
   intro w hw
   exact horizonFunction_pos_of_isLevelCoercive hconv hlsc hproper hf hw
+
+/-- In finite dimensions, a lower-semicontinuous level-bounded function is
+inf-compact. -/
+theorem isInfCompact_of_isLevelBounded_of_lsc [FiniteDimensional ℝ E]
+    {f : E → EReal} (hlsc : LowerSemicontinuous f) (hf : IsLevelBounded f) :
+    IsInfCompact f := by
+  intro α
+  rw [Metric.isCompact_iff_isClosed_bounded]
+  exact ⟨isClosed_levelSet_of_lsc_ereal hlsc α, hf α⟩
+
+/-- A level-coercive proper lsc convex function is inf-compact. -/
+theorem isInfCompact_of_isLevelCoercive [FiniteDimensional ℝ E]
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f)) (hlsc : LowerSemicontinuous f)
+    (hproper : IsProper f) (hf : IsLevelCoercive f) :
+    IsInfCompact f := by
+  exact isInfCompact_of_isLevelBounded_of_lsc hlsc
+    (isLevelBounded_of_isLevelCoercive hconv hlsc hproper hf)
+
+/-- A coercive proper lsc convex function is inf-compact. -/
+theorem isInfCompact_of_isCoercive [FiniteDimensional ℝ E]
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f)) (hlsc : LowerSemicontinuous f)
+    (hproper : IsProper f) (hf : IsCoercive f) :
+    IsInfCompact f := by
+  exact isInfCompact_of_isLevelCoercive hconv hlsc hproper
+    (isLevelCoercive_of_isCoercive hf)
+
+/-- Level-coercive closed-polyhedral-epigraph functions are inf-compact. -/
+theorem HasClosedPolyhedralEpigraph.isInfCompact_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) :
+    IsInfCompact f :=
+  RW.isInfCompact_of_isLevelCoercive
+    hf.convex hf.lowerSemicontinuous hproper hlevel
+
+/-- Every finite level set of a level-coercive closed-polyhedral-epigraph
+function is compact. -/
+theorem HasClosedPolyhedralEpigraph.isCompact_levelSet_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) (α : ℝ) :
+    IsCompact (levelSet f α) :=
+  hf.isInfCompact_of_isLevelCoercive hproper hlevel α
+
+/-- Coercive closed-polyhedral-epigraph functions are inf-compact. -/
+theorem HasClosedPolyhedralEpigraph.isInfCompact_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f) :
+    IsInfCompact f :=
+  RW.isInfCompact_of_isCoercive hf.convex hf.lowerSemicontinuous hproper hcoer
+
+/-- Every finite level set of a coercive closed-polyhedral-epigraph function is
+compact. -/
+theorem HasClosedPolyhedralEpigraph.isCompact_levelSet_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f)
+    (α : ℝ) :
+    IsCompact (levelSet f α) :=
+  hf.isInfCompact_of_isCoercive hproper hcoer α
+
+/-- Level-coercive convex piecewise-linear functions are inf-compact. -/
+theorem IsConvexPiecewiseLinear.isInfCompact_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) :
+    IsInfCompact f :=
+  hf.hasClosedPolyhedralEpigraph.isInfCompact_of_isLevelCoercive hf.isProper hlevel
+
+/-- Every finite level set of a level-coercive convex piecewise-linear
+function is compact. -/
+theorem IsConvexPiecewiseLinear.isCompact_levelSet_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) (α : ℝ) :
+    IsCompact (levelSet f α) :=
+  hf.isInfCompact_of_isLevelCoercive hlevel α
+
+/-- Coercive convex piecewise-linear functions are inf-compact. -/
+theorem IsConvexPiecewiseLinear.isInfCompact_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) :
+    IsInfCompact f :=
+  hf.hasClosedPolyhedralEpigraph.isInfCompact_of_isCoercive hf.isProper hcoer
+
+/-- Every finite level set of a coercive convex piecewise-linear function is
+compact. -/
+theorem IsConvexPiecewiseLinear.isCompact_levelSet_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) (α : ℝ) :
+    IsCompact (levelSet f α) :=
+  hf.isInfCompact_of_isCoercive hcoer α
+
+/-- In finite dimensions, an inf-compact proper lsc function attains its
+global minimum. -/
+theorem exists_isMinOn_of_isInfCompact_of_lsc_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hifc : IsInfCompact f) (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    ∃ x : E, IsMinOn f univ x := by
+  rcases hproper.1 with ⟨x₀, hx₀_top⟩
+  have hx₀_bot : f x₀ ≠ ⊥ := ne_of_gt (hproper.2 x₀)
+  let α : ℝ := (f x₀).toReal
+  have hx₀_level : x₀ ∈ levelSet f α := by
+    change f x₀ ≤ (α : EReal)
+    simp [α, EReal.coe_toReal (ne_of_lt hx₀_top) hx₀_bot]
+  have hlsc_level : LowerSemicontinuousOn f (levelSet f α) :=
+    hlsc.lowerSemicontinuousOn (levelSet f α)
+  obtain ⟨x, hx_level, hx_min⟩ :=
+    hlsc_level.exists_isMinOn ⟨x₀, hx₀_level⟩ (hifc α)
+  refine ⟨x, ?_⟩
+  rw [isMinOn_univ_iff]
+  intro y
+  by_cases hy_level : y ∈ levelSet f α
+  · exact hx_min hy_level
+  · have hy_gt : (α : EReal) < f y := by
+      exact lt_of_not_ge (by simpa [levelSet] using hy_level)
+    exact le_trans hx_level hy_gt.le
+
+/-- In finite dimensions, an inf-compact proper lsc function attains its
+global infimum at some point. -/
+theorem exists_eq_iInf_of_isInfCompact_of_lsc_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hifc : IsInfCompact f) (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    ∃ x : E, f x = ⨅ y, f y := by
+  rcases exists_isMinOn_of_isInfCompact_of_lsc_of_isProper hifc hlsc hproper with ⟨x, hx_min⟩
+  refine ⟨x, ?_⟩
+  symm
+  simpa [iInf_subtype'', iInf_univ] using
+    hx_min.iInf_eq (by simp : x ∈ (univ : Set E))
+
+/-- In finite dimensions, the global minimizer set of an inf-compact proper lsc
+function is nonempty. -/
+theorem argmin_nonempty_of_isInfCompact_of_lsc_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hifc : IsInfCompact f) (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    (argmin f).Nonempty := by
+  rcases exists_eq_iInf_of_isInfCompact_of_lsc_of_isProper hifc hlsc hproper with ⟨x, hx⟩
+  exact ⟨x, by simpa [argmin] using hx⟩
+
+/-- For a proper function, any minimizer point identifies `argmin f` with the
+finite level set at its attained value. -/
+theorem argmin_eq_levelSet_toReal_of_eq_iInf_of_isProper
+    {f : E → EReal} {x : E}
+    (hx : f x = ⨅ y, f y) (hproper : IsProper f) :
+    argmin f = levelSet f ((f x).toReal) := by
+  rcases hproper.1 with ⟨x₀, hx₀_top⟩
+  have hx_top : f x < ⊤ := lt_of_le_of_lt
+      (by
+        rw [hx]
+        exact iInf_le (fun y : E => f y) x₀)
+      hx₀_top
+  have hx_bot : f x > ⊥ := hproper.2 x
+  ext y
+  constructor
+  · intro hy
+    have hy_eq : f y = f x := by
+      calc
+        f y = ⨅ z, f z := by simpa [argmin] using hy
+        _ = f x := hx.symm
+    change f y ≤ (((f x).toReal : ℝ) : EReal)
+    simpa [hy_eq, EReal.coe_toReal (ne_of_lt hx_top) (ne_of_gt hx_bot)]
+  · intro hy
+    have hy_le : f y ≤ f x := by
+      simpa [levelSet, EReal.coe_toReal (ne_of_lt hx_top) (ne_of_gt hx_bot)] using hy
+    have hx_le : f x ≤ f y := by
+      rw [hx]
+      exact iInf_le (fun z : E => f z) y
+    have hy_eq : f y = f x := le_antisymm hy_le hx_le
+    simpa [argmin, hy_eq, hx]
+
+/-- For a proper function, any global minimizer identifies `argmin f` with the
+finite level set at its attained value. -/
+theorem argmin_eq_levelSet_toReal_of_isMinOn_of_isProper
+    {f : E → EReal} {x : E}
+    (hx : IsMinOn f univ x) (hproper : IsProper f) :
+    argmin f = levelSet f ((f x).toReal) := by
+  have hx_inf : f x = ⨅ y, f y := by
+    symm
+    simpa [iInf_subtype'', iInf_univ] using
+      hx.iInf_eq (by simp : x ∈ (univ : Set E))
+  exact argmin_eq_levelSet_toReal_of_eq_iInf_of_isProper hx_inf hproper
+
+/-- In finite dimensions, the global minimizer set of an inf-compact proper lsc
+function is a finite level set. -/
+theorem exists_argmin_eq_levelSet_of_isInfCompact_of_lsc_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hifc : IsInfCompact f) (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    ∃ α : ℝ, argmin f = levelSet f α := by
+  rcases exists_isMinOn_of_isInfCompact_of_lsc_of_isProper hifc hlsc hproper with ⟨x, hx⟩
+  exact ⟨(f x).toReal, argmin_eq_levelSet_toReal_of_isMinOn_of_isProper hx hproper⟩
+
+/-- In finite dimensions, the global minimizer set of an inf-compact proper lsc
+function is compact. -/
+theorem isCompact_argmin_of_isInfCompact_of_lsc_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hifc : IsInfCompact f) (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
+    IsCompact (argmin f) := by
+  rcases exists_isMinOn_of_isInfCompact_of_lsc_of_isProper hifc hlsc hproper with ⟨x, hx_min⟩
+  rw [argmin_eq_levelSet_toReal_of_isMinOn_of_isProper hx_min hproper]
+  exact hifc ((f x).toReal)
+
+/-- A proper closed-polyhedral-epigraph function with a nonempty global
+minimizer set admits an explicit finite coefficient formula for `argmin f`. -/
+theorem HasClosedPolyhedralEpigraph.exists_argmin_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (harg : (argmin f).Nonempty) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ),
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) := by
+  rcases harg with ⟨x₀, hx₀⟩
+  have hx₀_inf : f x₀ = ⨅ y, f y := by
+    simpa [argmin] using hx₀
+  refine ⟨(f x₀).toReal, ?_⟩
+  rcases hf.exists_levelSet_generator_formula ((f x₀).toReal) with ⟨s, t, hst⟩
+  refine ⟨s, t, ?_⟩
+  intro x
+  rw [argmin_eq_levelSet_toReal_of_eq_iInf_of_isProper hx₀_inf hproper]
+  exact hst
+
+/-- A proper closed-polyhedral-epigraph function with a nonempty global
+minimizer set admits the same finite `argmin` formula with a nonempty ordinary
+generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_argmin_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (harg : (argmin f).Nonempty) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) := by
+  rcases harg with ⟨x₀, hx₀⟩
+  have hx₀_inf : f x₀ = ⨅ y, f y := by
+    simpa [argmin] using hx₀
+  have hargEq : argmin f = levelSet f ((f x₀).toReal) :=
+    argmin_eq_levelSet_toReal_of_eq_iInf_of_isProper hx₀_inf hproper
+  have hlevel : (levelSet f ((f x₀).toReal)).Nonempty := by
+    refine ⟨x₀, ?_⟩
+    simpa [hargEq] using hx₀
+  rcases hf.exists_nonempty_levelSet_generator_formula_of_nonempty hlevel with
+    ⟨s, t, hs, hst⟩
+  refine ⟨(f x₀).toReal, s, t, hs, ?_⟩
+  intro x
+  rw [hargEq]
+  exact hst
+
+/-- A coercive closed-polyhedral-epigraph function attains its global minimum.
+-/
+theorem HasClosedPolyhedralEpigraph.exists_isMinOn_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f) :
+    ∃ x : E, IsMinOn f univ x :=
+  exists_isMinOn_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hproper hcoer) hf.lowerSemicontinuous hproper
+
+/-- A coercive closed-polyhedral-epigraph function attains its infimum at some
+point. -/
+theorem HasClosedPolyhedralEpigraph.exists_eq_iInf_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f) :
+    ∃ x : E, f x = ⨅ y, f y :=
+  exists_eq_iInf_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hproper hcoer) hf.lowerSemicontinuous hproper
+
+/-- The global minimizer set of a coercive closed-polyhedral-epigraph function
+is a finite level set. -/
+theorem HasClosedPolyhedralEpigraph.exists_argmin_eq_levelSet_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f) :
+    ∃ α : ℝ, argmin f = levelSet f α :=
+  exists_argmin_eq_levelSet_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hproper hcoer) hf.lowerSemicontinuous hproper
+
+/-- The global minimizer set of a coercive closed-polyhedral-epigraph function
+is nonempty. -/
+theorem HasClosedPolyhedralEpigraph.argmin_nonempty_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f) :
+    (argmin f).Nonempty :=
+  argmin_nonempty_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hproper hcoer) hf.lowerSemicontinuous hproper
+
+/-- The global minimizer set of a coercive closed-polyhedral-epigraph function
+is compact. -/
+theorem HasClosedPolyhedralEpigraph.isCompact_argmin_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f) :
+    IsCompact (argmin f) :=
+  isCompact_argmin_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hproper hcoer) hf.lowerSemicontinuous hproper
+
+/-- A level-coercive closed-polyhedral-epigraph function attains its global
+minimum. -/
+theorem HasClosedPolyhedralEpigraph.exists_isMinOn_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) :
+    ∃ x : E, IsMinOn f univ x :=
+  exists_isMinOn_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hproper hlevel)
+    hf.lowerSemicontinuous hproper
+
+/-- A level-coercive closed-polyhedral-epigraph function attains its infimum
+at some point. -/
+theorem HasClosedPolyhedralEpigraph.exists_eq_iInf_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) :
+    ∃ x : E, f x = ⨅ y, f y :=
+  exists_eq_iInf_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hproper hlevel)
+    hf.lowerSemicontinuous hproper
+
+/-- The global minimizer set of a level-coercive closed-polyhedral-epigraph
+function is a finite level set. -/
+theorem HasClosedPolyhedralEpigraph.exists_argmin_eq_levelSet_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) :
+    ∃ α : ℝ, argmin f = levelSet f α :=
+  exists_argmin_eq_levelSet_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hproper hlevel)
+    hf.lowerSemicontinuous hproper
+
+/-- The global minimizer set of a level-coercive closed-polyhedral-epigraph
+function is nonempty. -/
+theorem HasClosedPolyhedralEpigraph.argmin_nonempty_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) :
+    (argmin f).Nonempty :=
+  argmin_nonempty_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hproper hlevel)
+    hf.lowerSemicontinuous hproper
+
+/-- The global minimizer set of a level-coercive closed-polyhedral-epigraph
+function is compact. -/
+theorem HasClosedPolyhedralEpigraph.isCompact_argmin_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) :
+    IsCompact (argmin f) :=
+  isCompact_argmin_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hproper hlevel)
+    hf.lowerSemicontinuous hproper
+
+/-- A coercive convex piecewise-linear function attains its global minimum. -/
+theorem IsConvexPiecewiseLinear.exists_isMinOn_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) :
+    ∃ x : E, IsMinOn f univ x :=
+  exists_isMinOn_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hcoer)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- A coercive convex piecewise-linear function attains its infimum at some
+point. -/
+theorem IsConvexPiecewiseLinear.exists_eq_iInf_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) :
+    ∃ x : E, f x = ⨅ y, f y :=
+  exists_eq_iInf_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hcoer)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- The global minimizer set of a coercive convex piecewise-linear function is
+a finite level set. -/
+theorem IsConvexPiecewiseLinear.exists_argmin_eq_levelSet_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) :
+    ∃ α : ℝ, argmin f = levelSet f α :=
+  exists_argmin_eq_levelSet_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hcoer)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- The global minimizer set of a coercive convex piecewise-linear function is
+nonempty. -/
+theorem IsConvexPiecewiseLinear.argmin_nonempty_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) :
+    (argmin f).Nonempty :=
+  argmin_nonempty_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hcoer)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- The global minimizer set of a coercive convex piecewise-linear function is
+compact. -/
+theorem IsConvexPiecewiseLinear.isCompact_argmin_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) :
+    IsCompact (argmin f) :=
+  isCompact_argmin_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isCoercive hcoer)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- A level-coercive convex piecewise-linear function attains its global
+minimum. -/
+theorem IsConvexPiecewiseLinear.exists_isMinOn_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) :
+    ∃ x : E, IsMinOn f univ x :=
+  exists_isMinOn_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hlevel)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- A level-coercive convex piecewise-linear function attains its infimum at
+some point. -/
+theorem IsConvexPiecewiseLinear.exists_eq_iInf_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) :
+    ∃ x : E, f x = ⨅ y, f y :=
+  exists_eq_iInf_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hlevel)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- The global minimizer set of a level-coercive convex piecewise-linear
+function is a finite level set. -/
+theorem IsConvexPiecewiseLinear.exists_argmin_eq_levelSet_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) :
+    ∃ α : ℝ, argmin f = levelSet f α :=
+  exists_argmin_eq_levelSet_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hlevel)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- The global minimizer set of a level-coercive convex piecewise-linear
+function is nonempty. -/
+theorem IsConvexPiecewiseLinear.argmin_nonempty_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) :
+    (argmin f).Nonempty :=
+  argmin_nonempty_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hlevel)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- The global minimizer set of a level-coercive convex piecewise-linear
+function is compact. -/
+theorem IsConvexPiecewiseLinear.isCompact_argmin_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) :
+    IsCompact (argmin f) :=
+  isCompact_argmin_of_isInfCompact_of_lsc_of_isProper
+    (hf.isInfCompact_of_isLevelCoercive hlevel)
+    hf.hasClosedPolyhedralEpigraph.lowerSemicontinuous hf.isProper
+
+/-- A coercive closed-polyhedral-epigraph function admits an explicit finite
+coefficient formula for its global minimizer set. -/
+theorem HasClosedPolyhedralEpigraph.exists_argmin_generator_formula_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ),
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.exists_argmin_generator_formula_of_nonempty hproper
+    (hf.argmin_nonempty_of_isCoercive hproper hcoer)
+
+/-- A coercive closed-polyhedral-epigraph function admits the same finite
+argmin formula with a nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_argmin_generator_formula_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) (hcoer : IsCoercive f) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.exists_nonempty_argmin_generator_formula_of_nonempty hproper
+    (hf.argmin_nonempty_of_isCoercive hproper hcoer)
+
+/-- A level-coercive closed-polyhedral-epigraph function admits an explicit
+finite coefficient formula for its global minimizer set. -/
+theorem HasClosedPolyhedralEpigraph.exists_argmin_generator_formula_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ),
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.exists_argmin_generator_formula_of_nonempty hproper
+    (hf.argmin_nonempty_of_isLevelCoercive hproper hlevel)
+
+/-- A level-coercive closed-polyhedral-epigraph function admits the same
+finite argmin formula with a nonempty ordinary generator set. -/
+theorem HasClosedPolyhedralEpigraph.exists_nonempty_argmin_generator_formula_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f)
+    (hlevel : IsLevelCoercive f) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.exists_nonempty_argmin_generator_formula_of_nonempty hproper
+    (hf.argmin_nonempty_of_isLevelCoercive hproper hlevel)
+
+/-- A convex piecewise-linear function with a nonempty global minimizer set
+admits an explicit finite coefficient formula for `argmin f`. -/
+theorem IsConvexPiecewiseLinear.exists_argmin_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (harg : (argmin f).Nonempty) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ),
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.hasClosedPolyhedralEpigraph.exists_argmin_generator_formula_of_nonempty
+    hf.isProper harg
+
+/-- A convex piecewise-linear function with a nonempty global minimizer set
+admits the same finite `argmin` formula with a nonempty ordinary generator
+set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_argmin_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (harg : (argmin f).Nonempty) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.hasClosedPolyhedralEpigraph.exists_nonempty_argmin_generator_formula_of_nonempty
+    hf.isProper harg
+
+/-- A coercive convex piecewise-linear function admits an explicit finite
+coefficient formula for its global minimizer set. -/
+theorem IsConvexPiecewiseLinear.exists_argmin_generator_formula_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ),
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.exists_argmin_generator_formula_of_nonempty
+    (hf.argmin_nonempty_of_isCoercive hcoer)
+
+/-- A coercive convex piecewise-linear function admits the same finite argmin
+formula with a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_argmin_generator_formula_of_isCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hcoer : IsCoercive f) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.exists_nonempty_argmin_generator_formula_of_nonempty
+    (hf.argmin_nonempty_of_isCoercive hcoer)
+
+/-- A level-coercive convex piecewise-linear function admits an explicit finite
+coefficient formula for its global minimizer set. -/
+theorem IsConvexPiecewiseLinear.exists_argmin_generator_formula_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ),
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.exists_argmin_generator_formula_of_nonempty
+    (hf.argmin_nonempty_of_isLevelCoercive hlevel)
+
+/-- A level-coercive convex piecewise-linear function admits the same finite
+argmin formula with a nonempty ordinary generator set. -/
+theorem IsConvexPiecewiseLinear.exists_nonempty_argmin_generator_formula_of_isLevelCoercive
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hlevel : IsLevelCoercive f) :
+    ∃ α : ℝ, ∃ s t : Finset (E × ℝ), s.Nonempty ∧
+      ∀ {x : E},
+        x ∈ argmin f ↔
+          ∃ w : (E × ℝ) → ℝ,
+            (∀ y ∈ s, 0 ≤ w y) ∧
+            ∑ y ∈ s, w y = 1 ∧
+            ∃ c : (E × ℝ) →₀ ℝ,
+              ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+              (∀ y, 0 ≤ c y) ∧
+              (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) :=
+  hf.exists_nonempty_argmin_generator_formula_of_nonempty
+    (hf.argmin_nonempty_of_isLevelCoercive hlevel)
 
 /-- A coercive real-valued function admits an affine norm lower bound whose
 slope dominates any prescribed continuous linear functional norm. -/
@@ -903,6 +1620,345 @@ theorem eq_of_infConvolution_eq_of_isCoercive_real_of_convex_lsc
   exact
     forall_iInf_sub_continuousLinear_eq_of_infConvolution_eq_of_isCoercive_real_of_isCoercive
       hEq hf₁ hf₂ hg l
+
+section ConvexRealLscNoComplete
+
+omit [CompleteSpace E]
+
+/-- A real-valued convex function on the whole finite-dimensional space is
+lower semicontinuous when viewed as an `EReal`-valued function. -/
+theorem lowerSemicontinuous_coe_real_of_convex_epigraph
+    {f : E → ℝ}
+    (hconv : Convex ℝ (epigraph (fun x => (f x : EReal)))) :
+    LowerSemicontinuous (fun x => (f x : EReal)) := by
+  have hconvOn : ConvexOn ℝ univ f := by
+    rw [← convex_epigraph_iff_convexOn f univ convex_univ]
+    simpa [epigraph, ge_iff_le] using hconv
+  have hcont : Continuous f := by
+    rw [← continuousOn_univ]
+    exact continuous_of_convexOn_open isOpen_univ convex_univ hconvOn
+  exact (continuous_coe_real_ereal.comp hcont).lowerSemicontinuous
+
+end ConvexRealLscNoComplete
+
+/-- Separation endpoint for real-valued convex functions: equality of all
+shifted continuous-linear infima forces the pointwise lower bound. The explicit
+lower-semicontinuity hypothesis in the closed-convex version follows from
+finite-dimensional convexity. -/
+theorem le_of_forall_iInf_sub_continuousLinear_eq_of_convex
+    {f₁ f₂ : E → ℝ}
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hbdd₂ : ∀ l : E →L[ℝ] ℝ, BddBelow (Set.range fun w : E => f₂ w - l w))
+    (hEqInf : ∀ l : E →L[ℝ] ℝ,
+      (⨅ w : E, f₁ w - l w) = (⨅ w : E, f₂ w - l w))
+    (x : E) :
+    f₁ x ≤ f₂ x :=
+  le_of_forall_iInf_sub_continuousLinear_eq_of_convex_lsc
+    hconv₁ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₁)
+    hbdd₂ hEqInf x
+
+/-- Separation endpoint for real-valued convex functions: equality of all
+shifted continuous-linear infima determines the function. The explicit
+lower-semicontinuity hypotheses in the closed-convex version follow from
+finite-dimensional convexity. -/
+theorem eq_of_forall_iInf_sub_continuousLinear_eq_of_convex
+    {f₁ f₂ : E → ℝ}
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hbdd₁ : ∀ l : E →L[ℝ] ℝ, BddBelow (Set.range fun w : E => f₁ w - l w))
+    (hbdd₂ : ∀ l : E →L[ℝ] ℝ, BddBelow (Set.range fun w : E => f₂ w - l w))
+    (hEqInf : ∀ l : E →L[ℝ] ℝ,
+      (⨅ w : E, f₁ w - l w) = (⨅ w : E, f₂ w - l w)) :
+    f₁ = f₂ :=
+  eq_of_forall_iInf_sub_continuousLinear_eq_of_convex_lsc
+    hconv₁ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₁)
+    hconv₂ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₂)
+    hbdd₁ hbdd₂ hEqInf
+
+/-- Coercive common-summand cancellation for real-valued convex functions:
+the explicit lower-semicontinuity hypotheses follow from convexity in finite
+dimension. -/
+theorem eq_of_infConvolution_eq_of_isCoercive_real_of_convex
+    {f₁ f₂ g : E → ℝ}
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hEq : f₁ □ g = f₂ □ g)
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    f₁ = f₂ :=
+  eq_of_infConvolution_eq_of_isCoercive_real_of_convex_lsc
+    hconv₁ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₁)
+    hconv₂ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₂)
+    hEq hf₁ hf₂ hg
+
+section MoreauEnvelopeEndpointNoComplete
+
+omit [CompleteSpace E]
+
+/-- In finite dimensions, a coercive real-valued convex function is determined
+by its Moreau envelopes on positive parameters. -/
+theorem eq_of_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex
+    {f₁ f₂ : E → ℝ}
+    [InnerProductSpace ℝ E]
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hEq : ∀ {lam : ℝ}, 0 < lam → moreauEnvelope f₁ lam = moreauEnvelope f₂ lam) :
+    f₁ = f₂ := by
+  have hconvOn₁ : ConvexOn ℝ univ f₁ := by
+    rw [← convex_epigraph_iff_convexOn f₁ univ convex_univ]
+    simpa [epigraph, ge_iff_le]
+      using hconv₁
+  have hconvOn₂ : ConvexOn ℝ univ f₂ := by
+    rw [← convex_epigraph_iff_convexOn f₂ univ convex_univ]
+    simpa [epigraph, ge_iff_le]
+      using hconv₂
+  have hcont₁ : Continuous f₁ := by
+    rw [← continuousOn_univ]
+    exact continuous_of_convexOn_open isOpen_univ convex_univ hconvOn₁
+  have hcont₂ : Continuous f₂ := by
+    rw [← continuousOn_univ]
+    exact continuous_of_convexOn_open isOpen_univ convex_univ hconvOn₂
+  have hbdd₁ : ∃ c : ℝ, ∀ w : E, f₁ w ≥ c := by
+    rcases bddBelow_of_isCoercive_real hf₁ with ⟨c, hc⟩
+    exact ⟨c, fun w => hc ⟨w, rfl⟩⟩
+  have hbdd₂ : ∃ c : ℝ, ∀ w : E, f₂ w ≥ c := by
+    rcases bddBelow_of_isCoercive_real hf₂ with ⟨c, hc⟩
+    exact ⟨c, fun w => hc ⟨w, rfl⟩⟩
+  funext x
+  have hme₁ :
+      Filter.Tendsto (fun lam => moreauEnvelope f₁ lam x)
+        (nhdsWithin 0 (Set.Ioi 0)) (nhds (f₁ x)) :=
+    moreauEnvelope_converges_to_f x (hcont₁.continuousAt) hbdd₁
+  have hme₂ :
+      Filter.Tendsto (fun lam => moreauEnvelope f₂ lam x)
+        (nhdsWithin 0 (Set.Ioi 0)) (nhds (f₂ x)) :=
+    moreauEnvelope_converges_to_f x (hcont₂.continuousAt) hbdd₂
+  refine tendsto_nhds_unique_of_eventuallyEq hme₁ hme₂ ?_
+  filter_upwards [self_mem_nhdsWithin] with lam hlam
+  simpa [Set.mem_Ioi] using congrFun (hEq hlam) x
+
+/-- Compatibility wrapper keeping the older explicit lower-semicontinuity
+hypotheses. -/
+theorem eq_of_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex_lsc
+    {f₁ f₂ : E → ℝ}
+    [InnerProductSpace ℝ E]
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (_hlsc₁ : LowerSemicontinuous (fun x => (f₁ x : EReal)))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (_hlsc₂ : LowerSemicontinuous (fun x => (f₂ x : EReal)))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hEq : ∀ {lam : ℝ}, 0 < lam → moreauEnvelope f₁ lam = moreauEnvelope f₂ lam) :
+    f₁ = f₂ :=
+  eq_of_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex
+    hconv₁ hconv₂ hf₁ hf₂ hEq
+
+/-- In finite dimensions, two coercive real-valued convex functions are equal
+exactly when all of their positive Moreau envelopes agree. -/
+theorem eq_iff_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex
+    {f₁ f₂ : E → ℝ}
+    [InnerProductSpace ℝ E]
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal))) :
+    f₁ = f₂ ↔ ∀ {lam : ℝ}, 0 < lam → moreauEnvelope f₁ lam = moreauEnvelope f₂ lam := by
+  constructor
+  · intro hEq lam hlam
+    simpa [hEq]
+  · intro hEq
+    exact eq_of_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex
+      hconv₁ hconv₂ hf₁ hf₂ hEq
+
+/-- Compatibility wrapper keeping the older explicit lower-semicontinuity
+hypotheses. -/
+theorem eq_iff_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex_lsc
+    {f₁ f₂ : E → ℝ}
+    [InnerProductSpace ℝ E]
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (_hlsc₁ : LowerSemicontinuous (fun x => (f₁ x : EReal)))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (_hlsc₂ : LowerSemicontinuous (fun x => (f₂ x : EReal)))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal))) :
+    f₁ = f₂ ↔ ∀ {lam : ℝ}, 0 < lam → moreauEnvelope f₁ lam = moreauEnvelope f₂ lam :=
+  eq_iff_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex
+    hconv₁ hconv₂ hf₁ hf₂
+
+end MoreauEnvelopeEndpointNoComplete
+
+/-- Coercive common-summand cancellation propagates to every positive Moreau
+envelope of the left summands. -/
+theorem forall_moreauEnvelope_eq_of_infConvolution_eq_of_isCoercive_real_of_convex_lsc
+    {f₁ f₂ g : E → ℝ}
+    [InnerProductSpace ℝ E]
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hlsc₁ : LowerSemicontinuous (fun x => (f₁ x : EReal)))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hlsc₂ : LowerSemicontinuous (fun x => (f₂ x : EReal)))
+    (hEq : f₁ □ g = f₂ □ g)
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    ∀ {lam : ℝ}, 0 < lam → moreauEnvelope f₁ lam = moreauEnvelope f₂ lam := by
+  have hfun :
+      f₁ = f₂ :=
+    eq_of_infConvolution_eq_of_isCoercive_real_of_convex_lsc
+      hconv₁ hlsc₁ hconv₂ hlsc₂ hEq hf₁ hf₂ hg
+  intro lam hlam
+  simpa [hfun]
+
+/-- Coercive common-summand cancellation propagates to every positive Moreau
+envelope of the left summands; lower semicontinuity follows from convexity in
+finite dimension. -/
+theorem forall_moreauEnvelope_eq_of_infConvolution_eq_of_isCoercive_real_of_convex
+    {f₁ f₂ g : E → ℝ}
+    [InnerProductSpace ℝ E]
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hEq : f₁ □ g = f₂ □ g)
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    ∀ {lam : ℝ}, 0 < lam → moreauEnvelope f₁ lam = moreauEnvelope f₂ lam :=
+  forall_moreauEnvelope_eq_of_infConvolution_eq_of_isCoercive_real_of_convex_lsc
+    hconv₁ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₁)
+    hconv₂ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₂)
+    hEq hf₁ hf₂ hg
+
+/-- In the coercive closed-convex real-valued setting, equality after infimal
+convolution with a common summand is equivalent to equality of the original
+left summands. This is the clean Chapter 3 cancellation statement in the
+current development. -/
+theorem infConvolution_eq_iff_eq_of_isCoercive_real_of_convex_lsc
+    {f₁ f₂ g : E → ℝ}
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hlsc₁ : LowerSemicontinuous (fun x => (f₁ x : EReal)))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hlsc₂ : LowerSemicontinuous (fun x => (f₂ x : EReal)))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    f₁ □ g = f₂ □ g ↔ f₁ = f₂ := by
+  constructor
+  · intro hEq
+    exact eq_of_infConvolution_eq_of_isCoercive_real_of_convex_lsc
+      hconv₁ hlsc₁ hconv₂ hlsc₂ hEq hf₁ hf₂ hg
+  · intro hEq
+    simpa [hEq]
+
+/-- In the coercive convex real-valued setting, equality after infimal
+convolution with a common summand is equivalent to equality of the original
+left summands; lower semicontinuity follows from convexity in finite dimension. -/
+theorem infConvolution_eq_iff_eq_of_isCoercive_real_of_convex
+    {f₁ f₂ g : E → ℝ}
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    f₁ □ g = f₂ □ g ↔ f₁ = f₂ := by
+  constructor
+  · intro hEq
+    exact eq_of_infConvolution_eq_of_isCoercive_real_of_convex
+      hconv₁ hconv₂ hEq hf₁ hf₂ hg
+  · intro hEq
+    simpa [hEq]
+
+/-- In the coercive closed-convex real-valued setting, equality after infimal
+convolution with a common summand is equivalent to equality of all shifted
+continuous-linear infima of the left summands. This packages the algebraic
+`3(10)` step together with the separation-based endpoint. -/
+theorem infConvolution_eq_iff_forall_iInf_sub_continuousLinear_eq_of_isCoercive_real_of_convex_lsc
+    {f₁ f₂ g : E → ℝ}
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hlsc₁ : LowerSemicontinuous (fun x => (f₁ x : EReal)))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hlsc₂ : LowerSemicontinuous (fun x => (f₂ x : EReal)))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    f₁ □ g = f₂ □ g ↔
+      ∀ l : E →L[ℝ] ℝ, (⨅ w : E, f₁ w - l w) = (⨅ w : E, f₂ w - l w) := by
+  constructor
+  · intro hEq
+    exact forall_iInf_sub_continuousLinear_eq_of_infConvolution_eq_of_isCoercive_real_of_isCoercive
+      hEq hf₁ hf₂ hg
+  · intro hEqInf
+    have hfun :
+        f₁ = f₂ :=
+      eq_of_forall_iInf_sub_continuousLinear_eq_of_convex_lsc
+        hconv₁ hlsc₁ hconv₂ hlsc₂
+        (fun l => bddBelow_sub_continuousLinear_of_isCoercive_real hf₁ l)
+        (fun l => bddBelow_sub_continuousLinear_of_isCoercive_real hf₂ l)
+        hEqInf
+    simpa [hfun]
+
+/-- In the coercive convex real-valued setting, equality after infimal
+convolution with a common summand is equivalent to equality of all shifted
+continuous-linear infima of the left summands; lower semicontinuity follows
+from convexity in finite dimension. -/
+theorem infConvolution_eq_iff_forall_iInf_sub_continuousLinear_eq_of_isCoercive_real_of_convex
+    {f₁ f₂ g : E → ℝ}
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    f₁ □ g = f₂ □ g ↔
+      ∀ l : E →L[ℝ] ℝ, (⨅ w : E, f₁ w - l w) = (⨅ w : E, f₂ w - l w) :=
+  infConvolution_eq_iff_forall_iInf_sub_continuousLinear_eq_of_isCoercive_real_of_convex_lsc
+    hconv₁ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₁)
+    hconv₂ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₂)
+    hf₁ hf₂ hg
+
+/-- In the coercive closed-convex real-valued setting, equality after infimal
+convolution with a common summand is equivalent to equality of all positive
+Moreau envelopes of the left summands. -/
+theorem infConvolution_eq_iff_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex_lsc
+    {f₁ f₂ g : E → ℝ}
+    [InnerProductSpace ℝ E]
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hlsc₁ : LowerSemicontinuous (fun x => (f₁ x : EReal)))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hlsc₂ : LowerSemicontinuous (fun x => (f₂ x : EReal)))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    f₁ □ g = f₂ □ g ↔
+      ∀ {lam : ℝ}, 0 < lam → moreauEnvelope f₁ lam = moreauEnvelope f₂ lam := by
+  constructor
+  · intro hEq
+    exact forall_moreauEnvelope_eq_of_infConvolution_eq_of_isCoercive_real_of_convex_lsc
+      hconv₁ hlsc₁ hconv₂ hlsc₂ hEq hf₁ hf₂ hg
+  · intro hEq
+    have hfun :
+        f₁ = f₂ :=
+      eq_of_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex_lsc
+        hconv₁ hlsc₁ hconv₂ hlsc₂ hf₁ hf₂ hEq
+    simpa [hfun]
+
+/-- In the coercive convex real-valued setting, equality after infimal
+convolution with a common summand is equivalent to equality of all positive
+Moreau envelopes of the left summands; lower semicontinuity follows from
+convexity in finite dimension. -/
+theorem infConvolution_eq_iff_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex
+    {f₁ f₂ g : E → ℝ}
+    [InnerProductSpace ℝ E]
+    (hconv₁ : Convex ℝ (epigraph (fun x => (f₁ x : EReal))))
+    (hconv₂ : Convex ℝ (epigraph (fun x => (f₂ x : EReal))))
+    (hf₁ : IsCoercive (fun x : E => (f₁ x : EReal)))
+    (hf₂ : IsCoercive (fun x : E => (f₂ x : EReal)))
+    (hg : IsCoercive (fun x : E => (g x : EReal))) :
+    f₁ □ g = f₂ □ g ↔
+      ∀ {lam : ℝ}, 0 < lam → moreauEnvelope f₁ lam = moreauEnvelope f₂ lam :=
+  infConvolution_eq_iff_forall_moreauEnvelope_eq_of_isCoercive_real_of_convex_lsc
+    hconv₁ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₁)
+    hconv₂ (lowerSemicontinuous_coe_real_of_convex_epigraph hconv₂)
+    hf₁ hf₂ hg
 
 end ConvexAnalyticEndpoint
 

@@ -13,9 +13,10 @@ horizon functions:
 
 import RockafellarWets.Chapter3.Cones
 import RockafellarWets.Chapter1.Defs
+import RockafellarWets.Chapter1.Semicontinuity
 import Mathlib.Data.EReal.Operations
 
-open Set EReal
+open Set EReal Filter Topology
 
 namespace RW
 
@@ -90,6 +91,106 @@ theorem isCone_epigraph_of_positivelyHomogeneous {h : E → EReal}
       h (c • x) = (c : EReal) * h x := hh.2 hc
       _ ≤ (c : EReal) * α := by gcongr
       _ = ((c * α : ℝ) : EReal) := by rw [EReal.coe_mul]
+
+private theorem ereal_eq_of_forall_real_upper_bounds {a b : EReal}
+    (h : ∀ α : ℝ, a ≤ (α : EReal) ↔ b ≤ (α : EReal)) :
+    a = b := by
+  apply le_antisymm
+  · by_contra hle
+    have hlt : b < a := lt_of_not_ge hle
+    obtain ⟨α, hbα, hαa⟩ := EReal.exists_between_coe_real hlt
+    have hb_le : b ≤ (α : EReal) := le_of_lt hbα
+    have ha_le : a ≤ (α : EReal) := (h α).2 hb_le
+    exact (not_le_of_gt hαa) ha_le
+  · by_contra hle
+    have hlt : a < b := lt_of_not_ge hle
+    obtain ⟨α, haα, hαb⟩ := EReal.exists_between_coe_real hlt
+    have ha_le : a ≤ (α : EReal) := le_of_lt haα
+    have hb_le : b ≤ (α : EReal) := (h α).1 ha_le
+    exact (not_le_of_gt hαb) hb_le
+
+private theorem coe_mul_le_coe_iff_le_inv_mul {a : EReal} {c α : ℝ}
+    (hc : 0 < c) :
+    ((c : EReal) * a ≤ (α : EReal) ↔
+      a ≤ ((c⁻¹ * α : ℝ) : EReal)) := by
+  cases a with
+  | bot => simp [EReal.coe_mul_bot_of_pos hc]
+  | top =>
+      rw [EReal.coe_mul_top_of_pos hc]
+      have hfinite : ((c⁻¹ : EReal) * (α : EReal)) ≠ ⊤ := by
+        rw [← EReal.coe_inv, ← EReal.coe_mul]
+        exact EReal.coe_ne_top _
+      constructor
+      · intro htop
+        exact False.elim ((EReal.coe_ne_top α) (top_le_iff.mp htop))
+      · intro htop
+        exact False.elim (hfinite (top_le_iff.mp htop))
+  | coe x =>
+      rw [← EReal.coe_mul]
+      norm_cast
+      exact (le_inv_mul_iff₀ hc).symm
+
+/-- **Exercise 3.19**: if the epigraph of a function is a cone, then the
+function is positively homogeneous. -/
+theorem positivelyHomogeneous_of_isCone_epigraph {h : E → EReal}
+    (hep : IsCone (epigraph h)) :
+    PositivelyHomogeneous h := by
+  refine ⟨?_, ?_⟩
+  · have hmem : ((0 : E), (0 : ℝ)) ∈ epigraph h := by
+      simpa using hep.1
+    have hle : h 0 ≤ (0 : EReal) := by
+      simpa [mem_epigraph_iff] using hmem
+    exact lt_of_le_of_lt hle (EReal.coe_lt_top 0)
+  · intro x c hc
+    apply ereal_eq_of_forall_real_upper_bounds
+    intro α
+    calc
+      h (c • x) ≤ (α : EReal)
+          ↔ (c • x, α) ∈ epigraph h := (mem_epigraph_iff h (c • x) α).symm
+      _ ↔ (x, c⁻¹ * α) ∈ epigraph h := by
+            constructor
+            · intro hp
+              have hscaled : (c⁻¹ : ℝ) • (c • x, α) ∈ epigraph h :=
+                hep.2 hp (inv_pos.mpr hc)
+              simpa [Prod.smul_mk, smul_smul, smul_eq_mul,
+                inv_mul_cancel₀ hc.ne'] using hscaled
+            · intro hp
+              have hscaled : c • (x, c⁻¹ * α) ∈ epigraph h := hep.2 hp hc
+              have hα : c * (c⁻¹ * α) = α := by
+                field_simp [hc.ne']
+              simpa [Prod.smul_mk, smul_eq_mul, hα] using hscaled
+      _ ↔ h x ≤ (((c⁻¹ * α : ℝ) : EReal)) := mem_epigraph_iff h x (c⁻¹ * α)
+      _ ↔ (c : EReal) * h x ≤ (α : EReal) :=
+            (coe_mul_le_coe_iff_le_inv_mul (a := h x) hc).symm
+
+/-- **Exercise 3.19**: positive homogeneity is equivalent to conicity of the
+epigraph. -/
+theorem positivelyHomogeneous_iff_isCone_epigraph {h : E → EReal} :
+    PositivelyHomogeneous h ↔ IsCone (epigraph h) := by
+  constructor
+  · exact isCone_epigraph_of_positivelyHomogeneous
+  · exact positivelyHomogeneous_of_isCone_epigraph
+
+/-- The zero lower level set of a positively homogeneous function is a cone. -/
+theorem PositivelyHomogeneous.isCone_levelSet_zero {h : E → EReal}
+    (hh : PositivelyHomogeneous h) :
+    IsCone (levelSet h (0 : EReal)) := by
+  refine ⟨?_, ?_⟩
+  · exact hh.map_zero_le_zero
+  · intro x hx c hc
+    change h (c • x) ≤ (0 : EReal)
+    rw [hh.2 hc]
+    calc
+      (c : EReal) * h x ≤ (c : EReal) * (0 : EReal) := by
+        gcongr
+        exact hx
+      _ = 0 := by simp
+
+/-- The zero lower level set of a sublinear function is a cone. -/
+theorem Sublinear.isCone_levelSet_zero {h : E → EReal}
+    (hh : Sublinear h) :
+    IsCone (levelSet h (0 : EReal)) :=
+  hh.1.isCone_levelSet_zero
 
 /-- The epigraph of a sublinear function is convex. -/
 theorem convex_epigraph_of_sublinear {h : E → EReal} (hh : Sublinear h) :
@@ -335,6 +436,26 @@ theorem sublinear_of_positivelyHomogeneous_of_convex_epigraph_of_ne_bot
   sublinear_of_positivelyHomogeneous_of_convex hph
     (convex_inequality_of_convex_epigraph_of_ne_bot hep hbot)
 
+/-- **Exercise 3.19**, `EReal`-safe form: for functions with no `⊥` values,
+sublinearity is equivalent to the epigraph being a convex cone. -/
+theorem sublinear_iff_convex_isCone_epigraph_of_ne_bot {h : E → EReal}
+    (hbot : ∀ x, h x ≠ ⊥) :
+    Sublinear h ↔ Convex ℝ (epigraph h) ∧ IsCone (epigraph h) := by
+  constructor
+  · intro hh
+    exact ⟨convex_epigraph_of_sublinear hh, isCone_epigraph_of_positivelyHomogeneous hh.1⟩
+  · rintro ⟨hconv, hcone⟩
+    exact sublinear_of_positivelyHomogeneous_of_convex_epigraph_of_ne_bot
+      (positivelyHomogeneous_of_isCone_epigraph hcone) hconv hbot
+
+/-- Proper-function specialization of the epigraph convex-cone criterion for
+sublinearity. -/
+theorem sublinear_iff_convex_isCone_epigraph_of_isProper {h : E → EReal}
+    (hproper : IsProper h) :
+    Sublinear h ↔ Convex ℝ (epigraph h) ∧ IsCone (epigraph h) :=
+  sublinear_iff_convex_isCone_epigraph_of_ne_bot
+    (fun x => ne_of_gt (hproper.2 x))
+
 /-- A function is sublinear iff it is positively homogeneous and satisfies the
 convexity inequality. -/
 theorem sublinear_iff_positivelyHomogeneous_and_convex
@@ -349,6 +470,358 @@ theorem sublinear_iff_positivelyHomogeneous_and_convex
     exact ⟨hh.1, convex_inequality_of_sublinear hh⟩
   · rintro ⟨hph, hconv⟩
     exact sublinear_of_positivelyHomogeneous_of_convex hph hconv
+
+/-- A positively homogeneous proper function has value `0` at the origin. -/
+theorem PositivelyHomogeneous.map_zero_eq_zero_of_isProper {h : E → EReal}
+    (hh : PositivelyHomogeneous h) (hproper : IsProper h) :
+    h 0 = 0 := by
+  rcases hh.zero_eq_zero_or_bot with h0 | h0
+  · exact h0
+  · exact False.elim ((ne_of_gt (hproper.2 0)) h0)
+
+/-- **Exercise 3.19**: a lower-semicontinuous positively homogeneous function
+with value `0` at the origin is proper. -/
+theorem PositivelyHomogeneous.isProper_of_lowerSemicontinuous_map_zero_eq_zero
+    {h : E → EReal} (hh : PositivelyHomogeneous h)
+    (hlsc : LowerSemicontinuous h) (h0 : h 0 = 0) :
+    IsProper h := by
+  refine ⟨⟨0, by simp [h0]⟩, ?_⟩
+  intro x
+  by_contra hx_not
+  have hx_bot : h x = ⊥ := le_bot_iff.mp (not_lt.mp hx_not)
+  have hclosed : IsClosed (epigraph h) := isClosed_epigraph_of_lsc_ereal h hlsc
+  let u : ℕ → E × ℝ := fun n => ((((n : ℝ) + 1)⁻¹) • x, (-1 : ℝ))
+  have hcoef_tendsto :
+      Tendsto (fun n : ℕ => (((n : ℝ) + 1)⁻¹)) atTop (𝓝 (0 : ℝ)) := by
+    simpa [one_div] using tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)
+  have hsmul_tendsto :
+      Tendsto (fun n : ℕ => (((n : ℝ) + 1)⁻¹) • x) atTop (𝓝 (0 : E)) := by
+    simpa using hcoef_tendsto.smul_const x
+  have hu_tendsto : Tendsto u atTop (𝓝 ((0 : E), (-1 : ℝ))) := by
+    simpa [u] using hsmul_tendsto.prodMk_nhds tendsto_const_nhds
+  have hu_mem : ∀ᶠ n : ℕ in atTop, u n ∈ epigraph h := by
+    refine Filter.Eventually.of_forall ?_
+    intro n
+    have hpos : 0 < ((n : ℝ) + 1)⁻¹ := by positivity
+    rw [mem_epigraph_iff]
+    rw [hh.2 (x := x) (c := ((n : ℝ) + 1)⁻¹) hpos, hx_bot,
+      EReal.coe_mul_bot_of_pos hpos]
+    exact bot_le
+  have hlim : ((0 : E), (-1 : ℝ)) ∈ epigraph h :=
+    hclosed.mem_of_tendsto hu_tendsto hu_mem
+  have hbad : (0 : EReal) ≤ ((-1 : ℝ) : EReal) := by
+    simpa [mem_epigraph_iff, h0] using hlim
+  exact (by norm_num : ¬ (0 : EReal) ≤ ((-1 : ℝ) : EReal)) hbad
+
+/-- The linearity region from **Exercise 3.20**, represented as the projection
+of the lineality space of the epigraph. -/
+noncomputable def linearitySubmoduleOfProperConvexPosHom
+    (h : E → EReal) (hconv : Convex ℝ (epigraph h))
+    (hph : PositivelyHomogeneous h) : Submodule ℝ E :=
+  (linealitySubmoduleOfConvexCone hconv
+    (isCone_epigraph_of_positivelyHomogeneous hph)).map (LinearMap.fst ℝ E ℝ)
+
+/-- A finite-value subadditivity consequence used to identify the lineality
+projection in Exercise 3.20. -/
+private theorem neg_le_apply_neg_of_sublinear_of_isProper {h : E → EReal}
+    (hh : Sublinear h) (hproper : IsProper h) (x : E) :
+    -h x ≤ h (-x) := by
+  have h0 : h 0 = 0 := hh.1.map_zero_eq_zero_of_isProper hproper
+  have h0le : (0 : EReal) ≤ h x + h (-x) := by
+    calc
+      (0 : EReal) = h (x + -x) := by simp [h0]
+      _ ≤ h x + h (-x) := hh.2 x (-x)
+  have hsub : (0 : EReal) - h x ≤ h (-x) := by
+    exact EReal.sub_le_of_le_add (by simpa [add_comm] using h0le)
+  simpa using hsub
+
+/-- **Exercise 3.20**: for a proper convex positively homogeneous function,
+the projected lineality space of the epigraph is exactly the set where
+`h (-x) = -h x`. -/
+theorem mem_linearitySubmoduleOfProperConvexPosHom_iff
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    {x : E} :
+    x ∈ linearitySubmoduleOfProperConvexPosHom h hconv hph ↔
+      h (-x) = -h x := by
+  let L :=
+    linealitySubmoduleOfConvexCone hconv
+      (isCone_epigraph_of_positivelyHomogeneous hph)
+  have hsub : Sublinear h :=
+    sublinear_of_positivelyHomogeneous_of_convex_epigraph_of_ne_bot hph hconv
+      (fun y => ne_of_gt (hproper.2 y))
+  constructor
+  · intro hx
+    rw [linearitySubmoduleOfProperConvexPosHom, Submodule.mem_map] at hx
+    rcases hx with ⟨p, hp, hp_eq⟩
+    rcases p with ⟨y, a⟩
+    have hyx : y = x := by simpa using hp_eq
+    subst y
+    have hxy : h x ≤ (a : EReal) := by
+      simpa [L, mem_epigraph_iff] using hp.1
+    have hnegxy : h (-x) ≤ ((-a : ℝ) : EReal) := by
+      simpa [L, mem_epigraph_iff, Prod.neg_mk] using hp.2
+    have hneg_bound : ((-a : ℝ) : EReal) ≤ -h x := by
+      have : -((a : ℝ) : EReal) ≤ -h x :=
+        EReal.neg_le_neg_iff.2 hxy
+      simpa [EReal.coe_neg] using this
+    exact le_antisymm (hnegxy.trans hneg_bound)
+      (neg_le_apply_neg_of_sublinear_of_isProper hsub hproper x)
+  · intro hx
+    rw [linearitySubmoduleOfProperConvexPosHom, Submodule.mem_map]
+    have hx_bot : h x ≠ ⊥ := ne_of_gt (hproper.2 x)
+    have hx_top : h x ≠ ⊤ := by
+      intro htop
+      have hneg_bot : h (-x) = ⊥ := by simpa [htop] using hx
+      exact (ne_of_gt (hproper.2 (-x))) hneg_bot
+    let a : ℝ := (h x).toReal
+    have ha : (a : EReal) = h x := EReal.coe_toReal hx_top hx_bot
+    refine ⟨(x, a), ?_, rfl⟩
+    refine ⟨?_, ?_⟩
+    · rw [mem_epigraph_iff]
+      exact le_of_eq ha.symm
+    · rw [mem_epigraph_iff]
+      simpa [Prod.neg_mk, EReal.coe_neg, ha] using le_of_eq hx
+
+/-- **Exercise 3.20**: the equality region `h (-x) = -h x` is a linear
+subspace for a proper convex positively homogeneous function. -/
+theorem exists_submodule_eq_neg_apply_eq_neg_of_isProper_convex_posHom
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h) :
+    ∃ M : Submodule ℝ E, (M : Set E) = {x | h (-x) = -h x} := by
+  refine ⟨linearitySubmoduleOfProperConvexPosHom h hconv hph, ?_⟩
+  ext x
+  exact mem_linearitySubmoduleOfProperConvexPosHom_iff hproper hconv hph
+
+private theorem apply_eq_coe_of_mem_lineality_epigraph
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    {x : E} {a : ℝ}
+    (hp : (x, a) ∈
+      linealitySubmoduleOfConvexCone hconv
+        (isCone_epigraph_of_positivelyHomogeneous hph)) :
+    h x = (a : EReal) := by
+  have hsub : Sublinear h :=
+    sublinear_of_positivelyHomogeneous_of_convex_epigraph_of_ne_bot hph hconv
+      (fun y => ne_of_gt (hproper.2 y))
+  have h0 : h 0 = 0 := hph.map_zero_eq_zero_of_isProper hproper
+  have hxa : h x ≤ (a : EReal) := by
+    simpa [mem_epigraph_iff] using hp.1
+  have hnxa : h (-x) ≤ ((-a : ℝ) : EReal) := by
+    simpa [mem_epigraph_iff, Prod.neg_mk] using hp.2
+  have h0le : (0 : EReal) ≤ h x + h (-x) := by
+    calc
+      (0 : EReal) = h (x + -x) := by simp [h0]
+      _ ≤ h x + h (-x) := hsub.2 x (-x)
+  have h0le' : (0 : EReal) ≤ h x + ((-a : ℝ) : EReal) := by
+    have hadd : h x + h (-x) ≤ h x + ((-a : ℝ) : EReal) := by
+      gcongr
+    exact h0le.trans hadd
+  have ha_le : (a : EReal) ≤ h x := by
+    have hsub' : (0 : EReal) - ((-a : ℝ) : EReal) ≤ h x := by
+      exact EReal.sub_le_of_le_add (by simpa [add_comm] using h0le')
+    simpa [EReal.coe_neg] using hsub'
+  exact le_antisymm hxa ha_le
+
+/-- **Exercise 3.20**: on the linearity subspace, `h` is additive. -/
+theorem apply_add_of_mem_linearitySubmoduleOfProperConvexPosHom
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    {x y : E}
+    (hx : x ∈ linearitySubmoduleOfProperConvexPosHom h hconv hph)
+    (hy : y ∈ linearitySubmoduleOfProperConvexPosHom h hconv hph) :
+    h (x + y) = h x + h y := by
+  let L :=
+    linealitySubmoduleOfConvexCone hconv
+      (isCone_epigraph_of_positivelyHomogeneous hph)
+  rw [linearitySubmoduleOfProperConvexPosHom, Submodule.mem_map] at hx hy
+  rcases hx with ⟨p, hp, hp_eq⟩
+  rcases hy with ⟨q, hq, hq_eq⟩
+  rcases p with ⟨x', a⟩
+  rcases q with ⟨y', b⟩
+  have hx' : x' = x := by simpa using hp_eq
+  have hy' : y' = y := by simpa using hq_eq
+  subst x'
+  subst y'
+  have hxval : h x = (a : EReal) :=
+    apply_eq_coe_of_mem_lineality_epigraph hproper hconv hph hp
+  have hyval : h y = (b : EReal) :=
+    apply_eq_coe_of_mem_lineality_epigraph hproper hconv hph hq
+  have hsum_mem : ((x + y, a + b) : E × ℝ) ∈ L := by
+    simpa [L, Prod.mk_add_mk] using L.add_mem hp hq
+  have hsum : h (x + y) = ((a + b : ℝ) : EReal) :=
+    apply_eq_coe_of_mem_lineality_epigraph hproper hconv hph hsum_mem
+  calc
+    h (x + y) = ((a + b : ℝ) : EReal) := hsum
+    _ = h x + h y := by rw [hxval, hyval, EReal.coe_add]
+
+/-- **Exercise 3.20**: on the linearity subspace, positive homogeneity upgrades
+to full real homogeneity. -/
+theorem apply_smul_of_mem_linearitySubmoduleOfProperConvexPosHom
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    {x : E} (hx : x ∈ linearitySubmoduleOfProperConvexPosHom h hconv hph)
+    (c : ℝ) :
+    h (c • x) = (c : EReal) * h x := by
+  let L :=
+    linealitySubmoduleOfConvexCone hconv
+      (isCone_epigraph_of_positivelyHomogeneous hph)
+  rw [linearitySubmoduleOfProperConvexPosHom, Submodule.mem_map] at hx
+  rcases hx with ⟨p, hp, hp_eq⟩
+  rcases p with ⟨x', a⟩
+  have hx' : x' = x := by simpa using hp_eq
+  subst x'
+  have hxval : h x = (a : EReal) :=
+    apply_eq_coe_of_mem_lineality_epigraph hproper hconv hph hp
+  have hscaled_mem : ((c • x, c * a) : E × ℝ) ∈ L := by
+    simpa [L, Prod.smul_mk, smul_eq_mul] using L.smul_mem c hp
+  have hscaled : h (c • x) = ((c * a : ℝ) : EReal) :=
+    apply_eq_coe_of_mem_lineality_epigraph hproper hconv hph hscaled_mem
+  calc
+    h (c • x) = ((c * a : ℝ) : EReal) := hscaled
+    _ = (c : EReal) * h x := by rw [hxval, EReal.coe_mul]
+
+/-- **Exercise 3.20**: the linearity subspace is all of the ambient space
+exactly when `h (-x) = -h x` holds for every `x`. -/
+theorem linearitySubmoduleOfProperConvexPosHom_eq_top_iff
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h) :
+    linearitySubmoduleOfProperConvexPosHom h hconv hph = ⊤ ↔
+      ∀ x : E, h (-x) = -h x := by
+  constructor
+  · intro htop x
+    exact (mem_linearitySubmoduleOfProperConvexPosHom_iff hproper hconv hph).1
+      (by rw [htop]; exact Submodule.mem_top)
+  · intro hall
+    ext x
+    constructor
+    · intro hx
+      exact Submodule.mem_top
+    · intro hx
+      exact (mem_linearitySubmoduleOfProperConvexPosHom_iff hproper hconv hph).2
+        (hall x)
+
+/-- If the Exercise 3.20 linearity subspace is all of `E`, then `h` is
+additive everywhere. -/
+theorem apply_add_of_linearitySubmodule_eq_top
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    (htop : linearitySubmoduleOfProperConvexPosHom h hconv hph = ⊤)
+    (x y : E) :
+    h (x + y) = h x + h y := by
+  apply apply_add_of_mem_linearitySubmoduleOfProperConvexPosHom hproper hconv hph
+  · rw [htop]
+    exact Submodule.mem_top
+  · rw [htop]
+    exact Submodule.mem_top
+
+/-- If the Exercise 3.20 linearity subspace is all of `E`, then positive
+homogeneity upgrades to full real homogeneity everywhere. -/
+theorem apply_smul_of_linearitySubmodule_eq_top
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    (htop : linearitySubmoduleOfProperConvexPosHom h hconv hph = ⊤)
+    (c : ℝ) (x : E) :
+    h (c • x) = (c : EReal) * h x := by
+  apply apply_smul_of_mem_linearitySubmoduleOfProperConvexPosHom hproper hconv hph
+  rw [htop]
+  exact Submodule.mem_top
+
+/-- If the Exercise 3.20 linearity subspace is all of `E`, then `h` is finite
+everywhere. -/
+theorem apply_ne_top_of_linearitySubmodule_eq_top
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    (htop : linearitySubmoduleOfProperConvexPosHom h hconv hph = ⊤)
+    (x : E) :
+    h x ≠ ⊤ := by
+  intro hx_top
+  have hneg :
+      h (-x) = -h x :=
+    (linearitySubmoduleOfProperConvexPosHom_eq_top_iff hproper hconv hph).1 htop x
+  have hneg_bot : h (-x) = ⊥ := by
+    simpa [hx_top] using hneg
+  exact (ne_of_gt (hproper.2 (-x))) hneg_bot
+
+/-- If the Exercise 3.20 linearity subspace is all of `E`, then the real-valued
+representative `toReal ∘ h` coerces back to `h`. -/
+theorem coe_toReal_apply_of_linearitySubmodule_eq_top
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    (htop : linearitySubmoduleOfProperConvexPosHom h hconv hph = ⊤)
+    (x : E) :
+    (((h x).toReal : ℝ) : EReal) = h x :=
+  EReal.coe_toReal
+    (apply_ne_top_of_linearitySubmodule_eq_top hproper hconv hph htop x)
+    (ne_of_gt (hproper.2 x))
+
+/-- **Exercise 3.20**: if the linearity subspace is all of `E`, then `h` is a
+real linear function, represented by a `LinearMap` into `ℝ`. -/
+theorem exists_linearMap_coe_eq_of_linearitySubmodule_eq_top
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    (htop : linearitySubmoduleOfProperConvexPosHom h hconv hph = ⊤) :
+    ∃ L : E →ₗ[ℝ] ℝ, ∀ x : E, h x = (L x : EReal) := by
+  let hfin : ∀ x : E, (((h x).toReal : ℝ) : EReal) = h x :=
+    coe_toReal_apply_of_linearitySubmodule_eq_top hproper hconv hph htop
+  refine ⟨{
+    toFun := fun x => (h x).toReal
+    map_add' := ?_
+    map_smul' := ?_
+  }, ?_⟩
+  · intro x y
+    have hcoe :
+        (((h (x + y)).toReal : ℝ) : EReal) =
+          (((h x).toReal + (h y).toReal : ℝ) : EReal) := by
+      calc
+        (((h (x + y)).toReal : ℝ) : EReal) = h (x + y) := hfin (x + y)
+        _ = h x + h y :=
+          apply_add_of_linearitySubmodule_eq_top hproper hconv hph htop x y
+        _ = (((h x).toReal : ℝ) : EReal) + (((h y).toReal : ℝ) : EReal) := by
+          rw [hfin x, hfin y]
+        _ = (((h x).toReal + (h y).toReal : ℝ) : EReal) := by
+          rw [EReal.coe_add]
+    exact_mod_cast hcoe
+  · intro c x
+    have hcoe :
+        (((h (c • x)).toReal : ℝ) : EReal) =
+          (((c * (h x).toReal : ℝ)) : EReal) := by
+      calc
+        (((h (c • x)).toReal : ℝ) : EReal) = h (c • x) := hfin (c • x)
+        _ = (c : EReal) * h x :=
+          apply_smul_of_linearitySubmodule_eq_top hproper hconv hph htop c x
+        _ = (c : EReal) * (((h x).toReal : ℝ) : EReal) := by rw [hfin x]
+        _ = (((c * (h x).toReal : ℝ)) : EReal) := by rw [EReal.coe_mul]
+    exact_mod_cast hcoe
+  · intro x
+    exact (hfin x).symm
+
+/-- **Exercise 3.20**: if `h` is represented by a real linear map, then its
+linearity subspace is all of `E`. -/
+theorem linearitySubmodule_eq_top_of_exists_linearMap_coe_eq
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h)
+    (hlin : ∃ L : E →ₗ[ℝ] ℝ, ∀ x : E, h x = (L x : EReal)) :
+    linearitySubmoduleOfProperConvexPosHom h hconv hph = ⊤ := by
+  rcases hlin with ⟨L, hL⟩
+  exact
+    (linearitySubmoduleOfProperConvexPosHom_eq_top_iff hproper hconv hph).2
+      (fun x => by
+        calc
+          h (-x) = (L (-x) : EReal) := hL (-x)
+          _ = ((-L x : ℝ) : EReal) := by rw [map_neg]
+          _ = -h x := by rw [EReal.coe_neg, hL x])
+
+/-- **Exercise 3.20**: the linearity subspace is all of `E` iff `h` is a real
+linear function. -/
+theorem linearitySubmodule_eq_top_iff_exists_linearMap_coe_eq
+    {h : E → EReal} (hproper : IsProper h)
+    (hconv : Convex ℝ (epigraph h)) (hph : PositivelyHomogeneous h) :
+    linearitySubmoduleOfProperConvexPosHom h hconv hph = ⊤ ↔
+      ∃ L : E →ₗ[ℝ] ℝ, ∀ x : E, h x = (L x : EReal) := by
+  constructor
+  · exact exists_linearMap_coe_eq_of_linearitySubmodule_eq_top hproper hconv hph
+  · exact linearitySubmodule_eq_top_of_exists_linearMap_coe_eq hproper hconv hph
 
 /-- The indicator function of a set is positively homogeneous iff the set is a
 cone. -/
