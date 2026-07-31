@@ -36,6 +36,15 @@ def ordinaryRayCone (C : Set E) : Set (E × ℝ) :=
 def raySpaceCone (C K : Set E) : Set (E × ℝ) :=
   ordinaryRayCone C ∪ (K ×ˢ ({0} : Set ℝ))
 
+@[simp] theorem ordinaryRayCone_empty :
+    ordinaryRayCone (∅ : Set E) = ∅ := by
+  ext p
+  simp [ordinaryRayCone]
+
+@[simp] theorem raySpaceCone_empty_empty :
+    raySpaceCone (∅ : Set E) (∅ : Set E) = ∅ := by
+  simp [raySpaceCone]
+
 theorem mem_ordinaryRayCone {C : Set E} {p : E × ℝ} :
     p ∈ ordinaryRayCone C ↔ ∃ x ∈ C, ∃ a : ℝ, 0 < a ∧ p = (a • x, -a) := by
   rfl
@@ -52,6 +61,53 @@ theorem snd_lt_zero_of_mem_ordinaryRayCone {C : Set E} {p : E × ℝ}
   have hneg : (-(a : ℝ)) < 0 := by
     linarith
   simpa [hEq] using hneg
+
+theorem mem_ordinaryRayCone_neg_one_iff {C : Set E} {x : E} :
+    (x, -1) ∈ ordinaryRayCone C ↔ x ∈ C := by
+  constructor
+  · rintro ⟨y, hy, a, ha, hEq⟩
+    have ha1 : a = 1 := by
+      have hsnd : (-1 : ℝ) = -a := by
+        simpa using congrArg Prod.snd hEq
+      linarith
+    have hxy : x = y := by
+      simpa [ha1] using congrArg Prod.fst hEq
+    simpa [hxy] using hy
+  · intro hx
+    exact ⟨x, hx, 1, by norm_num, by simp⟩
+
+theorem mem_ordinaryRayCone_zero_iff {C : Set E} {x : E} :
+    (x, 0) ∈ ordinaryRayCone C ↔ False := by
+  constructor
+  · intro hx
+    have hlt := snd_lt_zero_of_mem_ordinaryRayCone hx
+    simp at hlt
+  · intro h
+    exact False.elim h
+
+theorem ordinaryRayCone_eq_empty_iff {C : Set E} :
+    ordinaryRayCone C = ∅ ↔ C = ∅ := by
+  constructor
+  · intro h
+    ext x
+    constructor
+    · intro hx
+      have hxOrd : (x, -1) ∈ ordinaryRayCone C :=
+        (mem_ordinaryRayCone_neg_one_iff).2 hx
+      simp [h] at hxOrd
+    · intro hx
+      simp at hx
+  · intro h
+    simp [h]
+
+theorem ordinaryRayCone_nonempty_iff {C : Set E} :
+    (ordinaryRayCone C).Nonempty ↔ C.Nonempty := by
+  constructor
+  · rintro ⟨p, hp⟩
+    rcases hp with ⟨x, hx, a, ha, hEq⟩
+    exact ⟨x, hx⟩
+  · rintro ⟨x, hx⟩
+    exact ⟨(x, -1), (mem_ordinaryRayCone_neg_one_iff).2 hx⟩
 
 theorem ordinaryRayCone_inter {C D : Set E} :
     ordinaryRayCone (C ∩ D) = ordinaryRayCone C ∩ ordinaryRayCone D := by
@@ -107,6 +163,35 @@ theorem raySpaceCone_inter {C D K L : Set E} :
       · exact ordinaryRayCone_mono inter_subset_right hpOrd
     · exact ⟨Or.inr ⟨hpHor.1.1, hpHor.2⟩, Or.inr ⟨hpHor.1.2, hpHor.2⟩⟩
 
+/-- Ordinary ray points are included in the corresponding ray-space cone. -/
+theorem ordinaryRayCone_subset_raySpaceCone (C K : Set E) :
+    ordinaryRayCone C ⊆ raySpaceCone C K := by
+  intro p hp
+  exact Or.inl hp
+
+/-- Direction-slice points are included in the corresponding ray-space cone. -/
+theorem directionSlice_subset_raySpaceCone (C K : Set E) :
+    K ×ˢ ({0} : Set ℝ) ⊆ raySpaceCone C K := by
+  intro p hp
+  exact Or.inr hp
+
+/-- Ray-space cones are monotone in both ordinary and direction parts. -/
+theorem raySpaceCone_mono {C D K L : Set E} (hCD : C ⊆ D) (hKL : K ⊆ L) :
+    raySpaceCone C K ⊆ raySpaceCone D L := by
+  intro p hp
+  rcases hp with hpOrd | hpHor
+  · exact Or.inl (ordinaryRayCone_mono hCD hpOrd)
+  · exact Or.inr ⟨hKL hpHor.1, hpHor.2⟩
+
+/-- A point of a ray-space cone has nonpositive height. -/
+theorem snd_nonpos_of_mem_raySpaceCone {C K : Set E} {p : E × ℝ}
+    (hp : p ∈ raySpaceCone C K) :
+    p.2 ≤ 0 := by
+  rcases hp with hpOrd | hpHor
+  · exact le_of_lt (snd_lt_zero_of_mem_ordinaryRayCone hpOrd)
+  · have hzero : p.2 = 0 := by simpa using hpHor.2
+    exact le_of_eq hzero
+
 theorem mem_raySpaceCone_zero_iff {C K : Set E} {x : E} :
     (x, 0) ∈ raySpaceCone C K ↔ x ∈ K := by
   constructor
@@ -136,6 +221,98 @@ theorem mem_raySpaceCone_neg_one_iff {C K : Set E} {x : E} :
       linarith
   · intro hx
     exact Or.inl ⟨x, hx, 1, by norm_num, by simp⟩
+
+/-- A ray-space cone is empty exactly when both its ordinary and direction
+parts are empty. -/
+theorem raySpaceCone_eq_empty_iff {C K : Set E} :
+    raySpaceCone C K = ∅ ↔ C = ∅ ∧ K = ∅ := by
+  constructor
+  · intro h
+    refine ⟨?_, ?_⟩
+    · ext x
+      constructor
+      · intro hx
+        have hxRay : (x, -1) ∈ raySpaceCone C K :=
+          (mem_raySpaceCone_neg_one_iff).2 hx
+        simp [h] at hxRay
+      · intro hx
+        simp at hx
+    · ext x
+      constructor
+      · intro hx
+        have hxRay : (x, 0) ∈ raySpaceCone C K :=
+          (mem_raySpaceCone_zero_iff).2 hx
+        simp [h] at hxRay
+      · intro hx
+        simp at hx
+  · rintro ⟨hC, hK⟩
+    simp [hC, hK]
+
+/-- A ray-space cone is nonempty exactly when either its ordinary or direction
+part is nonempty. -/
+theorem raySpaceCone_nonempty_iff {C K : Set E} :
+    (raySpaceCone C K).Nonempty ↔ C.Nonempty ∨ K.Nonempty := by
+  constructor
+  · rintro ⟨p, hp⟩
+    rcases hp with hpOrd | hpHor
+    · rcases hpOrd with ⟨x, hx, a, ha, hEq⟩
+      exact Or.inl ⟨x, hx⟩
+    · exact Or.inr ⟨p.1, hpHor.1⟩
+  · rintro (⟨x, hx⟩ | ⟨x, hx⟩)
+    · exact ⟨(x, -1), (mem_raySpaceCone_neg_one_iff).2 hx⟩
+    · exact ⟨(x, 0), (mem_raySpaceCone_zero_iff).2 hx⟩
+
+/-- Negative-height ray-space points are exactly ordinary-ray points. -/
+theorem mem_ordinaryRayCone_of_mem_raySpaceCone_of_snd_lt_zero
+    {C K : Set E} {p : E × ℝ} (hp : p ∈ raySpaceCone C K)
+    (hneg : p.2 < 0) :
+    p ∈ ordinaryRayCone C := by
+  rcases hp with hpOrd | hpHor
+  · exact hpOrd
+  · have hzero : p.2 = 0 := by simpa using hpHor.2
+    linarith
+
+/-- Negative-height membership in a ray-space cone is equivalent to membership
+in the ordinary-ray part. -/
+theorem mem_raySpaceCone_iff_of_snd_lt_zero
+    {C K : Set E} {p : E × ℝ} (hneg : p.2 < 0) :
+    p ∈ raySpaceCone C K ↔ p ∈ ordinaryRayCone C := by
+  constructor
+  · intro hp
+    exact mem_ordinaryRayCone_of_mem_raySpaceCone_of_snd_lt_zero hp hneg
+  · intro hp
+    exact ordinaryRayCone_subset_raySpaceCone C K hp
+
+/-- Zero-height ray-space points are exactly direction-slice points. -/
+theorem fst_mem_of_mem_raySpaceCone_of_snd_eq_zero
+    {C K : Set E} {p : E × ℝ} (hp : p ∈ raySpaceCone C K)
+    (hzero : p.2 = 0) :
+    p.1 ∈ K := by
+  rcases p with ⟨x, t⟩
+  change t = 0 at hzero
+  subst hzero
+  exact (mem_raySpaceCone_zero_iff).1 hp
+
+/-- A zero-height point whose first coordinate is a direction belongs to the
+ray-space cone. -/
+theorem mem_raySpaceCone_of_fst_mem_of_snd_eq_zero
+    {C K : Set E} {p : E × ℝ} (hpK : p.1 ∈ K) (hzero : p.2 = 0) :
+    p ∈ raySpaceCone C K := by
+  rcases p with ⟨x, t⟩
+  change t = 0 at hzero
+  subst hzero
+  exact (mem_raySpaceCone_zero_iff).2 hpK
+
+/-- Zero-height membership in a ray-space cone is equivalent to membership of
+the first coordinate in the direction part. -/
+theorem mem_raySpaceCone_iff_of_snd_eq_zero
+    {C K : Set E} {p : E × ℝ} (hzero : p.2 = 0) :
+    p ∈ raySpaceCone C K ↔ p.1 ∈ K := by
+  constructor
+  · intro hp
+    exact fst_mem_of_mem_raySpaceCone_of_snd_eq_zero hp hzero
+  · intro hp
+    exact mem_raySpaceCone_of_fst_mem_of_snd_eq_zero hp hzero
 
 theorem isCone_raySpaceCone {C K : Set E} (hK : IsCone K) :
     IsCone (raySpaceCone C K) := by

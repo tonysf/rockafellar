@@ -30,6 +30,60 @@ theorem convex_extendedConvexHull (A B : Set E) :
     Convex ℝ (extendedConvexHull A B) := by
   exact (convex_convexHull ℝ A).add (convex_conicHull B)
 
+theorem subset_extendedConvexHull_left (A B : Set E) :
+    A ⊆ extendedConvexHull A B := by
+  intro x hx
+  exact ⟨x, subset_convexHull ℝ A hx, 0, zero_mem_conicHull B, by simp⟩
+
+theorem conicHull_subset_extendedConvexHull_right_of_zero_mem_convexHull
+    {A B : Set E} (h0 : (0 : E) ∈ convexHull ℝ A) :
+    conicHull B ⊆ extendedConvexHull A B := by
+  intro x hx
+  exact ⟨0, h0, x, hx, by simp⟩
+
+theorem conicHull_subset_extendedConvexHull_right_of_zero_mem_left
+    {A B : Set E} (h0 : (0 : E) ∈ A) :
+    conicHull B ⊆ extendedConvexHull A B :=
+  conicHull_subset_extendedConvexHull_right_of_zero_mem_convexHull
+    (subset_convexHull ℝ A h0)
+
+theorem extendedConvexHull_mono {A₁ A₂ B₁ B₂ : Set E}
+    (hA : A₁ ⊆ A₂) (hB : B₁ ⊆ B₂) :
+    extendedConvexHull A₁ B₁ ⊆ extendedConvexHull A₂ B₂ := by
+  rintro x ⟨u, hu, v, hv, rfl⟩
+  refine ⟨u, ?_, v, conicHull_mono hB hv, rfl⟩
+  exact convexHull_minimal
+    (Subset.trans hA (subset_convexHull ℝ A₂))
+    (convex_convexHull ℝ A₂) hu
+
+@[simp] theorem extendedConvexHull_empty_left (B : Set E) :
+    extendedConvexHull (∅ : Set E) B = ∅ := by
+  simp [extendedConvexHull]
+
+@[simp] theorem extendedConvexHull_singleton_zero_left (B : Set E) :
+    extendedConvexHull ({0} : Set E) B = conicHull B := by
+  ext x
+  constructor
+  · rintro ⟨u, hu, v, hv, hsum⟩
+    have hu0 : u = 0 := by simpa using hu
+    have hxv : x = v := by
+      simpa [hu0] using hsum.symm
+    simpa [hxv] using hv
+  · intro hx
+    exact ⟨0, by simp, x, hx, by simp⟩
+
+@[simp] theorem extendedConvexHull_singleton_zero_right (A : Set E) :
+    extendedConvexHull A ({0} : Set E) = convexHull ℝ A := by
+  ext x
+  constructor
+  · rintro ⟨u, hu, v, hv, hsum⟩
+    have hv0 : v = 0 := by simpa using hv
+    have hxu : x = u := by
+      simpa [hv0] using hsum.symm
+    simpa [hxu] using hu
+  · intro hx
+    exact ⟨x, hx, 0, by simp, by simp⟩
+
 /-- For finite ordinary generators `s` and direction generators `t`,
 membership in the extended convex hull is equivalent to a finite convex
 combination from `s` plus a finite conic combination from `t`. This is the
@@ -116,6 +170,31 @@ sum of the convex hull of finitely many ordinary points and the conic hull of
 finitely many directions. -/
 def IsExtendedFinitelyGenerated (C : Set E) : Prop :=
   ∃ s t : Finset E, C = extendedConvexHull (↑s : Set E) (↑t : Set E)
+
+theorem IsExtendedFinitelyGenerated.extendedConvexHull_finset
+    (s t : Finset E) :
+    IsExtendedFinitelyGenerated (extendedConvexHull (↑s : Set E) (↑t : Set E)) :=
+  ⟨s, t, rfl⟩
+
+theorem IsExtendedFinitelyGenerated.empty :
+    IsExtendedFinitelyGenerated (∅ : Set E) := by
+  refine ⟨∅, ∅, ?_⟩
+  simp
+
+theorem IsExtendedFinitelyGenerated.convexHull_finset (s : Finset E) :
+    IsExtendedFinitelyGenerated (convexHull ℝ (↑s : Set E)) := by
+  refine ⟨s, {0}, ?_⟩
+  simp
+
+theorem IsExtendedFinitelyGenerated.conicHull_finset (t : Finset E) :
+    IsExtendedFinitelyGenerated (conicHull (↑t : Set E)) := by
+  refine ⟨{0}, t, ?_⟩
+  simp
+
+theorem IsExtendedFinitelyGenerated.singleton (x : E) :
+    IsExtendedFinitelyGenerated ({x} : Set E) := by
+  simpa using
+    (IsExtendedFinitelyGenerated.convexHull_finset (E := E) ({x} : Finset E))
 
 theorem IsExtendedFinitelyGenerated.convex {C : Set E}
     (hC : IsExtendedFinitelyGenerated C) :
@@ -791,6 +870,19 @@ theorem IsPolyhedral.affine_image {F : Type*}
     IsPolyhedral (f '' C) :=
   IsExtendedFinitelyGenerated.affine_image hC f
 
+theorem IsPolyhedral.smul {C : Set E} (hC : IsPolyhedral C) (a : ℝ) :
+    IsPolyhedral (a • C) := by
+  let L : E →ₗ[ℝ] E := a • (LinearMap.id : E →ₗ[ℝ] E)
+  have himage : L '' C = a • C := by
+    ext x
+    constructor
+    · rintro ⟨y, hy, rfl⟩
+      exact ⟨y, hy, by simp [L]⟩
+    · rintro ⟨y, hy, hxy⟩
+      exact ⟨y, hy, by simpa [L] using hxy⟩
+  rw [← himage]
+  exact hC.linear_image L
+
 theorem IsPolyhedral.exists_generators {C : Set E} (hC : IsPolyhedral C) :
     ∃ s t : Finset E, C = extendedConvexHull (↑s : Set E) (↑t : Set E) :=
   hC
@@ -803,6 +895,23 @@ theorem IsPolyhedral.exists_closure_generators {C : Set E} (hC : IsPolyhedral C)
 theorem IsPolyhedral.closure_isClosedPolyhedral {C : Set E} (hC : IsPolyhedral C) :
     IsClosedPolyhedral (closure C) :=
   IsExtendedFinitelyGenerated.closure_isClosedPolyhedral hC
+
+theorem IsPolyhedral.isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} (hC : IsPolyhedral C) :
+    IsClosedPolyhedral C := by
+  rcases hC with ⟨s, t, rfl⟩
+  refine ⟨s, t, ?_⟩
+  rw [extendedConvexHull, closure_conicHull_finset]
+
+theorem IsPolyhedral.isClosed
+    [FiniteDimensional ℝ E] {C : Set E} (hC : IsPolyhedral C) :
+    IsClosed C :=
+  hC.isClosedPolyhedral.isClosed
+
+theorem isPolyhedral_iff_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} :
+    IsPolyhedral C ↔ IsClosedPolyhedral C :=
+  ⟨fun hC => hC.isClosedPolyhedral, fun hC => hC.isPolyhedral⟩
 
 theorem IsPolyhedral.isClosedPolyhedral_of_isClosed {C : Set E}
     (hC : IsPolyhedral C) (hclosed : IsClosed C) :
@@ -877,6 +986,21 @@ theorem IsClosedPolyhedral.submodule_span_finset (s : Finset E) :
     (IsPolyhedral.submodule_span_finset (E := E) s).isClosedPolyhedral_of_isClosed
       (C := (p : Set E)) p.closed_of_finiteDimensional
 
+theorem IsPolyhedral.extendedConvexHull_finset (s t : Finset E) :
+    IsPolyhedral (extendedConvexHull (↑s : Set E) (↑t : Set E)) :=
+  IsExtendedFinitelyGenerated.extendedConvexHull_finset s t
+
+theorem IsPolyhedral.convexHull_finset (s : Finset E) :
+    IsPolyhedral (convexHull ℝ (↑s : Set E)) :=
+  IsExtendedFinitelyGenerated.convexHull_finset s
+
+theorem IsPolyhedral.conicHull_finset (t : Finset E) :
+    IsPolyhedral (conicHull (↑t : Set E)) :=
+  IsExtendedFinitelyGenerated.conicHull_finset t
+
+theorem IsPolyhedral.singleton (x : E) : IsPolyhedral ({x} : Set E) :=
+  IsExtendedFinitelyGenerated.singleton x
+
 theorem IsPolyhedral.empty : IsPolyhedral (∅ : Set E) := by
   refine ⟨∅, ∅, ?_⟩
   simp [extendedConvexHull]
@@ -884,6 +1008,21 @@ theorem IsPolyhedral.empty : IsPolyhedral (∅ : Set E) := by
 theorem IsClosedPolyhedral.empty : IsClosedPolyhedral (∅ : Set E) := by
   refine ⟨∅, ∅, ?_⟩
   simp
+
+theorem IsClosedPolyhedral.convexHull_finset (s : Finset E) :
+    IsClosedPolyhedral (convexHull ℝ (↑s : Set E)) := by
+  refine ⟨s, {0}, ?_⟩
+  simp
+
+theorem IsClosedPolyhedral.conicHull_finset [FiniteDimensional ℝ E] (t : Finset E) :
+    IsClosedPolyhedral (conicHull (↑t : Set E)) := by
+  refine ⟨{0}, t, ?_⟩
+  rw [closure_conicHull_finset]
+  simp
+
+theorem IsClosedPolyhedral.singleton (x : E) :
+    IsClosedPolyhedral ({x} : Set E) := by
+  simpa using (IsClosedPolyhedral.convexHull_finset (E := E) ({x} : Finset E))
 
 private theorem image_add_right_Ici_zero (a : ℝ) :
     (fun x : ℝ => x + a) '' Set.Ici (0 : ℝ) = Set.Ici a := by
@@ -996,6 +1135,20 @@ theorem IsClosedPolyhedral.affine_image {C : Set E}
     _ = convexHull ℝ (↑(s.image f) : Set F) +
           closure (conicHull (↑(t.image f.linear) : Set F)) := by
             rw [htclosed'.closure_eq]
+
+theorem IsClosedPolyhedral.smul {C : Set E}
+    (hC : IsClosedPolyhedral C) (a : ℝ) :
+    IsClosedPolyhedral (a • C) := by
+  let L : E →ₗ[ℝ] E := a • (LinearMap.id : E →ₗ[ℝ] E)
+  have himage : L '' C = a • C := by
+    ext x
+    constructor
+    · rintro ⟨y, hy, rfl⟩
+      exact ⟨y, hy, by simp [L]⟩
+    · rintro ⟨y, hy, hxy⟩
+      exact ⟨y, hy, by simpa [L] using hxy⟩
+  rw [← himage]
+  exact hC.linear_image L
 
 end ClosedImages
 
@@ -1389,6 +1542,55 @@ theorem IsPolyhedral.exists_horizon_generators_of_nonempty
     ∃ t : Finset E, horizonCone C = horizonCone (conicHull (↑t : Set E)) :=
   IsExtendedFinitelyGenerated.exists_horizon_generators_of_nonempty hC hCne
 
+/-- The horizon cone of a nonempty polyhedral set is finitely generated. -/
+theorem IsPolyhedral.horizonCone_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (horizonCone C) := by
+  rcases hC.exists_horizon_generators_of_nonempty hCne with ⟨t, ht⟩
+  refine ⟨t, ?_⟩
+  rw [ht, horizonCone_conicHull_finset_eq_self]
+
+/-- The horizon cone of a nonempty polyhedral set is polyhedral. -/
+theorem IsPolyhedral.horizonCone_isPolyhedral
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (horizonCone C) :=
+  (hC.horizonCone_isFinitelyGeneratedCone hCne).isPolyhedral
+
+/-- The horizon cone of a nonempty polyhedral set is closed polyhedral. -/
+theorem IsPolyhedral.horizonCone_isClosedPolyhedral
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (horizonCone C) :=
+  (hC.horizonCone_isFinitelyGeneratedCone hCne).isClosedPolyhedral
+
+/-- A nonempty polyhedral set has an actual finite conic-hull representation
+for its horizon cone. -/
+theorem IsPolyhedral.exists_horizon_conicHull_generators_of_nonempty
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E, horizonCone C = conicHull (↑t : Set E) :=
+  (hC.horizonCone_isFinitelyGeneratedCone hCne).exists_generators
+
+/-- A nonempty polyhedral set has an explicit finite conic-coefficient formula
+for its horizon cone. -/
+theorem IsPolyhedral.exists_horizonCone_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ horizonCone C ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w := by
+  rcases hC.exists_horizon_conicHull_generators_of_nonempty hCne with ⟨t, ht⟩
+  refine ⟨t, ?_⟩
+  intro w
+  rw [ht]
+  exact mem_conicHull_iff_exists_finsupp
+
 theorem IsClosedPolyhedral.exists_raySpace_generators
     [FiniteDimensional ℝ E]
     {C : Set E} (hC : IsClosedPolyhedral C) :
@@ -1485,6 +1687,74 @@ theorem raySpaceCone_extendedConvexHull_eq_conicHull_rayGenerators
       exact subset_convexHull ℝ _ <| Or.inr ⟨subset_conicHull hx, rfl⟩
 
 open Classical in
+/-- A nonempty polyhedral set has a finitely generated ray-space cone: ordinary
+generators sit at height `-1`, and horizon generators sit at height `0`. -/
+theorem IsPolyhedral.isFinitelyGeneratedCone_raySpaceCone
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (raySpaceCone C (horizonCone C)) := by
+  obtain ⟨s, t, hs, hCeq⟩ :=
+    IsExtendedFinitelyGenerated.exists_nonempty_generators_of_nonempty hC hCne
+  have htclosed : IsClosed (conicHull (↑t : Set E)) :=
+    isClosed_conicHull_finset (E := E) t
+  have hhor :
+      horizonCone C = conicHull (↑t : Set E) := by
+    rw [hCeq]
+    exact horizonCone_extendedConvexHull_finset_eq_conicHull s t hs htclosed
+  refine
+    ⟨(s.image fun x => (x, (-1 : ℝ))) ∪ (t.image fun x => (x, (0 : ℝ))), ?_⟩
+  calc
+    raySpaceCone C (horizonCone C)
+        = raySpaceCone (extendedConvexHull (↑s : Set E) (↑t : Set E))
+            (conicHull (↑t : Set E)) := by
+              rw [hhor, hCeq]
+    _ = conicHull
+          (↑((s.image fun x => (x, (-1 : ℝ))) ∪ (t.image fun x => (x, (0 : ℝ)))) :
+            Set (E × ℝ)) :=
+          raySpaceCone_extendedConvexHull_eq_conicHull_rayGenerators s t
+
+/-- The ray-space cone of a nonempty polyhedral set is polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_isPolyhedral
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (raySpaceCone C (horizonCone C)) :=
+  (hC.isFinitelyGeneratedCone_raySpaceCone hCne).isPolyhedral
+
+/-- The ray-space cone of a nonempty polyhedral set is closed polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_isClosedPolyhedral
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (raySpaceCone C (horizonCone C)) :=
+  (hC.isFinitelyGeneratedCone_raySpaceCone hCne).isClosedPolyhedral
+
+/-- A nonempty polyhedral set has an explicitly finitely generated ray-space
+cone. -/
+theorem IsPolyhedral.exists_raySpaceCone_generators
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone C (horizonCone C) = conicHull (↑u : Set (E × ℝ)) :=
+  hC.isFinitelyGeneratedCone_raySpaceCone hCne
+
+/-- A nonempty polyhedral set has an explicit finite conic-coefficient formula
+for its ray-space cone. -/
+theorem IsPolyhedral.exists_raySpaceCone_generator_formula_of_nonempty
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone C (horizonCone C) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p := by
+  rcases hC.exists_raySpaceCone_generators hCne with ⟨u, hu⟩
+  refine ⟨u, ?_⟩
+  intro p
+  rw [hu]
+  exact mem_conicHull_iff_exists_finsupp
+
+open Classical in
 /-- A nonempty closed polyhedral set has a finitely generated ray-space cone:
 its ordinary generators sit at height `-1`, and its horizon generators sit at
 height `0`. -/
@@ -1518,6 +1788,13 @@ theorem IsClosedPolyhedral.raySpaceCone_isClosedPolyhedral
     {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
     IsClosedPolyhedral (raySpaceCone C (horizonCone C)) :=
   (hC.isFinitelyGeneratedCone_raySpaceCone hCne).isClosedPolyhedral
+
+/-- The ray-space cone of a nonempty closed polyhedral set is polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_isPolyhedral
+    [FiniteDimensional ℝ E]
+    {C : Set E} (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (raySpaceCone C (horizonCone C)) :=
+  (hC.isFinitelyGeneratedCone_raySpaceCone hCne).isPolyhedral
 
 /-- A nonempty closed polyhedral set has an explicitly finitely generated
 ray-space cone. -/

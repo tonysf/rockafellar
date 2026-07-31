@@ -48,6 +48,30 @@ theorem subset_positiveHull {C : Set E} : C ⊆ positiveHull C := by
   right
   exact ⟨1, by norm_num, x, hx, by simp⟩
 
+theorem positiveHull_mono {C D : Set E} (hCD : C ⊆ D) :
+    positiveHull C ⊆ positiveHull D := by
+  intro x hx
+  rcases hx with rfl | ⟨a, ha, y, hy, rfl⟩
+  · exact zero_mem_positiveHull D
+  · right
+    exact ⟨a, ha, y, hCD hy, rfl⟩
+
+@[simp] theorem positiveHull_empty :
+    positiveHull (∅ : Set E) = ({0} : Set E) := by
+  ext x
+  constructor
+  · intro hx
+    rcases hx with rfl | ⟨a, ha, y, hy, hxy⟩
+    · simp
+    · simp at hy
+  · intro hx
+    left
+    simpa using hx
+
+theorem positiveHull_nonempty (C : Set E) :
+    (positiveHull C).Nonempty :=
+  ⟨0, zero_mem_positiveHull C⟩
+
 /-- The positive hull is a cone. -/
 theorem isCone_positiveHull {C : Set E} : IsCone (positiveHull C) := by
   refine ⟨zero_mem_positiveHull C, ?_⟩
@@ -73,6 +97,139 @@ theorem positiveHull_eq_self {C : Set E} (hC : IsCone C) :
   apply le_antisymm
   · exact positiveHull_minimal hC subset_rfl
   · exact subset_positiveHull
+
+@[simp] theorem positiveHull_singleton_zero :
+    positiveHull ({0} : Set E) = ({0} : Set E) := by
+  exact positiveHull_eq_self
+    ⟨by simp, by
+      intro x hx c hc
+      simp [Set.mem_singleton_iff.mp hx]⟩
+
+@[simp] theorem positiveHull_idempotent (C : Set E) :
+    positiveHull (positiveHull C) = positiveHull C :=
+  positiveHull_eq_self isCone_positiveHull
+
+theorem positiveHull_subset_iff {C K : Set E} (hK : IsCone K) :
+    positiveHull C ⊆ K ↔ C ⊆ K := by
+  constructor
+  · intro hCK x hx
+    exact hCK (subset_positiveHull hx)
+  · exact positiveHull_minimal hK
+
+theorem positiveHull_eq_singleton_zero_iff {C : Set E} :
+    positiveHull C = ({0} : Set E) ↔ C ⊆ ({0} : Set E) := by
+  constructor
+  · intro hC x hx
+    have hxpos : x ∈ positiveHull C := subset_positiveHull hx
+    simpa [hC] using hxpos
+  · intro hC
+    apply le_antisymm
+    · exact (positiveHull_subset_iff
+        ⟨by simp, by
+          intro x hx c hc
+          simp [Set.mem_singleton_iff.mp hx]⟩).2 hC
+    · intro x hx
+      have hx0 : x = 0 := by simpa using hx
+      simpa [hx0] using zero_mem_positiveHull C
+
+/-- Adjoining the origin does not change the positive hull. -/
+@[simp] theorem positiveHull_insert_zero (C : Set E) :
+    positiveHull (insert (0 : E) C) = positiveHull C := by
+  apply le_antisymm
+  · intro x hx
+    rcases hx with rfl | ⟨a, ha, y, hy, rfl⟩
+    · exact zero_mem_positiveHull C
+    · rcases hy with rfl | hyC
+      · simpa using zero_mem_positiveHull C
+      · right
+        exact ⟨a, ha, y, hyC, rfl⟩
+  · exact positiveHull_mono (by intro x hx; exact Or.inr hx)
+
+/-- The positive hull of a union is the union of the positive hulls. -/
+theorem positiveHull_union (C D : Set E) :
+    positiveHull (C ∪ D) = positiveHull C ∪ positiveHull D := by
+  ext x
+  constructor
+  · intro hx
+    rcases hx with rfl | ⟨a, ha, y, hy, rfl⟩
+    · left
+      exact zero_mem_positiveHull C
+    · rcases hy with hyC | hyD
+      · left
+        right
+        exact ⟨a, ha, y, hyC, rfl⟩
+      · right
+        right
+        exact ⟨a, ha, y, hyD, rfl⟩
+  · intro hx
+    rcases hx with hx | hx
+    · exact positiveHull_mono (by intro y hy; exact Or.inl hy) hx
+    · exact positiveHull_mono (by intro y hy; exact Or.inr hy) hx
+
+/-- The positive hull of an intersection is contained in the intersection of
+the positive hulls. -/
+theorem positiveHull_inter_subset (C D : Set E) :
+    positiveHull (C ∩ D) ⊆ positiveHull C ∩ positiveHull D := by
+  intro x hx
+  exact ⟨positiveHull_mono (by intro y hy; exact hy.1) hx,
+    positiveHull_mono (by intro y hy; exact hy.2) hx⟩
+
+/-- Positive rescaling a set does not change its positive hull. -/
+theorem positiveHull_smul_eq_of_pos {C : Set E} {a : ℝ} (ha : 0 < a) :
+    positiveHull (a • C) = positiveHull C := by
+  apply le_antisymm
+  · intro x hx
+    rcases hx with rfl | ⟨b, hb, y, hy, rfl⟩
+    · exact zero_mem_positiveHull C
+    · rcases hy with ⟨z, hz, hzy⟩
+      right
+      refine ⟨b * a, mul_pos hb ha, z, hz, ?_⟩
+      calc
+        b • y = b • (a • z) := by rw [← hzy]
+        _ = (b * a) • z := by rw [smul_smul]
+  · intro x hx
+    rcases hx with rfl | ⟨b, hb, y, hy, rfl⟩
+    · exact zero_mem_positiveHull (a • C)
+    · right
+      refine ⟨b * a⁻¹, mul_pos hb (inv_pos.mpr ha), a • y, ?_, ?_⟩
+      · exact ⟨y, hy, rfl⟩
+      · rw [smul_smul]
+        have hcoef : (b * a⁻¹) * a = b := by
+          rw [mul_assoc, inv_mul_cancel₀ ha.ne', mul_one]
+        rw [hcoef]
+
+/-- Linear maps commute with positive hulls. -/
+theorem LinearMap.image_positiveHull
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    (L : E →ₗ[ℝ] F) (C : Set E) :
+    L '' positiveHull C = positiveHull (L '' C) := by
+  ext y
+  constructor
+  · rintro ⟨x, hx, rfl⟩
+    rcases hx with rfl | ⟨a, ha, z, hz, rfl⟩
+    · simpa using zero_mem_positiveHull (L '' C)
+    · right
+      refine ⟨a, ha, L z, ⟨z, hz, rfl⟩, ?_⟩
+      simp
+  · intro hy
+    rcases hy with rfl | ⟨a, ha, z, hz, rfl⟩
+    · exact ⟨0, zero_mem_positiveHull C, by simp⟩
+    · rcases hz with ⟨x, hx, rfl⟩
+      refine ⟨a • x, ?_, by simp⟩
+      right
+      exact ⟨a, ha, x, hx, rfl⟩
+
+/-- The positive hull of a linear preimage maps into the positive hull of the
+target set. -/
+theorem LinearMap.positiveHull_preimage_subset
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    (L : E →ₗ[ℝ] F) (C : Set F) :
+    positiveHull (L ⁻¹' C) ⊆ L ⁻¹' positiveHull C := by
+  intro x hx
+  rcases hx with rfl | ⟨a, ha, y, hy, rfl⟩
+  · simpa using zero_mem_positiveHull C
+  · right
+    exact ⟨a, ha, L y, hy, by simp⟩
 
 theorem positiveHull_eq_iff_isCone {C : Set E} :
     positiveHull C = C ↔ IsCone C := by
@@ -298,6 +455,16 @@ theorem positiveHullFunction_le_apply (f : E → EReal) (x : E) :
           simpa [mem_epigraph_iff] using a.property
     _ = f x := by
       simpa [A] using iInf_coe_real_ge_eq (f x)
+
+/-- Enlarging the epigraph lowers the positive-hull function. -/
+theorem positiveHullFunction_antitone_of_epigraph_subset {f g : E → EReal}
+    (hfg : epigraph f ⊆ epigraph g) :
+    positiveHullFunction g ≤ positiveHullFunction f := by
+  intro x
+  refine le_iInf ?_
+  intro a
+  exact positiveHullFunction_le_of_mem_positiveHull_epigraph
+    (positiveHull_mono hfg a.property)
 
 /-- Positive scaling of the argument scales the positive hull function by at
 least the same factor. -/
@@ -1372,6 +1539,32 @@ hull. -/
 noncomputable def gaugeFunction (C : Set E) : E → EReal :=
   positiveHullFunction (fun x => indicatorVA C x + 1)
 
+/-- Gauges are antitone with respect to inclusion of the underlying set. -/
+theorem gaugeFunction_antitone {C D : Set E} (hCD : C ⊆ D) :
+    gaugeFunction D ≤ gaugeFunction C := by
+  simpa [gaugeFunction] using
+    positiveHullFunction_antitone_of_epigraph_subset
+      (f := fun x => indicatorVA C x + 1)
+      (g := fun x => indicatorVA D x + 1)
+      (by
+        intro p hp
+        rw [epigraph_indicatorVA_add_one] at hp ⊢
+        exact ⟨hCD hp.1, hp.2⟩)
+
+/-- Gauge sublevel sets grow when the underlying set grows. -/
+theorem levelSet_gaugeFunction_mono_of_subset {C D : Set E}
+    (hCD : C ⊆ D) (a : ℝ) :
+    levelSet (gaugeFunction C) a ⊆ levelSet (gaugeFunction D) a := by
+  intro x hx
+  exact le_trans (gaugeFunction_antitone hCD x) hx
+
+/-- Strict gauge sublevel sets grow when the underlying set grows. -/
+theorem strictLevelSet_gaugeFunction_mono_of_subset {C D : Set E}
+    (hCD : C ⊆ D) (a : ℝ) :
+    strictLevelSet (gaugeFunction C) a ⊆ strictLevelSet (gaugeFunction D) a := by
+  intro x hx
+  exact lt_of_le_of_lt (gaugeFunction_antitone hCD x) hx
+
 /-- Gauge functions are positively homogeneous. -/
 theorem positivelyHomogeneous_gaugeFunction (C : Set E) :
     PositivelyHomogeneous (gaugeFunction C) := by
@@ -1442,6 +1635,46 @@ theorem levelSet_gaugeFunction_eq_empty_iff_neg {C : Set E} {a : ℝ} :
     rw [hempty] at hx
     exact hx
   · exact levelSet_gaugeFunction_eq_empty_of_neg
+
+/-- Nonpositive strict gauge sublevel sets are empty. -/
+theorem strictLevelSet_gaugeFunction_eq_empty_of_nonpos {C : Set E} {a : ℝ}
+    (ha : a ≤ 0) :
+    strictLevelSet (gaugeFunction C) a = ∅ := by
+  ext x
+  constructor
+  · intro hx
+    have hnonneg : (0 : EReal) ≤ gaugeFunction C x := nonneg_gaugeFunction C x
+    have ha' : (a : EReal) ≤ 0 := by
+      exact_mod_cast ha
+    exact False.elim <| (not_lt_of_ge hnonneg) (lt_of_lt_of_le hx ha')
+  · simp
+
+/-- Gauge strict sublevel sets are nonempty exactly at positive heights. -/
+theorem strictLevelSet_gaugeFunction_nonempty_iff_pos {C : Set E} {a : ℝ} :
+    (strictLevelSet (gaugeFunction C) a).Nonempty ↔ 0 < a := by
+  constructor
+  · rintro ⟨x, hx⟩
+    have hnonneg : (0 : EReal) ≤ gaugeFunction C x := nonneg_gaugeFunction C x
+    have ha : (0 : EReal) < (a : EReal) := lt_of_le_of_lt hnonneg hx
+    exact_mod_cast ha
+  · intro ha
+    refine ⟨0, ?_⟩
+    have ha' : (0 : EReal) < (a : EReal) := by
+      exact_mod_cast ha
+    simpa [strictLevelSet] using ha'
+
+/-- Gauge strict sublevel sets are empty exactly at nonpositive heights. -/
+theorem strictLevelSet_gaugeFunction_eq_empty_iff_nonpos {C : Set E} {a : ℝ} :
+    strictLevelSet (gaugeFunction C) a = ∅ ↔ a ≤ 0 := by
+  constructor
+  · intro hempty
+    by_contra hnot
+    have hnonempty : (strictLevelSet (gaugeFunction C) a).Nonempty :=
+      strictLevelSet_gaugeFunction_nonempty_iff_pos.2 (lt_of_not_ge hnot)
+    rcases hnonempty with ⟨x, hx⟩
+    rw [hempty] at hx
+    exact hx
+  · exact strictLevelSet_gaugeFunction_eq_empty_of_nonpos
 
 /-- Negating the first coordinate preserves membership in the positive hull of
 `epi (δ_C + 1)` when `C` is symmetric. -/
@@ -1565,6 +1798,16 @@ theorem effectiveDomain_gaugeFunction (C : Set E) :
     exact mem_positiveHull_of_mem_positiveHull_epigraph_indicatorVA_add_one hbmem
   · intro hx
     exact positiveHull_subset_effectiveDomain_gaugeFunction C hx
+
+/-- For a cone, the effective domain of the gauge is the cone itself. -/
+theorem effectiveDomain_gaugeFunction_eq_of_isCone {C : Set E} (hC : IsCone C) :
+    effectiveDomain (gaugeFunction C) = C := by
+  rw [effectiveDomain_gaugeFunction, positiveHull_eq_self hC]
+
+theorem effectiveDomain_gaugeFunction_mono {C D : Set E} (hCD : C ⊆ D) :
+    effectiveDomain (gaugeFunction C) ⊆ effectiveDomain (gaugeFunction D) := by
+  rw [effectiveDomain_gaugeFunction C, effectiveDomain_gaugeFunction D]
+  exact positiveHull_mono hCD
 
 /-- The gauge is finite at exactly the points of the positive hull. -/
 theorem gaugeFunction_lt_top_iff_mem_positiveHull {C : Set E} {x : E} :
@@ -1721,6 +1964,43 @@ theorem gaugeFunction_le_of_mem_smul {C : Set E} {a : ℝ} (ha : 0 ≤ a) {x : E
       _ ≤ (a : EReal) * 1 := by gcongr
       _ = a := by simp
 
+/-- Strict gauge bounds are witnessed by membership in a smaller nonnegative
+scaled copy of a convex set containing `0`. -/
+theorem gaugeFunction_lt_iff_exists_mem_smul {C : Set E}
+    (hC : Convex ℝ C) (h0 : (0 : E) ∈ C) {a : ℝ} {x : E} :
+    gaugeFunction C x < (a : EReal) ↔
+      ∃ r : ℝ, 0 ≤ r ∧ r < a ∧ x ∈ r • C := by
+  constructor
+  · intro hx
+    obtain ⟨r, hrmem, hra⟩ :=
+      exists_mem_positiveHull_epigraph_lt
+        (f := fun x => indicatorVA C x + 1) (x := x) hx
+    have hr_nonneg : 0 ≤ r :=
+      nonneg_of_mem_positiveHull_epigraph_of_nonneg (nonneg_indicatorVA_add_one C) hrmem
+    have hxr : x ∈ r • C :=
+      mem_smul_of_mem_positiveHull_epigraph_indicatorVA_add_one hC h0 hrmem
+    refine ⟨r, hr_nonneg, ?_, hxr⟩
+    exact_mod_cast hra
+  · rintro ⟨r, hr_nonneg, hra, hxr⟩
+    exact lt_of_le_of_lt (gaugeFunction_le_of_mem_smul hr_nonneg hxr) (by exact_mod_cast hra)
+
+/-- For a convex set containing `0`, strict gauge sublevel sets are unions of
+nonnegative scaled copies below the level. -/
+theorem strictLevelSet_gaugeFunction_eq_iUnion_smul {C : Set E}
+    (hC : Convex ℝ C) (h0 : (0 : E) ∈ C) {a : ℝ} :
+    strictLevelSet (gaugeFunction C) a =
+      ⋃ r : {r : ℝ // 0 ≤ r ∧ r < a}, r.1 • C := by
+  ext x
+  simp only [strictLevelSet, mem_setOf_eq, mem_iUnion]
+  constructor
+  · intro hx
+    rcases (gaugeFunction_lt_iff_exists_mem_smul hC h0).1 hx with
+      ⟨r, hr_nonneg, hra, hxr⟩
+    exact ⟨⟨r, hr_nonneg, hra⟩, hxr⟩
+  · rintro ⟨r, hxr⟩
+    exact (gaugeFunction_lt_iff_exists_mem_smul hC h0).2
+      ⟨r.1, r.2.1, r.2.2, hxr⟩
+
 /-- The gauge sublevel set at height `a ≥ 0` is the intersection of all scaled
 copies `r • C` with `r > a`. -/
 theorem levelSet_gaugeFunction_eq_iInter_smul {C : Set E}
@@ -1803,12 +2083,46 @@ theorem levelSet_gaugeFunction_eq_smul {C : Set E}
     intro r hr
     exact smul_set_mono_of_nonneg_le hC h0 ha.le hr.le hx
 
+/-- Positive gauge sublevel membership is exactly membership in the
+corresponding scaled set. -/
+theorem gaugeFunction_le_iff_mem_smul {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    {a : ℝ} (ha : 0 < a) {x : E} :
+    gaugeFunction C x ≤ (a : EReal) ↔ x ∈ a • C := by
+  change x ∈ levelSet (gaugeFunction C) a ↔ x ∈ a • C
+  rw [levelSet_gaugeFunction_eq_smul hC hC_closed h0 ha]
+
+/-- Strict positive gauge sublevels are contained in the corresponding scaled
+closed convex set. -/
+theorem strictLevelSet_gaugeFunction_subset_smul {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    {a : ℝ} (ha : 0 < a) :
+    strictLevelSet (gaugeFunction C) a ⊆ a • C := by
+  intro x hx
+  exact (gaugeFunction_le_iff_mem_smul hC hC_closed h0 ha).1 (le_of_lt hx)
+
 /-- In particular, the unit sublevel set of the gauge is the original closed
 convex set containing `0`. -/
 theorem levelSet_gaugeFunction_one {C : Set E}
     (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
     levelSet (gaugeFunction C) 1 = C := by
   simpa using levelSet_gaugeFunction_eq_smul hC hC_closed h0 (a := 1) zero_lt_one
+
+/-- Unit gauge sublevel membership is exactly membership in the closed convex
+set. -/
+theorem gaugeFunction_le_one_iff_mem {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) {x : E} :
+    gaugeFunction C x ≤ (1 : EReal) ↔ x ∈ C := by
+  simpa using
+    (gaugeFunction_le_iff_mem_smul hC hC_closed h0 (a := 1) zero_lt_one (x := x))
+
+/-- The strict unit gauge sublevel is contained in the underlying closed convex
+set. -/
+theorem strictLevelSet_gaugeFunction_one_subset {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
+    strictLevelSet (gaugeFunction C) 1 ⊆ C := by
+  simpa using
+    (strictLevelSet_gaugeFunction_subset_smul hC hC_closed h0 (a := 1) zero_lt_one)
 
 /-- The zero sublevel set of the gauge is the horizon cone. This is the
 project's form of `lev≤0 γ_C = C^∞`. -/
@@ -1891,6 +2205,23 @@ theorem gaugeFunction_eq_zero_iff_of_isBounded
     simpa using hxlevel
   · intro hx
     simpa [hx] using gaugeFunction_zero C
+
+/-- In the finite-dimensional bounded case, the gauge is strictly positive away
+from the origin. -/
+theorem gaugeFunction_pos_iff_ne_zero_of_isBounded
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C)
+    (hCbdd : Bornology.IsBounded C) {x : E} :
+    0 < gaugeFunction C x ↔ x ≠ 0 := by
+  constructor
+  · intro hpos hx
+    subst hx
+    exact (not_lt_of_ge (le_of_eq (gaugeFunction_zero C))) hpos
+  · intro hxne
+    by_contra hnot
+    have hle : gaugeFunction C x ≤ 0 := le_of_not_gt hnot
+    have hzero : gaugeFunction C x = 0 := le_antisymm hle (nonneg_gaugeFunction C x)
+    exact hxne ((gaugeFunction_eq_zero_iff_of_isBounded hC hC_closed h0 hCbdd).1 hzero)
 
 /-- Finiteness of the gauge everywhere is equivalent to `positiveHull C = univ`.
 This is the project form of the `dom γ_C = pos C` statement. -/
@@ -2041,6 +2372,103 @@ theorem lowerSemicontinuous_gaugeFunction {C : Set E}
         rw [hset]
         exact isClosed_empty
 
+/-- The epigraph of the gauge of a closed convex set containing `0` is closed. -/
+theorem isClosed_epigraph_gaugeFunction {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
+    IsClosed (epigraph (gaugeFunction C)) :=
+  isClosed_epigraph_of_lsc_ereal _
+    (lowerSemicontinuous_gaugeFunction hC hC_closed h0)
+
+/-- The horizon function of a closed convex gauge is the gauge itself. -/
+theorem horizonFunction_gaugeFunction_eq_self {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
+    horizonFunction (gaugeFunction C) = gaugeFunction C :=
+  horizonFunction_eq_self_of_lowerSemicontinuous_of_positivelyHomogeneous
+    (lowerSemicontinuous_gaugeFunction hC hC_closed h0)
+    (positivelyHomogeneous_gaugeFunction C)
+
+/-- The gauge of a closed convex cone is exactly its variational-analysis
+indicator. -/
+theorem gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C) :
+    gaugeFunction C = indicatorVA C := by
+  funext x
+  by_cases hx : x ∈ C
+  · have hxhor : x ∈ horizonCone C := by
+      rwa [horizonCone_eq_self_of_isClosed_isCone hC_closed hCone]
+    have hxzero : gaugeFunction C x = 0 :=
+      (gaugeFunction_eq_zero_iff_mem_horizonCone hC hC_closed hCone.1).2 hxhor
+    simp [hxzero, indicatorVA_apply_mem hx]
+  · have hxnot : x ∉ positiveHull C := by
+      rwa [positiveHull_eq_self hCone]
+    have hxtop : gaugeFunction C x = ⊤ :=
+      (gaugeFunction_eq_top_iff_not_mem_positiveHull).2 hxnot
+    simp [hxtop, indicatorVA_apply_not_mem hx]
+
+/-- On a closed convex cone, the gauge vanishes exactly on the cone. -/
+theorem gaugeFunction_eq_zero_iff_mem_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C) {x : E} :
+    gaugeFunction C x = 0 ↔ x ∈ C := by
+  rw [gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone hC hC_closed hCone]
+  by_cases hx : x ∈ C <;> simp [indicatorVA, hx]
+
+/-- Outside a closed convex cone, the gauge is `⊤`. -/
+theorem gaugeFunction_eq_top_iff_not_mem_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C) {x : E} :
+    gaugeFunction C x = ⊤ ↔ x ∉ C := by
+  rw [gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone hC hC_closed hCone]
+  by_cases hx : x ∈ C <;> simp [indicatorVA, hx]
+
+/-- On a closed convex cone, finiteness of the gauge is membership in the cone. -/
+theorem gaugeFunction_lt_top_iff_mem_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C) {x : E} :
+    gaugeFunction C x < ⊤ ↔ x ∈ C := by
+  rw [gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone hC hC_closed hCone]
+  by_cases hx : x ∈ C <;> simp [indicatorVA, hx]
+
+/-- On a closed convex cone, avoiding `⊤` is membership in the cone. -/
+theorem gaugeFunction_ne_top_iff_mem_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C) {x : E} :
+    gaugeFunction C x ≠ ⊤ ↔ x ∈ C := by
+  rw [gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone hC hC_closed hCone]
+  by_cases hx : x ∈ C <;> simp [indicatorVA, hx]
+
+/-- On a closed convex cone, strict positivity of the gauge is nonmembership in
+the cone. -/
+theorem gaugeFunction_pos_iff_not_mem_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C) {x : E} :
+    0 < gaugeFunction C x ↔ x ∉ C := by
+  rw [gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone hC hC_closed hCone]
+  by_cases hx : x ∈ C <;> simp [indicatorVA, hx]
+
+/-- The epigraph of the gauge of a closed convex cone is the vertical
+half-cylinder over the cone. -/
+theorem epigraph_gaugeFunction_eq_prod_Ici_zero_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C) :
+    epigraph (gaugeFunction C) = C ×ˢ Set.Ici (0 : ℝ) := by
+  rw [gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone hC hC_closed hCone,
+    epigraph_indicatorVA]
+
+/-- Nonnegative finite lower level sets of the gauge of a closed convex cone
+are the cone itself. -/
+theorem levelSet_gaugeFunction_eq_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C)
+    {a : ℝ} (ha : 0 ≤ a) :
+    levelSet (gaugeFunction C) a = C := by
+  rw [gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone hC hC_closed hCone]
+  ext x
+  by_cases hx : x ∈ C <;> simp [levelSet, indicatorVA, hx, ha]
+
+/-- Positive finite strict lower level sets of the gauge of a closed convex cone
+are the cone itself. -/
+theorem strictLevelSet_gaugeFunction_eq_of_isClosed_convex_cone {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (hCone : IsCone C)
+    {a : ℝ} (ha : 0 < a) :
+    strictLevelSet (gaugeFunction C) a = C := by
+  rw [gaugeFunction_eq_indicatorVA_of_isClosed_convex_cone hC hC_closed hCone]
+  ext x
+  by_cases hx : x ∈ C <;> simp [strictLevelSet, indicatorVA, hx, ha]
+
 /-- Evenness of the gauge recovers symmetry of a closed convex set from its unit
 sublevel set. -/
 theorem symmetric_of_gaugeFunction_neg_eq {C : Set E}
@@ -2052,6 +2480,17 @@ theorem symmetric_of_gaugeFunction_neg_eq {C : Set E}
   change gaugeFunction C (-x) ≤ 1
   rw [heven x]
   exact gaugeFunction_le_one_of_mem hx
+
+/-- For closed convex sets containing `0`, evenness of the gauge is equivalent
+to symmetry of the set. -/
+theorem gaugeFunction_neg_eq_iff_symmetric {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
+    (∀ x : E, gaugeFunction C (-x) = gaugeFunction C x) ↔
+      (∀ ⦃x : E⦄, x ∈ C → -x ∈ C) := by
+  constructor
+  · exact symmetric_of_gaugeFunction_neg_eq hC hC_closed h0
+  · intro hsym x
+    exact gaugeFunction_neg_eq_of_symmetric hsym x
 
 /-- If the gauge of a closed convex set containing `0` vanishes only at `0`,
 then the set is bounded in finite dimension. -/
@@ -2073,6 +2512,37 @@ theorem isBounded_of_gaugeFunction_eq_zero_iff
   have hhoriz : horizonCone C = ({0} : Set E) := by
     rw [← levelSet_gaugeFunction_zero hC hC_closed h0, hlevel]
   exact (isBounded_iff_horizonCone_eq_singleton_zero (C := C)).mpr hhoriz
+
+/-- In finite dimension, boundedness of a closed convex set containing `0` is
+equivalent to positive-definiteness of its gauge in equality form. -/
+theorem isBounded_iff_gaugeFunction_eq_zero_iff
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
+    Bornology.IsBounded C ↔ ∀ x : E, gaugeFunction C x = 0 ↔ x = 0 := by
+  constructor
+  · intro hCbdd x
+    exact gaugeFunction_eq_zero_iff_of_isBounded hC hC_closed h0 hCbdd
+  · intro hzero
+    exact isBounded_of_gaugeFunction_eq_zero_iff hC hC_closed h0 hzero
+
+/-- In finite dimension, boundedness of a closed convex set containing `0` is
+equivalent to strict positivity of its gauge away from the origin. -/
+theorem isBounded_iff_gaugeFunction_pos_iff_ne_zero
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : Convex ℝ C) (hC_closed : IsClosed C) (h0 : (0 : E) ∈ C) :
+    Bornology.IsBounded C ↔ ∀ x : E, 0 < gaugeFunction C x ↔ x ≠ 0 := by
+  constructor
+  · intro hCbdd x
+    exact gaugeFunction_pos_iff_ne_zero_of_isBounded hC hC_closed h0 hCbdd
+  · intro hpos
+    apply isBounded_of_gaugeFunction_eq_zero_iff hC hC_closed h0
+    intro x
+    constructor
+    · intro hxzero
+      by_contra hxne
+      exact (not_lt_of_ge (le_of_eq hxzero)) ((hpos x).2 hxne)
+    · intro hx
+      simpa [hx] using gaugeFunction_zero C
 
 /-- Under the standard bounded/interior/symmetry hypotheses, the gauge has the
 expected norm properties: it is finite everywhere, lower semicontinuous,

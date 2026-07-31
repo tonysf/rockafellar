@@ -756,26 +756,6 @@ theorem epigraph_valueFunction_nonempty_of_isProper
   exact (iInf_le (fun x' : E => f (x', u)) x).trans <| by
     simpa [EReal.coe_toReal (ne_of_lt hfin) hbot]
 
-/-- A lower semicontinuous positively homogeneous function coincides with its
-horizon function. -/
-theorem horizonFunction_eq_self_of_lowerSemicontinuous_of_positivelyHomogeneous
-    {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
-    {g : G → EReal} (hlsc : LowerSemicontinuous g)
-    (hph : PositivelyHomogeneous g) :
-    horizonFunction g = g := by
-  have hne : (epigraph g).Nonempty := by
-    refine ⟨(0, 0), ?_⟩
-    rw [mem_epigraph_iff]
-    exact hph.map_zero_le_zero
-  apply eq_of_epigraph_eq
-  calc
-    epigraph (horizonFunction g) = horizonCone (epigraph g) :=
-      epigraph_horizonFunction_eq_horizonCone_epigraph hne
-    _ = epigraph g := by
-      exact horizonCone_eq_self_of_isClosed_isCone
-        (isClosed_epigraph_of_lsc_ereal g hlsc)
-        (isCone_epigraph_of_positivelyHomogeneous hph)
-
 /-- Under condition `3(8)`, the horizon function itself is level-bounded in the
 decision variable locally uniformly in the parameter. -/
 theorem isLevelBoundedInXLocallyUniformly_horizonFunction

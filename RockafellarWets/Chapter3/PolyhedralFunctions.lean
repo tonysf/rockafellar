@@ -251,6 +251,53 @@ theorem HasPolyhedralEpigraph.closure_isClosedPolyhedral {f : E → EReal}
     IsClosedPolyhedral (closure (epigraph f)) :=
   IsPolyhedral.closure_isClosedPolyhedral hf
 
+theorem HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) :
+    HasClosedPolyhedralEpigraph f :=
+  IsPolyhedral.isClosedPolyhedral hf
+
+theorem HasPolyhedralEpigraph.isClosed_epigraph
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) :
+    IsClosed (epigraph f) :=
+  hf.hasClosedPolyhedralEpigraph.isClosed
+
+theorem HasPolyhedralEpigraph.lowerSemicontinuous
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) :
+    LowerSemicontinuous f :=
+  lowerSemicontinuous_of_isClosed_epigraph_ereal f hf.isClosed_epigraph
+
+theorem hasPolyhedralEpigraph_iff_hasClosedPolyhedralEpigraph
+    [FiniteDimensional ℝ E] {f : E → EReal} :
+    HasPolyhedralEpigraph f ↔ HasClosedPolyhedralEpigraph f :=
+  ⟨fun hf => hf.hasClosedPolyhedralEpigraph, fun hf => IsClosedPolyhedral.isPolyhedral hf⟩
+
+theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsConvexPiecewiseLinear f :=
+  ⟨hproper, hf.hasClosedPolyhedralEpigraph⟩
+
+/-- Finite-dimensional form of Exercise `3.54`: the project wrapper for convex
+piecewise-linear functions is equivalently properness together with a
+polyhedral epigraph. -/
+theorem isConvexPiecewiseLinear_iff_isProper_and_hasPolyhedralEpigraph
+    [FiniteDimensional ℝ E] {f : E → EReal} :
+    IsConvexPiecewiseLinear f ↔ IsProper f ∧ HasPolyhedralEpigraph f := by
+  constructor
+  · intro hf
+    exact ⟨hf.1, IsClosedPolyhedral.isPolyhedral hf.2⟩
+  · rintro ⟨hproper, hpoly⟩
+    exact hpoly.isConvexPiecewiseLinear_of_isProper hproper
+
+theorem HasPolyhedralEpigraph.isConvexPiecewiseLinear_iff_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) :
+    IsConvexPiecewiseLinear f ↔ IsProper f :=
+  ⟨fun h => h.1, fun hproper => hf.isConvexPiecewiseLinear_of_isProper hproper⟩
+
 theorem HasPolyhedralEpigraph.hasClosedPolyhedralEpigraph_of_isClosed {f : E → EReal}
     (hf : HasPolyhedralEpigraph f) (hclosed : IsClosed (epigraph f)) :
     HasClosedPolyhedralEpigraph f :=
@@ -275,6 +322,143 @@ theorem IsClosedPolyhedral.hasClosedPolyhedralEpigraph_indicatorVA {C : Set E}
   change IsClosedPolyhedral (epigraph (indicatorVA C))
   rw [epigraph_indicatorVA]
   exact hC.prod IsClosedPolyhedral.Ici_zero
+
+/-- A nonempty polyhedral epigraph has a finitely generated horizon cone. -/
+theorem HasPolyhedralEpigraph.horizonCone_epigraph_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    IsFinitelyGeneratedCone (horizonCone (epigraph f)) :=
+  IsPolyhedral.horizonCone_isFinitelyGeneratedCone hf hne
+
+/-- A nonempty polyhedral epigraph has a polyhedral horizon cone. -/
+theorem HasPolyhedralEpigraph.horizonCone_epigraph_isPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    IsPolyhedral (horizonCone (epigraph f)) :=
+  IsPolyhedral.horizonCone_isPolyhedral hf hne
+
+/-- A nonempty polyhedral epigraph has a closed polyhedral horizon cone. -/
+theorem HasPolyhedralEpigraph.horizonCone_epigraph_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    IsClosedPolyhedral (horizonCone (epigraph f)) :=
+  IsPolyhedral.horizonCone_isClosedPolyhedral hf hne
+
+/-- A nonempty polyhedral epigraph has a finitely generated ray-space cone. -/
+theorem HasPolyhedralEpigraph.raySpaceCone_epigraph_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    IsFinitelyGeneratedCone (raySpaceCone (epigraph f) (horizonCone (epigraph f))) :=
+  IsPolyhedral.isFinitelyGeneratedCone_raySpaceCone hf hne
+
+/-- A nonempty polyhedral epigraph has a polyhedral ray-space cone. -/
+theorem HasPolyhedralEpigraph.raySpaceCone_epigraph_isPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    IsPolyhedral (raySpaceCone (epigraph f) (horizonCone (epigraph f))) :=
+  IsPolyhedral.raySpaceCone_isPolyhedral hf hne
+
+/-- A nonempty polyhedral epigraph has a closed polyhedral ray-space cone. -/
+theorem HasPolyhedralEpigraph.raySpaceCone_epigraph_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    IsClosedPolyhedral (raySpaceCone (epigraph f) (horizonCone (epigraph f))) :=
+  IsPolyhedral.raySpaceCone_isClosedPolyhedral hf hne
+
+/-- A nonempty polyhedral epigraph has finitely many horizon-cone generators. -/
+theorem HasPolyhedralEpigraph.exists_horizonCone_epigraph_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    ∃ t : Finset (E × ℝ),
+      horizonCone (epigraph f) = conicHull (↑t : Set (E × ℝ)) :=
+  IsPolyhedral.exists_horizon_conicHull_generators_of_nonempty hf hne
+
+/-- Properness supplies epigraph nonemptiness for horizon-cone generators. -/
+theorem HasPolyhedralEpigraph.exists_horizonCone_epigraph_generators_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset (E × ℝ),
+      horizonCone (epigraph f) = conicHull (↑t : Set (E × ℝ)) :=
+  hf.exists_horizonCone_epigraph_generators
+    (epigraph_nonempty_of_isProper hproper)
+
+/-- A nonempty polyhedral epigraph has an explicit finite conic-coefficient
+formula for its horizon cone. -/
+theorem HasPolyhedralEpigraph.exists_horizonCone_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    ∃ t : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ horizonCone (epigraph f) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  IsPolyhedral.exists_horizonCone_generator_formula_of_nonempty hf hne
+
+/-- Properness supplies epigraph nonemptiness for the horizon-cone coefficient
+formula. -/
+theorem HasPolyhedralEpigraph.exists_horizonCone_epigraph_generator_formula_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ horizonCone (epigraph f) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.exists_horizonCone_epigraph_generator_formula
+    (epigraph_nonempty_of_isProper hproper)
+
+/-- A nonempty polyhedral epigraph has finitely many ray-space cone
+generators. -/
+theorem HasPolyhedralEpigraph.exists_raySpaceCone_epigraph_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      raySpaceCone (epigraph f) (horizonCone (epigraph f)) =
+        conicHull (↑u : Set ((E × ℝ) × ℝ)) :=
+  IsPolyhedral.exists_raySpaceCone_generators hf hne
+
+/-- Properness supplies epigraph nonemptiness for ray-space cone generators. -/
+theorem HasPolyhedralEpigraph.exists_raySpaceCone_epigraph_generators_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      raySpaceCone (epigraph f) (horizonCone (epigraph f)) =
+        conicHull (↑u : Set ((E × ℝ) × ℝ)) :=
+  hf.exists_raySpaceCone_epigraph_generators
+    (epigraph_nonempty_of_isProper hproper)
+
+/-- A nonempty polyhedral epigraph has an explicit finite conic-coefficient
+formula for its ray-space cone. -/
+theorem HasPolyhedralEpigraph.exists_raySpaceCone_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hne : (epigraph f).Nonempty) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      ∀ {p : (E × ℝ) × ℝ},
+        p ∈ raySpaceCone (epigraph f) (horizonCone (epigraph f)) ↔
+          ∃ c : ((E × ℝ) × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set ((E × ℝ) × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  IsPolyhedral.exists_raySpaceCone_generator_formula_of_nonempty hf hne
+
+/-- Properness supplies epigraph nonemptiness for the ray-space cone
+coefficient formula. -/
+theorem HasPolyhedralEpigraph.exists_raySpaceCone_epigraph_generator_formula_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      ∀ {p : (E × ℝ) × ℝ},
+        p ∈ raySpaceCone (epigraph f) (horizonCone (epigraph f)) ↔
+          ∃ c : ((E × ℝ) × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set ((E × ℝ) × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.exists_raySpaceCone_epigraph_generator_formula
+    (epigraph_nonempty_of_isProper hproper)
 
 theorem HasClosedPolyhedralEpigraph.isClosed {f : E → EReal}
     (hf : HasClosedPolyhedralEpigraph f) :
@@ -516,6 +700,11 @@ theorem HasClosedPolyhedralEpigraph.lowerSemicontinuous {f : E → EReal}
     LowerSemicontinuous f :=
   lowerSemicontinuous_of_isClosed_epigraph_ereal f hf.isClosed
 
+theorem HasClosedPolyhedralEpigraph.isConvexPiecewiseLinear_iff_isProper
+    {f : E → EReal} (hf : HasClosedPolyhedralEpigraph f) :
+    IsConvexPiecewiseLinear f ↔ IsProper f :=
+  ⟨fun h => h.1, fun hproper => ⟨hproper, hf⟩⟩
+
 /-- In finite dimension, a nonempty finite lower level set of a
 closed-polyhedral-epigraph function admits a coefficient formula with a
 nonempty ordinary generator set. -/
@@ -636,6 +825,179 @@ theorem HasPolyhedralEpigraph.exists_nonempty_effectiveDomain_generator_formula_
   IsPolyhedral.exists_nonempty_generator_formula_of_nonempty
     hf.effectiveDomain_isPolyhedral hdom
 
+/-- A nonempty effective domain of a polyhedral-epigraph function has a
+finitely generated horizon cone. -/
+theorem HasPolyhedralEpigraph.horizonCone_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsFinitelyGeneratedCone (horizonCone (effectiveDomain f)) :=
+  IsPolyhedral.horizonCone_isFinitelyGeneratedCone
+    hf.effectiveDomain_isPolyhedral hdom
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has a
+polyhedral horizon cone. -/
+theorem HasPolyhedralEpigraph.horizonCone_effectiveDomain_isPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsPolyhedral (horizonCone (effectiveDomain f)) :=
+  IsPolyhedral.horizonCone_isPolyhedral hf.effectiveDomain_isPolyhedral hdom
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has a closed
+polyhedral horizon cone. -/
+theorem HasPolyhedralEpigraph.horizonCone_effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsClosedPolyhedral (horizonCone (effectiveDomain f)) :=
+  IsPolyhedral.horizonCone_isClosedPolyhedral hf.effectiveDomain_isPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for finite horizon-cone
+generators. -/
+theorem HasPolyhedralEpigraph.horizonCone_effectiveDomain_isFinitelyGeneratedCone_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsFinitelyGeneratedCone (horizonCone (effectiveDomain f)) :=
+  hf.horizonCone_effectiveDomain_isFinitelyGeneratedCone
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has finite
+horizon-cone generators. -/
+theorem HasPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    ∃ t : Finset E,
+      horizonCone (effectiveDomain f) = conicHull (↑t : Set E) :=
+  IsPolyhedral.exists_horizon_conicHull_generators_of_nonempty
+    hf.effectiveDomain_isPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for finite horizon-cone
+generators. -/
+theorem HasPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generators_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset E,
+      horizonCone (effectiveDomain f) = conicHull (↑t : Set E) :=
+  hf.exists_horizonCone_effectiveDomain_generators
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has an
+explicit finite conic-coefficient formula for its horizon cone. -/
+theorem HasPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ horizonCone (effectiveDomain f) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  IsPolyhedral.exists_horizonCone_generator_formula_of_nonempty
+    hf.effectiveDomain_isPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for the finite
+horizon-cone coefficient formula. -/
+theorem HasPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generator_formula_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ horizonCone (effectiveDomain f) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  hf.exists_horizonCone_effectiveDomain_generator_formula
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has a
+finitely generated ray-space cone. -/
+theorem HasPolyhedralEpigraph.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  IsPolyhedral.isFinitelyGeneratedCone_raySpaceCone
+    hf.effectiveDomain_isPolyhedral hdom
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has a
+polyhedral ray-space cone. -/
+theorem HasPolyhedralEpigraph.raySpaceCone_effectiveDomain_isPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsPolyhedral
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  IsPolyhedral.raySpaceCone_isPolyhedral hf.effectiveDomain_isPolyhedral hdom
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has a closed
+polyhedral ray-space cone. -/
+theorem HasPolyhedralEpigraph.raySpaceCone_effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsClosedPolyhedral
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  IsPolyhedral.raySpaceCone_isClosedPolyhedral hf.effectiveDomain_isPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for finite ray-space cone
+generators. -/
+theorem HasPolyhedralEpigraph.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  hf.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has finite
+ray-space cone generators. -/
+theorem HasPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  IsPolyhedral.exists_raySpaceCone_generators hf.effectiveDomain_isPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for finite ray-space cone
+generators. -/
+theorem HasPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generators_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  hf.exists_raySpaceCone_effectiveDomain_generators
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a polyhedral-epigraph function has an
+explicit finite conic-coefficient formula for its ray-space cone. -/
+theorem HasPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  IsPolyhedral.exists_raySpaceCone_generator_formula_of_nonempty
+    hf.effectiveDomain_isPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for the finite ray-space
+cone coefficient formula. -/
+theorem HasPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generator_formula_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.exists_raySpaceCone_effectiveDomain_generator_formula
+    (by simpa [effectiveDomain] using hproper.1)
+
 /-- In finite dimension, closed polyhedral epigraphs induce the same explicit
 effective-domain generators as polyhedral epigraphs. -/
 theorem HasClosedPolyhedralEpigraph.exists_effectiveDomain_generators
@@ -716,6 +1078,182 @@ theorem HasClosedPolyhedralEpigraph.exists_nonempty_effectiveDomain_generator_fo
     hpoly.exists_nonempty_effectiveDomain_generator_formula_of_nonempty
       hdom
 
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has a
+finitely generated horizon cone. -/
+theorem HasClosedPolyhedralEpigraph.horizonCone_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsFinitelyGeneratedCone (horizonCone (effectiveDomain f)) :=
+  IsClosedPolyhedral.horizonCone_isFinitelyGeneratedCone
+    hf.effectiveDomain_isClosedPolyhedral hdom
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has a
+polyhedral horizon cone. -/
+theorem HasClosedPolyhedralEpigraph.horizonCone_effectiveDomain_isPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsPolyhedral (horizonCone (effectiveDomain f)) :=
+  (hf.horizonCone_effectiveDomain_isFinitelyGeneratedCone hdom).isPolyhedral
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has a
+closed polyhedral horizon cone. -/
+theorem HasClosedPolyhedralEpigraph.horizonCone_effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsClosedPolyhedral (horizonCone (effectiveDomain f)) :=
+  IsClosedPolyhedral.horizonCone_isClosedPolyhedral
+    hf.effectiveDomain_isClosedPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for finite horizon-cone
+generators. -/
+theorem HasClosedPolyhedralEpigraph.horizonCone_effectiveDomain_isFinitelyGeneratedCone_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsFinitelyGeneratedCone (horizonCone (effectiveDomain f)) :=
+  hf.horizonCone_effectiveDomain_isFinitelyGeneratedCone
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has
+finite horizon-cone generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    ∃ t : Finset E,
+      horizonCone (effectiveDomain f) = conicHull (↑t : Set E) :=
+  IsClosedPolyhedral.exists_horizon_conicHull_generators
+    hf.effectiveDomain_isClosedPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for finite horizon-cone
+generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generators_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset E,
+      horizonCone (effectiveDomain f) = conicHull (↑t : Set E) :=
+  hf.exists_horizonCone_effectiveDomain_generators
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has an
+explicit finite conic-coefficient formula for its horizon cone. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ horizonCone (effectiveDomain f) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  IsClosedPolyhedral.exists_horizonCone_generator_formula_of_nonempty
+    hf.effectiveDomain_isClosedPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for the finite
+horizon-cone coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generator_formula_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ horizonCone (effectiveDomain f) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  hf.exists_horizonCone_effectiveDomain_generator_formula
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has a
+finitely generated ray-space cone. -/
+theorem HasClosedPolyhedralEpigraph.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  IsClosedPolyhedral.isFinitelyGeneratedCone_raySpaceCone
+    hf.effectiveDomain_isClosedPolyhedral hdom
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has a
+polyhedral ray-space cone. -/
+theorem HasClosedPolyhedralEpigraph.raySpaceCone_effectiveDomain_isPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsPolyhedral
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  (hf.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone hdom).isPolyhedral
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has a
+closed polyhedral ray-space cone. -/
+theorem HasClosedPolyhedralEpigraph.raySpaceCone_effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    IsClosedPolyhedral
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  IsClosedPolyhedral.raySpaceCone_isClosedPolyhedral
+    hf.effectiveDomain_isClosedPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for finite ray-space cone
+generators. -/
+theorem HasClosedPolyhedralEpigraph.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  hf.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has
+finite ray-space cone generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  IsClosedPolyhedral.exists_raySpaceCone_generators
+    hf.effectiveDomain_isClosedPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for finite ray-space cone
+generators. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generators_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  hf.exists_raySpaceCone_effectiveDomain_generators
+    (by simpa [effectiveDomain] using hproper.1)
+
+/-- A nonempty effective domain of a closed-polyhedral-epigraph function has an
+explicit finite conic-coefficient formula for its ray-space cone. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hdom : (effectiveDomain f).Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  IsClosedPolyhedral.exists_raySpaceCone_generator_formula_of_nonempty
+    hf.effectiveDomain_isClosedPolyhedral hdom
+
+/-- Properness supplies effective-domain nonemptiness for the finite ray-space
+cone coefficient formula. -/
+theorem HasClosedPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_formula_of_isProper
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hproper : IsProper f) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.exists_raySpaceCone_effectiveDomain_generator_formula
+    (by simpa [effectiveDomain] using hproper.1)
+
 theorem HasClosedPolyhedralEpigraph.hasPolyhedralEpigraph [FiniteDimensional ℝ E]
     {f : E → EReal}
     (hf : HasClosedPolyhedralEpigraph f) :
@@ -759,6 +1297,1531 @@ theorem IsClosedPolyhedral.isConvexPiecewiseLinear_indicatorVA
   refine ⟨(indicatorVA_isProper_iff C).2 hCne, ?_⟩
   exact hC.hasClosedPolyhedralEpigraph_indicatorVA
 
+/-- The horizon function of the indicator of a nonempty polyhedral set has a closed
+polyhedral epigraph. -/
+theorem IsPolyhedral.hasClosedPolyhedralEpigraph_horizonFunction_indicatorVA
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    HasClosedPolyhedralEpigraph (horizonFunction (indicatorVA C)) := by
+  rw [horizonFunction_indicatorVA]
+  exact (hC.horizonCone_isClosedPolyhedral hCne).hasClosedPolyhedralEpigraph_indicatorVA
+
+/-- Closed-polyhedral sets give closed-polyhedral epigraphs for the horizon function of their
+indicator. -/
+theorem IsClosedPolyhedral.hasClosedPolyhedralEpigraph_horizonFunction_indicatorVA
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    HasClosedPolyhedralEpigraph (horizonFunction (indicatorVA C)) :=
+  hC.isPolyhedral.hasClosedPolyhedralEpigraph_horizonFunction_indicatorVA hCne
+
+/-- The horizon function of the indicator of a nonempty polyhedral set is convex
+piecewise linear. -/
+theorem IsPolyhedral.isConvexPiecewiseLinear_horizonFunction_indicatorVA
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsConvexPiecewiseLinear (horizonFunction (indicatorVA C)) := by
+  rw [horizonFunction_indicatorVA]
+  exact (hC.horizonCone_isClosedPolyhedral hCne).isConvexPiecewiseLinear_indicatorVA
+    ⟨0, zero_mem_horizonCone C⟩
+
+/-- Closed-polyhedral sets give convex piecewise-linear horizon functions for indicators. -/
+theorem IsClosedPolyhedral.isConvexPiecewiseLinear_horizonFunction_indicatorVA
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsConvexPiecewiseLinear (horizonFunction (indicatorVA C)) :=
+  hC.isPolyhedral.isConvexPiecewiseLinear_horizonFunction_indicatorVA hCne
+
+/-- The horizon cone of the effective domain of an indicator horizon is unchanged. -/
+theorem horizonCone_effectiveDomain_horizonFunction_indicatorVA_eq [FiniteDimensional ℝ E]
+    (C : Set E) :
+    horizonCone (effectiveDomain (horizonFunction (indicatorVA C))) = horizonCone C := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact horizonCone_eq_self_of_isClosed_isCone (isClosed_horizonCone C) (isCone_horizonCone C)
+
+/-- Membership in the horizon cone of the effective domain of an indicator horizon. -/
+theorem mem_horizonCone_effectiveDomain_horizonFunction_indicatorVA_iff
+    [FiniteDimensional ℝ E] {C : Set E} {w : E} :
+    w ∈ horizonCone (effectiveDomain (horizonFunction (indicatorVA C))) ↔
+      w ∈ horizonCone C := by
+  rw [horizonCone_effectiveDomain_horizonFunction_indicatorVA_eq C]
+
+/-- The effective domain of the horizon function of an indicator of a nonempty polyhedral set is
+the closed polyhedral horizon cone. -/
+theorem IsPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (effectiveDomain (horizonFunction (indicatorVA C))) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact hC.horizonCone_isClosedPolyhedral hCne
+
+/-- The effective domain of the horizon function of an indicator of a nonempty polyhedral set is
+finitely generated as a cone. -/
+theorem IsPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (effectiveDomain (horizonFunction (indicatorVA C))) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact hC.horizonCone_isFinitelyGeneratedCone hCne
+
+/-- The effective domain of the horizon function of an indicator of a nonempty closed polyhedral
+set is closed polyhedral. -/
+theorem IsClosedPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (effectiveDomain (horizonFunction (indicatorVA C))) :=
+  hC.isPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isClosedPolyhedral hCne
+
+/-- The effective domain of the horizon function of an indicator of a nonempty closed polyhedral
+set is finitely generated as a cone. -/
+theorem IsClosedPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (effectiveDomain (horizonFunction (indicatorVA C))) :=
+  hC.isPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone hCne
+
+/-- The effective domain of the horizon function of an indicator of a nonempty polyhedral set is
+polyhedral. -/
+theorem IsPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (effectiveDomain (horizonFunction (indicatorVA C))) :=
+  (hC.effectiveDomain_horizonFunction_indicatorVA_isClosedPolyhedral hCne).isPolyhedral
+
+/-- The effective domain of the horizon function of an indicator of a nonempty closed polyhedral
+set is polyhedral. -/
+theorem IsClosedPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (effectiveDomain (horizonFunction (indicatorVA C))) :=
+  hC.isPolyhedral.effectiveDomain_horizonFunction_indicatorVA_isPolyhedral hCne
+
+/-- The effective domain of the horizon function of an indicator of a nonempty polyhedral set has
+finite conic generators. -/
+theorem IsPolyhedral.exists_effectiveDomain_horizonFunction_indicatorVA_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      effectiveDomain (horizonFunction (indicatorVA C)) = conicHull (↑t : Set E) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact hC.exists_horizon_conicHull_generators_of_nonempty hCne
+
+/-- The effective domain of the horizon function of an indicator of a nonempty closed polyhedral
+set has finite conic generators. -/
+theorem IsClosedPolyhedral.exists_effectiveDomain_horizonFunction_indicatorVA_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      effectiveDomain (horizonFunction (indicatorVA C)) = conicHull (↑t : Set E) :=
+  hC.isPolyhedral.exists_effectiveDomain_horizonFunction_indicatorVA_generators hCne
+
+/-- The effective domain of the horizon function of an indicator of a nonempty polyhedral set
+admits a finite conic-coefficient formula. -/
+theorem IsPolyhedral.exists_effectiveDomain_horizonFunction_indicatorVA_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ effectiveDomain (horizonFunction (indicatorVA C)) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact hC.exists_horizonCone_generator_formula_of_nonempty hCne
+
+/-- The effective domain of the horizon function of an indicator of a nonempty closed polyhedral
+set admits a finite conic-coefficient formula. -/
+theorem IsClosedPolyhedral.exists_effectiveDomain_horizonFunction_indicatorVA_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ effectiveDomain (horizonFunction (indicatorVA C)) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  hC.isPolyhedral.exists_effectiveDomain_horizonFunction_indicatorVA_generator_formula hCne
+
+/-- The ordinary-ray cone of the effective domain of an indicator horizon is the horizon cone
+times the negative real ray. -/
+theorem ordinaryRayCone_effectiveDomain_horizonFunction_indicatorVA_eq
+    [FiniteDimensional ℝ E] (C : Set E) :
+    ordinaryRayCone (effectiveDomain (horizonFunction (indicatorVA C))) =
+      horizonCone C ×ˢ Set.Iio (0 : ℝ) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact ordinaryRayCone_eq_prod_Iio_zero_of_isCone (isCone_horizonCone C)
+
+/-- Membership in the ordinary-ray cone of the effective domain of an indicator horizon. -/
+theorem mem_ordinaryRayCone_effectiveDomain_horizonFunction_indicatorVA_iff
+    [FiniteDimensional ℝ E] {C : Set E} {p : E × ℝ} :
+    p ∈ ordinaryRayCone (effectiveDomain (horizonFunction (indicatorVA C))) ↔
+      p.1 ∈ horizonCone C ∧ p.2 < 0 := by
+  rw [ordinaryRayCone_effectiveDomain_horizonFunction_indicatorVA_eq C]
+  rfl
+
+/-- The ray-space cone of the effective domain of an indicator horizon is the horizon cone
+times the nonpositive real ray. -/
+theorem raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_eq
+    [FiniteDimensional ℝ E] (C : Set E) :
+    raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+        (effectiveDomain (horizonFunction (indicatorVA C))) =
+      horizonCone C ×ˢ Set.Iic (0 : ℝ) := by
+  rw [effectiveDomain_horizonFunction_indicatorVA]
+  exact raySpaceCone_eq_prod_Iic_zero_of_isCone (isCone_horizonCone C)
+
+/-- Membership in the ray-space cone of the effective domain of an indicator horizon. -/
+theorem mem_raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_iff
+    [FiniteDimensional ℝ E] {C : Set E} {p : E × ℝ} :
+    p ∈ raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+          (effectiveDomain (horizonFunction (indicatorVA C))) ↔
+      p.1 ∈ horizonCone C ∧ p.2 ≤ 0 := by
+  rw [raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_eq C]
+  rfl
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty
+polyhedral set is finitely generated. -/
+theorem
+IsPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+        (effectiveDomain (horizonFunction (indicatorVA C)))) :=
+  (hC.effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).raySpaceCone_of_isCone
+    (isCone_effectiveDomain_horizonFunction_indicatorVA C)
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty
+polyhedral set is polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral
+      (raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+        (effectiveDomain (horizonFunction (indicatorVA C)))) :=
+  (hC.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).isPolyhedral
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty
+polyhedral set is closed polyhedral. -/
+theorem
+IsPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral
+      (raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+        (effectiveDomain (horizonFunction (indicatorVA C)))) :=
+  (hC.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).isClosedPolyhedral
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty closed
+polyhedral set is finitely generated. -/
+theorem
+IsClosedPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+        (effectiveDomain (horizonFunction (indicatorVA C)))) :=
+  hC.isPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty closed
+polyhedral set is polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral
+      (raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+        (effectiveDomain (horizonFunction (indicatorVA C)))) :=
+  hC.isPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isPolyhedral
+    hCne
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty closed
+polyhedral set is closed polyhedral. -/
+theorem
+IsClosedPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral
+      (raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+        (effectiveDomain (horizonFunction (indicatorVA C)))) :=
+  hC.isPolyhedral.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isClosedPolyhedral
+    hCne
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty
+polyhedral set has finite conic generators. -/
+theorem
+IsPolyhedral.exists_raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+          (effectiveDomain (horizonFunction (indicatorVA C))) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  (hC.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).exists_generators
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty closed
+polyhedral set has finite conic generators. -/
+theorem
+IsClosedPolyhedral.exists_raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+          (effectiveDomain (horizonFunction (indicatorVA C))) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  hC.isPolyhedral.exists_raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_generators
+    hCne
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty
+polyhedral set admits a finite conic-coefficient formula. -/
+theorem
+IsPolyhedral.exists_raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+            (effectiveDomain (horizonFunction (indicatorVA C))) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  (hC.raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).exists_generator_formula
+
+/-- The ray-space cone of the effective domain of an indicator horizon over a nonempty closed
+polyhedral set admits a finite conic-coefficient formula. -/
+theorem
+IsClosedPolyhedral.exists_raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain (horizonFunction (indicatorVA C)))
+            (effectiveDomain (horizonFunction (indicatorVA C))) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hC.isPolyhedral.exists_raySpaceCone_effectiveDomain_horizonFunction_indicatorVA_generator_formula
+    hCne
+
+/-- The zero level set of the horizon function of an indicator is a cone. -/
+theorem isCone_levelSet_zero_horizonFunction_indicatorVA [FiniteDimensional ℝ E]
+    (C : Set E) :
+    IsCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) := by
+  rw [levelSet_zero_horizonFunction_indicatorVA]
+  exact isCone_horizonCone C
+
+/-- The horizon cone of the zero level set of an indicator horizon is unchanged. -/
+theorem horizonCone_levelSet_zero_horizonFunction_indicatorVA_eq
+    [FiniteDimensional ℝ E] (C : Set E) :
+    horizonCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) =
+      horizonCone C := by
+  rw [levelSet_zero_horizonFunction_indicatorVA]
+  exact horizonCone_eq_self_of_isClosed_isCone (isClosed_horizonCone C) (isCone_horizonCone C)
+
+/-- Membership in the horizon cone of the zero level set of an indicator horizon. -/
+theorem mem_horizonCone_levelSet_zero_horizonFunction_indicatorVA_iff
+    [FiniteDimensional ℝ E] {C : Set E} {w : E} :
+    w ∈ horizonCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) ↔
+      w ∈ horizonCone C := by
+  rw [horizonCone_levelSet_zero_horizonFunction_indicatorVA_eq C]
+
+/-- The ordinary-ray cone of the zero level set of an indicator horizon is the horizon cone
+times the negative real ray. -/
+theorem ordinaryRayCone_levelSet_zero_horizonFunction_indicatorVA_eq
+    [FiniteDimensional ℝ E] (C : Set E) :
+    ordinaryRayCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) =
+      horizonCone C ×ˢ Set.Iio (0 : ℝ) := by
+  rw [levelSet_zero_horizonFunction_indicatorVA]
+  exact ordinaryRayCone_eq_prod_Iio_zero_of_isCone (isCone_horizonCone C)
+
+/-- Membership in the ordinary-ray cone of the zero level set of an indicator horizon. -/
+theorem mem_ordinaryRayCone_levelSet_zero_horizonFunction_indicatorVA_iff
+    [FiniteDimensional ℝ E] {C : Set E} {p : E × ℝ} :
+    p ∈ ordinaryRayCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) ↔
+      p.1 ∈ horizonCone C ∧ p.2 < 0 := by
+  rw [ordinaryRayCone_levelSet_zero_horizonFunction_indicatorVA_eq C]
+  rfl
+
+/-- The ray-space cone of the zero level set of an indicator horizon is the horizon cone times
+the nonpositive real ray. -/
+theorem raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_eq
+    [FiniteDimensional ℝ E] (C : Set E) :
+    raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) =
+      horizonCone C ×ˢ Set.Iic (0 : ℝ) := by
+  rw [levelSet_zero_horizonFunction_indicatorVA]
+  exact raySpaceCone_eq_prod_Iic_zero_of_isCone (isCone_horizonCone C)
+
+/-- Membership in the ray-space cone of the zero level set of an indicator horizon. -/
+theorem mem_raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_iff
+    [FiniteDimensional ℝ E] {C : Set E} {p : E × ℝ} :
+    p ∈ raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+          (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) ↔
+      p.1 ∈ horizonCone C ∧ p.2 ≤ 0 := by
+  rw [raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_eq C]
+  rfl
+
+/-- The zero level set of the horizon function of the indicator of a nonempty polyhedral set is
+finitely generated as a cone. -/
+theorem IsPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) := by
+  rw [levelSet_zero_horizonFunction_indicatorVA]
+  exact hC.horizonCone_isFinitelyGeneratedCone hCne
+
+/-- The zero level set of the horizon function of the indicator of a nonempty polyhedral set is
+polyhedral. -/
+theorem IsPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) :=
+  (hC.levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone hCne).isPolyhedral
+
+/-- The zero level set of the horizon function of the indicator of a nonempty polyhedral set is
+closed polyhedral. -/
+theorem IsPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) :=
+  (hC.levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone hCne).isClosedPolyhedral
+
+/-- The zero level set of the horizon function of the indicator of a nonempty closed polyhedral
+set is finitely generated as a cone. -/
+theorem IsClosedPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) :=
+  hC.isPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone hCne
+
+/-- The zero level set of the horizon function of the indicator of a nonempty closed polyhedral
+set is polyhedral. -/
+theorem IsClosedPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) :=
+  hC.isPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isPolyhedral hCne
+
+/-- The zero level set of the horizon function of the indicator of a nonempty closed polyhedral
+set is closed polyhedral. -/
+theorem IsClosedPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) :=
+  hC.isPolyhedral.levelSet_zero_horizonFunction_indicatorVA_isClosedPolyhedral hCne
+
+/-- The zero level set of the horizon function of the indicator of a nonempty polyhedral set has
+finite conic generators. -/
+theorem IsPolyhedral.exists_levelSet_zero_horizonFunction_indicatorVA_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      levelSet (horizonFunction (indicatorVA C)) (0 : EReal) = conicHull (↑t : Set E) := by
+  rw [levelSet_zero_horizonFunction_indicatorVA]
+  exact hC.exists_horizon_conicHull_generators_of_nonempty hCne
+
+/-- The zero level set of the horizon function of the indicator of a nonempty closed polyhedral
+set has finite conic generators. -/
+theorem IsClosedPolyhedral.exists_levelSet_zero_horizonFunction_indicatorVA_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      levelSet (horizonFunction (indicatorVA C)) (0 : EReal) = conicHull (↑t : Set E) :=
+  hC.isPolyhedral.exists_levelSet_zero_horizonFunction_indicatorVA_generators hCne
+
+/-- The zero level set of the horizon function of the indicator of a nonempty polyhedral set
+admits a finite conic-coefficient formula. -/
+theorem IsPolyhedral.exists_levelSet_zero_horizonFunction_indicatorVA_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ levelSet (horizonFunction (indicatorVA C)) (0 : EReal) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w := by
+  rw [levelSet_zero_horizonFunction_indicatorVA]
+  exact hC.exists_horizonCone_generator_formula_of_nonempty hCne
+
+/-- The zero level set of the horizon function of the indicator of a nonempty closed polyhedral
+set admits a finite conic-coefficient formula. -/
+theorem IsClosedPolyhedral.exists_levelSet_zero_horizonFunction_indicatorVA_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ levelSet (horizonFunction (indicatorVA C)) (0 : EReal) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  hC.isPolyhedral.exists_levelSet_zero_horizonFunction_indicatorVA_generator_formula hCne
+
+/-- Every finite lower level of an indicator horizon over a nonempty polyhedral set is
+polyhedral: it is either the horizon cone or empty. -/
+theorem IsPolyhedral.levelSet_horizonFunction_indicatorVA_coe_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) := by
+  by_cases hα : 0 ≤ α
+  · rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+    exact hC.horizonCone_isPolyhedral hCne
+  · have hαlt : α < 0 := not_le.mp hα
+    rw [levelSet_horizonFunction_indicatorVA_coe_of_neg C hαlt]
+    exact IsPolyhedral.empty
+
+/-- Every finite lower level of an indicator horizon over a nonempty polyhedral set is closed
+polyhedral. -/
+theorem IsPolyhedral.levelSet_horizonFunction_indicatorVA_coe_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) := by
+  by_cases hα : 0 ≤ α
+  · rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+    exact hC.horizonCone_isClosedPolyhedral hCne
+  · have hαlt : α < 0 := not_le.mp hα
+    rw [levelSet_horizonFunction_indicatorVA_coe_of_neg C hαlt]
+    exact IsClosedPolyhedral.empty
+
+/-- Every finite lower level of an indicator horizon over a nonempty closed polyhedral set is
+polyhedral. -/
+theorem IsClosedPolyhedral.levelSet_horizonFunction_indicatorVA_coe_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) :=
+  hC.isPolyhedral.levelSet_horizonFunction_indicatorVA_coe_isPolyhedral hCne
+
+/-- Every finite lower level of an indicator horizon over a nonempty closed polyhedral set is
+closed polyhedral. -/
+theorem IsClosedPolyhedral.levelSet_horizonFunction_indicatorVA_coe_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) :=
+  hC.isPolyhedral.levelSet_horizonFunction_indicatorVA_coe_isClosedPolyhedral hCne
+
+/-- Nonnegative finite lower levels of an indicator horizon over a nonempty polyhedral set are
+finitely generated cones. -/
+theorem IsPolyhedral.levelSet_horizonFunction_indicatorVA_coe_of_nonneg_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    IsFinitelyGeneratedCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+  exact hC.horizonCone_isFinitelyGeneratedCone hCne
+
+/-- Nonnegative finite lower levels of an indicator horizon over a nonempty closed polyhedral set
+are finitely generated cones. -/
+theorem
+    IsClosedPolyhedral.levelSet_horizonFunction_indicatorVA_coe_of_nonneg_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    IsFinitelyGeneratedCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) :=
+  hC.isPolyhedral.levelSet_horizonFunction_indicatorVA_coe_of_nonneg_isFinitelyGeneratedCone
+    hCne hα
+
+/-- Nonnegative finite lower levels of an indicator horizon over a nonempty polyhedral set have
+finite conic generators. -/
+theorem IsPolyhedral.exists_levelSet_horizonFunction_indicatorVA_coe_generators_of_nonneg
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    ∃ t : Finset E,
+      levelSet (horizonFunction (indicatorVA C)) (α : EReal) = conicHull (↑t : Set E) := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+  exact hC.exists_horizon_conicHull_generators_of_nonempty hCne
+
+/-- Nonnegative finite lower levels of an indicator horizon over a nonempty closed polyhedral set
+have finite conic generators. -/
+theorem IsClosedPolyhedral.exists_levelSet_horizonFunction_indicatorVA_coe_generators_of_nonneg
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    ∃ t : Finset E,
+      levelSet (horizonFunction (indicatorVA C)) (α : EReal) = conicHull (↑t : Set E) :=
+  hC.isPolyhedral.exists_levelSet_horizonFunction_indicatorVA_coe_generators_of_nonneg
+    hCne hα
+
+/-- Nonnegative finite lower levels of an indicator horizon over a nonempty polyhedral set come
+with a finite conic-coefficient formula. -/
+theorem IsPolyhedral.exists_levelSet_horizonFunction_indicatorVA_coe_generator_formula_of_nonneg
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ levelSet (horizonFunction (indicatorVA C)) (α : EReal) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+  exact hC.exists_horizonCone_generator_formula_of_nonempty hCne
+
+/-- Nonnegative finite lower levels of an indicator horizon over a nonempty closed polyhedral set
+come with a finite conic-coefficient formula. -/
+theorem
+    IsClosedPolyhedral.exists_levelSet_horizonFunction_indicatorVA_coe_generator_formula_of_nonneg
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ levelSet (horizonFunction (indicatorVA C)) (α : EReal) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  hC.isPolyhedral.exists_levelSet_horizonFunction_indicatorVA_coe_generator_formula_of_nonneg
+    hCne hα
+
+/-- Every finite strict lower level of an indicator horizon over a nonempty polyhedral set is
+polyhedral: it is either the horizon cone or empty. -/
+theorem IsPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) := by
+  by_cases hα : 0 < α
+  · rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+    exact hC.horizonCone_isPolyhedral hCne
+  · have hαle : α ≤ 0 := le_of_not_gt hα
+    rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_nonpos C hαle]
+    exact IsPolyhedral.empty
+
+/-- Every finite strict lower level of an indicator horizon over a nonempty polyhedral set is
+closed polyhedral. -/
+theorem IsPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) := by
+  by_cases hα : 0 < α
+  · rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+    exact hC.horizonCone_isClosedPolyhedral hCne
+  · have hαle : α ≤ 0 := le_of_not_gt hα
+    rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_nonpos C hαle]
+    exact IsClosedPolyhedral.empty
+
+/-- Every finite strict lower level of an indicator horizon over a nonempty closed polyhedral set
+is polyhedral. -/
+theorem IsClosedPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) :=
+  hC.isPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_isPolyhedral hCne
+
+/-- Every finite strict lower level of an indicator horizon over a nonempty closed polyhedral set
+is closed polyhedral. -/
+theorem IsClosedPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) :=
+  hC.isPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_isClosedPolyhedral hCne
+
+/-- Positive finite strict lower levels of an indicator horizon over a nonempty polyhedral set are
+finitely generated cones. -/
+theorem IsPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_of_pos_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    IsFinitelyGeneratedCone
+      (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+  exact hC.horizonCone_isFinitelyGeneratedCone hCne
+
+/-- Positive finite strict lower levels of an indicator horizon over a nonempty closed polyhedral
+set are finitely generated cones. -/
+theorem
+    IsClosedPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_of_pos_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    IsFinitelyGeneratedCone
+      (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) :=
+  hC.isPolyhedral.strictLevelSet_horizonFunction_indicatorVA_coe_of_pos_isFinitelyGeneratedCone
+    hCne hα
+
+/-- Positive finite strict lower levels of an indicator horizon over a nonempty polyhedral set
+have finite conic generators. -/
+theorem IsPolyhedral.exists_strictLevelSet_horizonFunction_indicatorVA_coe_generators_of_pos
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    ∃ t : Finset E,
+      strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal) =
+        conicHull (↑t : Set E) := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+  exact hC.exists_horizon_conicHull_generators_of_nonempty hCne
+
+/-- Positive finite strict lower levels of an indicator horizon over a nonempty closed polyhedral
+set have finite conic generators. -/
+theorem
+    IsClosedPolyhedral.exists_strictLevelSet_horizonFunction_indicatorVA_coe_generators_of_pos
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    ∃ t : Finset E,
+      strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal) =
+        conicHull (↑t : Set E) :=
+  hC.isPolyhedral.exists_strictLevelSet_horizonFunction_indicatorVA_coe_generators_of_pos
+    hCne hα
+
+/-- Positive finite strict lower levels of an indicator horizon over a nonempty polyhedral set
+come with a finite conic-coefficient formula. -/
+theorem IsPolyhedral.exists_strictLevelSet_horizonFunction_indicatorVA_coe_generator_formula_of_pos
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+  exact hC.exists_horizonCone_generator_formula_of_nonempty hCne
+
+/-- Positive finite strict lower levels of an indicator horizon over a nonempty closed polyhedral
+set come with a finite conic-coefficient formula. -/
+theorem IsClosedPolyhedral.exists_strictLevelSet_horizonFunction_indicatorVA_coe_formula_of_pos
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  hC.isPolyhedral.exists_strictLevelSet_horizonFunction_indicatorVA_coe_generator_formula_of_pos
+    hCne hα
+
+/-- Nonnegative finite lower levels of an indicator horizon are cones. -/
+theorem isCone_indicatorHorizon_levelSet_coe_of_nonneg [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : 0 ≤ α) :
+    IsCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+  exact isCone_horizonCone C
+
+/-- Positive finite strict lower levels of an indicator horizon are cones. -/
+theorem isCone_indicatorHorizon_strictLevelSet_coe_of_pos [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : 0 < α) :
+    IsCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+  exact isCone_horizonCone C
+
+/-- The horizon cone of a nonnegative finite lower level of an indicator horizon is unchanged. -/
+theorem horizonCone_indicatorHorizon_levelSet_nonneg_eq [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : 0 ≤ α) :
+    horizonCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      horizonCone C := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+  exact horizonCone_eq_self_of_isClosed_isCone (isClosed_horizonCone C) (isCone_horizonCone C)
+
+/-- Membership in the horizon cone of a nonnegative finite lower level of an indicator horizon. -/
+theorem mem_horizonCone_indicatorHorizon_levelSet_nonneg_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : 0 ≤ α) {w : E} :
+    w ∈ horizonCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      w ∈ horizonCone C := by
+  rw [horizonCone_indicatorHorizon_levelSet_nonneg_eq C hα]
+
+/-- The horizon cone of a negative finite lower level of an indicator horizon is `{0}`. -/
+theorem horizonCone_indicatorHorizon_levelSet_neg_eq [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : α < 0) :
+    horizonCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      ({0} : Set E) := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_neg C hα]
+  simp
+
+/-- Membership in the horizon cone of a negative finite lower level of an indicator horizon. -/
+theorem mem_horizonCone_indicatorHorizon_levelSet_neg_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : α < 0) {w : E} :
+    w ∈ horizonCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      w = 0 := by
+  rw [horizonCone_indicatorHorizon_levelSet_neg_eq C hα]
+  simp
+
+/-- The horizon cone of a positive finite strict lower level of an indicator horizon is
+unchanged. -/
+theorem horizonCone_indicatorHorizon_strictLevelSet_pos_eq [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : 0 < α) :
+    horizonCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      horizonCone C := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+  exact horizonCone_eq_self_of_isClosed_isCone (isClosed_horizonCone C) (isCone_horizonCone C)
+
+/-- Membership in the horizon cone of a positive finite strict lower level of an indicator
+horizon. -/
+theorem mem_horizonCone_indicatorHorizon_strictLevelSet_pos_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : 0 < α) {w : E} :
+    w ∈ horizonCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      w ∈ horizonCone C := by
+  rw [horizonCone_indicatorHorizon_strictLevelSet_pos_eq C hα]
+
+/-- The horizon cone of a nonpositive finite strict lower level of an indicator horizon is
+`{0}`. -/
+theorem horizonCone_indicatorHorizon_strictLevelSet_nonpos_eq [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : α ≤ 0) :
+    horizonCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      ({0} : Set E) := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_nonpos C hα]
+  simp
+
+/-- Membership in the horizon cone of a nonpositive finite strict lower level of an indicator
+horizon. -/
+theorem mem_horizonCone_indicatorHorizon_strictLevelSet_nonpos_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : α ≤ 0) {w : E} :
+    w ∈ horizonCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      w = 0 := by
+  rw [horizonCone_indicatorHorizon_strictLevelSet_nonpos_eq C hα]
+  simp
+
+/-- The ordinary-ray cone of a nonnegative finite lower level of an indicator horizon is the
+horizon cone times the negative real ray. -/
+theorem ordinaryRayCone_indicatorHorizon_levelSet_nonneg_eq
+    [FiniteDimensional ℝ E] (C : Set E) {α : ℝ} (hα : 0 ≤ α) :
+    ordinaryRayCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      horizonCone C ×ˢ Set.Iio (0 : ℝ) := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+  exact ordinaryRayCone_eq_prod_Iio_zero_of_isCone (isCone_horizonCone C)
+
+/-- Membership in the ordinary-ray cone of a nonnegative finite lower level of an indicator
+horizon. -/
+theorem mem_ordinaryRayCone_indicatorHorizon_levelSet_nonneg_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : 0 ≤ α) {p : E × ℝ} :
+    p ∈ ordinaryRayCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      p.1 ∈ horizonCone C ∧ p.2 < 0 := by
+  rw [ordinaryRayCone_indicatorHorizon_levelSet_nonneg_eq C hα]
+  rfl
+
+/-- The ordinary-ray cone of a negative finite lower level of an indicator horizon is empty. -/
+theorem ordinaryRayCone_indicatorHorizon_levelSet_neg_eq
+    [FiniteDimensional ℝ E] (C : Set E) {α : ℝ} (hα : α < 0) :
+    ordinaryRayCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      ∅ := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_neg C hα]
+  exact ordinaryRayCone_empty
+
+/-- No point lies in the ordinary-ray cone of a negative finite lower level of an indicator
+horizon. -/
+theorem mem_ordinaryRayCone_indicatorHorizon_levelSet_neg_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : α < 0) {p : E × ℝ} :
+    p ∈ ordinaryRayCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      False := by
+  rw [ordinaryRayCone_indicatorHorizon_levelSet_neg_eq C hα]
+  simp
+
+/-- The ordinary-ray cone of a positive finite strict lower level of an indicator horizon is
+the horizon cone times the negative real ray. -/
+theorem ordinaryRayCone_indicatorHorizon_strictLevelSet_pos_eq
+    [FiniteDimensional ℝ E] (C : Set E) {α : ℝ} (hα : 0 < α) :
+    ordinaryRayCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      horizonCone C ×ˢ Set.Iio (0 : ℝ) := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+  exact ordinaryRayCone_eq_prod_Iio_zero_of_isCone (isCone_horizonCone C)
+
+/-- Membership in the ordinary-ray cone of a positive finite strict lower level of an indicator
+horizon. -/
+theorem mem_ordinaryRayCone_indicatorHorizon_strictLevelSet_pos_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : 0 < α) {p : E × ℝ} :
+    p ∈ ordinaryRayCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      p.1 ∈ horizonCone C ∧ p.2 < 0 := by
+  rw [ordinaryRayCone_indicatorHorizon_strictLevelSet_pos_eq C hα]
+  rfl
+
+/-- The ordinary-ray cone of a nonpositive finite strict lower level of an indicator horizon is
+empty. -/
+theorem ordinaryRayCone_indicatorHorizon_strictLevelSet_nonpos_eq
+    [FiniteDimensional ℝ E] (C : Set E) {α : ℝ} (hα : α ≤ 0) :
+    ordinaryRayCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      ∅ := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_nonpos C hα]
+  exact ordinaryRayCone_empty
+
+/-- No point lies in the ordinary-ray cone of a nonpositive finite strict lower level of an
+indicator horizon. -/
+theorem mem_ordinaryRayCone_indicatorHorizon_strictLevelSet_nonpos_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : α ≤ 0) {p : E × ℝ} :
+    p ∈ ordinaryRayCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      False := by
+  rw [ordinaryRayCone_indicatorHorizon_strictLevelSet_nonpos_eq C hα]
+  simp
+
+/-- The ray-space cone of a nonnegative finite lower level of an indicator horizon is the
+horizon cone times the nonpositive real ray. -/
+theorem raySpaceCone_indicatorHorizon_levelSet_nonneg_eq [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : 0 ≤ α) :
+    raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      horizonCone C ×ˢ Set.Iic (0 : ℝ) := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_nonneg C hα]
+  exact raySpaceCone_eq_prod_Iic_zero_of_isCone (isCone_horizonCone C)
+
+/-- Membership in the ray-space cone of a nonnegative finite lower level of an indicator
+horizon. -/
+theorem mem_raySpaceCone_indicatorHorizon_levelSet_nonneg_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : 0 ≤ α) {p : E × ℝ} :
+    p ∈ raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+          (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      p.1 ∈ horizonCone C ∧ p.2 ≤ 0 := by
+  rw [raySpaceCone_indicatorHorizon_levelSet_nonneg_eq C hα]
+  rfl
+
+/-- The ray-space cone of a negative finite lower level of an indicator horizon is empty. -/
+theorem raySpaceCone_indicatorHorizon_levelSet_neg_eq [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : α < 0) :
+    raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      ∅ := by
+  rw [levelSet_horizonFunction_indicatorVA_coe_of_neg C hα]
+  exact raySpaceCone_empty_empty
+
+/-- No point lies in the ray-space cone of a negative finite lower level of an indicator
+horizon. -/
+theorem mem_raySpaceCone_indicatorHorizon_levelSet_neg_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : α < 0) {p : E × ℝ} :
+    p ∈ raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+          (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      False := by
+  rw [raySpaceCone_indicatorHorizon_levelSet_neg_eq C hα]
+  simp
+
+/-- The ray-space cone of a positive finite strict lower level of an indicator horizon is the
+horizon cone times the nonpositive real ray. -/
+theorem raySpaceCone_indicatorHorizon_strictLevelSet_pos_eq [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : 0 < α) :
+    raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      horizonCone C ×ˢ Set.Iic (0 : ℝ) := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_pos C hα]
+  exact raySpaceCone_eq_prod_Iic_zero_of_isCone (isCone_horizonCone C)
+
+/-- Membership in the ray-space cone of a positive finite strict lower level of an indicator
+horizon. -/
+theorem mem_raySpaceCone_indicatorHorizon_strictLevelSet_pos_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : 0 < α) {p : E × ℝ} :
+    p ∈ raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+          (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      p.1 ∈ horizonCone C ∧ p.2 ≤ 0 := by
+  rw [raySpaceCone_indicatorHorizon_strictLevelSet_pos_eq C hα]
+  rfl
+
+/-- The ray-space cone of a nonpositive finite strict lower level of an indicator horizon is
+empty. -/
+theorem raySpaceCone_indicatorHorizon_strictLevelSet_nonpos_eq [FiniteDimensional ℝ E]
+    (C : Set E) {α : ℝ} (hα : α ≤ 0) :
+    raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+      ∅ := by
+  rw [strictLevelSet_horizonFunction_indicatorVA_coe_of_nonpos C hα]
+  exact raySpaceCone_empty_empty
+
+/-- No point lies in the ray-space cone of a nonpositive finite strict lower level of an
+indicator horizon. -/
+theorem mem_raySpaceCone_indicatorHorizon_strictLevelSet_nonpos_iff
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ} (hα : α ≤ 0) {p : E × ℝ} :
+    p ∈ raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+          (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+      False := by
+  rw [raySpaceCone_indicatorHorizon_strictLevelSet_nonpos_eq C hα]
+  simp
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+polyhedral set is finitely generated. -/
+theorem IsPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  (hC.levelSet_horizonFunction_indicatorVA_coe_of_nonneg_isFinitelyGeneratedCone
+    hCne hα).raySpaceCone_of_isCone
+    (isCone_indicatorHorizon_levelSet_coe_of_nonneg C hα)
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+polyhedral set is polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    IsPolyhedral
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  (hC.raySpaceCone_indicatorHorizon_levelSet_nonneg_isFinitelyGeneratedCone
+    hCne hα).isPolyhedral
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+polyhedral set is closed polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    IsClosedPolyhedral
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  (hC.raySpaceCone_indicatorHorizon_levelSet_nonneg_isFinitelyGeneratedCone
+    hCne hα).isClosedPolyhedral
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+closed polyhedral set is finitely generated. -/
+theorem
+    IsClosedPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isFinitelyGeneratedCone
+    hCne hα
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+closed polyhedral set is polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    IsPolyhedral
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isPolyhedral
+    hCne hα
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+closed polyhedral set is closed polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    IsClosedPolyhedral
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_indicatorHorizon_levelSet_nonneg_isClosedPolyhedral
+    hCne hα
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+polyhedral set has finite conic generators. -/
+theorem IsPolyhedral.exists_raySpaceCone_indicatorHorizon_levelSet_nonneg_generators
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+          (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  (hC.raySpaceCone_indicatorHorizon_levelSet_nonneg_isFinitelyGeneratedCone
+    hCne hα).exists_generators
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+closed polyhedral set has finite conic generators. -/
+theorem IsClosedPolyhedral.exists_raySpaceCone_indicatorHorizon_levelSet_nonneg_generators
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+          (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  hC.isPolyhedral.exists_raySpaceCone_indicatorHorizon_levelSet_nonneg_generators
+    hCne hα
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+polyhedral set comes with a finite conic-coefficient formula. -/
+theorem IsPolyhedral.exists_raySpaceCone_indicatorHorizon_levelSet_nonneg_formula
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+            (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  (hC.raySpaceCone_indicatorHorizon_levelSet_nonneg_isFinitelyGeneratedCone
+    hCne hα).exists_generator_formula
+
+/-- The ray-space cone of a nonnegative finite indicator-horizon lower level over a nonempty
+closed polyhedral set comes with a finite conic-coefficient formula. -/
+theorem IsClosedPolyhedral.exists_raySpaceCone_indicatorHorizon_levelSet_nonneg_formula
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 ≤ α) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (α : EReal))
+            (levelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hC.isPolyhedral.exists_raySpaceCone_indicatorHorizon_levelSet_nonneg_formula
+    hCne hα
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+polyhedral set is finitely generated. -/
+theorem IsPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  (hC.strictLevelSet_horizonFunction_indicatorVA_coe_of_pos_isFinitelyGeneratedCone
+    hCne hα).raySpaceCone_of_isCone
+    (isCone_indicatorHorizon_strictLevelSet_coe_of_pos C hα)
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+polyhedral set is polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    IsPolyhedral
+      (raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  (hC.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isFinitelyGeneratedCone
+    hCne hα).isPolyhedral
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+polyhedral set is closed polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    IsClosedPolyhedral
+      (raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  (hC.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isFinitelyGeneratedCone
+    hCne hα).isClosedPolyhedral
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+closed polyhedral set is finitely generated. -/
+theorem
+    IsClosedPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isFinitelyGeneratedCone
+    hCne hα
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+closed polyhedral set is polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    IsPolyhedral
+      (raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isPolyhedral
+    hCne hα
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+closed polyhedral set is closed polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    IsClosedPolyhedral
+      (raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+        (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isClosedPolyhedral
+    hCne hα
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+polyhedral set has finite conic generators. -/
+theorem IsPolyhedral.exists_raySpaceCone_indicatorHorizon_strictLevelSet_pos_generators
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+          (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  (hC.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isFinitelyGeneratedCone
+    hCne hα).exists_generators
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+closed polyhedral set has finite conic generators. -/
+theorem IsClosedPolyhedral.exists_raySpaceCone_indicatorHorizon_strictLevelSet_pos_generators
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+          (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  hC.isPolyhedral.exists_raySpaceCone_indicatorHorizon_strictLevelSet_pos_generators
+    hCne hα
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+polyhedral set comes with a finite conic-coefficient formula. -/
+theorem IsPolyhedral.exists_raySpaceCone_indicatorHorizon_strictLevelSet_pos_formula
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+            (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  (hC.raySpaceCone_indicatorHorizon_strictLevelSet_pos_isFinitelyGeneratedCone
+    hCne hα).exists_generator_formula
+
+/-- The ray-space cone of a positive finite indicator-horizon strict lower level over a nonempty
+closed polyhedral set comes with a finite conic-coefficient formula. -/
+theorem IsClosedPolyhedral.exists_raySpaceCone_indicatorHorizon_strictLevelSet_pos_formula
+    [FiniteDimensional ℝ E] {C : Set E} {α : ℝ}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) (hα : 0 < α) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal))
+            (strictLevelSet (horizonFunction (indicatorVA C)) (α : EReal)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hC.isPolyhedral.exists_raySpaceCone_indicatorHorizon_strictLevelSet_pos_formula
+    hCne hα
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty
+polyhedral set is finitely generated. -/
+theorem IsPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))) :=
+  (hC.levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).raySpaceCone_of_isCone
+    (isCone_levelSet_zero_horizonFunction_indicatorVA C)
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty
+polyhedral set is polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))) :=
+  (hC.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).isPolyhedral
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty
+polyhedral set is closed polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))) :=
+  (hC.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).isClosedPolyhedral
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty closed
+polyhedral set is finitely generated. -/
+theorem
+IsClosedPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty closed
+polyhedral set is polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isPolyhedral hCne
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty closed
+polyhedral set is closed polyhedral. -/
+theorem
+    IsClosedPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral
+      (raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+        (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))) :=
+  hC.isPolyhedral.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isClosedPolyhedral
+    hCne
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty polyhedral
+set has finite conic generators. -/
+theorem IsPolyhedral.exists_raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+          (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  (hC.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).exists_generators
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty closed
+polyhedral set has finite conic generators. -/
+theorem
+    IsClosedPolyhedral.exists_raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+          (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  hC.isPolyhedral.exists_raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_generators
+    hCne
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty polyhedral
+set admits a finite conic-coefficient formula. -/
+theorem
+    IsPolyhedral.exists_raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+            (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  (hC.raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_isFinitelyGeneratedCone
+    hCne).exists_generator_formula
+
+/-- The ray-space cone of the zero level set of an indicator horizon over a nonempty closed
+polyhedral set admits a finite conic-coefficient formula. -/
+theorem
+IsClosedPolyhedral.exists_raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (levelSet (horizonFunction (indicatorVA C)) (0 : EReal))
+            (levelSet (horizonFunction (indicatorVA C)) (0 : EReal)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hC.isPolyhedral.exists_raySpaceCone_levelSet_zero_horizonFunction_indicatorVA_generator_formula
+    hCne
+
+/-- The epigraph of the horizon function of the indicator of a nonempty polyhedral set is a
+finitely generated cone. -/
+theorem IsPolyhedral.horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (epigraph (horizonFunction (indicatorVA C))) := by
+  rw [epigraph_horizonFunction_indicatorVA]
+  exact (hC.horizonCone_isFinitelyGeneratedCone hCne).prod
+    IsFinitelyGeneratedCone.Ici_zero
+
+/-- The epigraph of the horizon function of the indicator of a nonempty polyhedral set is
+polyhedral. -/
+theorem IsPolyhedral.horizonFunction_indicatorVA_epigraph_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (epigraph (horizonFunction (indicatorVA C))) :=
+  (hC.horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone hCne).isPolyhedral
+
+/-- The epigraph of the horizon function of the indicator of a nonempty polyhedral set is closed
+polyhedral. -/
+theorem IsPolyhedral.horizonFunction_indicatorVA_epigraph_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (epigraph (horizonFunction (indicatorVA C))) :=
+  (hC.horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone hCne).isClosedPolyhedral
+
+/-- The epigraph of the horizon function of the indicator of a nonempty closed polyhedral set is
+a finitely generated cone. -/
+theorem IsClosedPolyhedral.horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone (epigraph (horizonFunction (indicatorVA C))) :=
+  hC.isPolyhedral.horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone hCne
+
+/-- The epigraph of the horizon function of the indicator of a nonempty closed polyhedral set is
+polyhedral. -/
+theorem IsClosedPolyhedral.horizonFunction_indicatorVA_epigraph_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral (epigraph (horizonFunction (indicatorVA C))) :=
+  hC.isPolyhedral.horizonFunction_indicatorVA_epigraph_isPolyhedral hCne
+
+/-- The epigraph of the horizon function of the indicator of a nonempty closed polyhedral set is
+closed polyhedral. -/
+theorem IsClosedPolyhedral.horizonFunction_indicatorVA_epigraph_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral (epigraph (horizonFunction (indicatorVA C))) :=
+  hC.isPolyhedral.horizonFunction_indicatorVA_epigraph_isClosedPolyhedral hCne
+
+/-- The epigraph of the horizon function of the indicator of a nonempty polyhedral set has finite
+conic generators. -/
+theorem IsPolyhedral.exists_horizonFunction_indicatorVA_epigraph_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      epigraph (horizonFunction (indicatorVA C)) = conicHull (↑u : Set (E × ℝ)) :=
+  (hC.horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone hCne).exists_generators
+
+/-- The epigraph of the horizon function of the indicator of a nonempty closed polyhedral set has
+finite conic generators. -/
+theorem IsClosedPolyhedral.exists_horizonFunction_indicatorVA_epigraph_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      epigraph (horizonFunction (indicatorVA C)) = conicHull (↑u : Set (E × ℝ)) :=
+  hC.isPolyhedral.exists_horizonFunction_indicatorVA_epigraph_generators hCne
+
+/-- The epigraph of the horizon function of the indicator of a nonempty polyhedral set admits a
+finite conic-coefficient formula. -/
+theorem IsPolyhedral.exists_horizonFunction_indicatorVA_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ epigraph (horizonFunction (indicatorVA C)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  (hC.horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone hCne).exists_generator_formula
+
+/-- The epigraph of the horizon function of the indicator of a nonempty closed polyhedral set
+admits a finite conic-coefficient formula. -/
+theorem IsClosedPolyhedral.exists_horizonFunction_indicatorVA_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ epigraph (horizonFunction (indicatorVA C)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hC.isPolyhedral.exists_horizonFunction_indicatorVA_epigraph_generator_formula hCne
+
+/-- The epigraph of an indicator horizon is a cone. -/
+theorem isCone_epigraph_horizonFunction_indicatorVA [FiniteDimensional ℝ E]
+    (C : Set E) :
+    IsCone (epigraph (horizonFunction (indicatorVA C))) :=
+  isCone_epigraph_of_positivelyHomogeneous
+    (positivelyHomogeneous_horizonFunction (indicatorVA C))
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty polyhedral set is
+finitely generated. -/
+theorem IsPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+        (epigraph (horizonFunction (indicatorVA C)))) :=
+  (hC.horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone hCne).raySpaceCone_of_isCone
+    (isCone_epigraph_horizonFunction_indicatorVA C)
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty polyhedral set is
+polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral
+      (raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+        (epigraph (horizonFunction (indicatorVA C)))) :=
+  (hC.raySpaceCone_horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    hCne).isPolyhedral
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty polyhedral set is closed
+polyhedral. -/
+theorem IsPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral
+      (raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+        (epigraph (horizonFunction (indicatorVA C)))) :=
+  (hC.raySpaceCone_horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    hCne).isClosedPolyhedral
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty closed polyhedral set is
+finitely generated. -/
+theorem IsClosedPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+        (epigraph (horizonFunction (indicatorVA C)))) :=
+  hC.isPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    hCne
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty closed polyhedral set is
+polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsPolyhedral
+      (raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+        (epigraph (horizonFunction (indicatorVA C)))) :=
+  hC.isPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isPolyhedral hCne
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty closed polyhedral set is
+closed polyhedral. -/
+theorem IsClosedPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    IsClosedPolyhedral
+      (raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+        (epigraph (horizonFunction (indicatorVA C)))) :=
+  hC.isPolyhedral.raySpaceCone_horizonFunction_indicatorVA_epigraph_isClosedPolyhedral
+    hCne
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty polyhedral set has finite
+conic generators. -/
+theorem IsPolyhedral.exists_raySpaceCone_horizonFunction_indicatorVA_epigraph_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+          (epigraph (horizonFunction (indicatorVA C))) =
+        conicHull (↑u : Set ((E × ℝ) × ℝ)) :=
+  (hC.raySpaceCone_horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    hCne).exists_generators
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty closed polyhedral set has
+finite conic generators. -/
+theorem IsClosedPolyhedral.exists_raySpaceCone_horizonFunction_indicatorVA_epigraph_generators
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+          (epigraph (horizonFunction (indicatorVA C))) =
+        conicHull (↑u : Set ((E × ℝ) × ℝ)) :=
+  hC.isPolyhedral.exists_raySpaceCone_horizonFunction_indicatorVA_epigraph_generators hCne
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty polyhedral set admits a
+finite conic-coefficient formula. -/
+theorem IsPolyhedral.exists_raySpaceCone_horizonFunction_indicatorVA_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      ∀ {p : (E × ℝ) × ℝ},
+        p ∈ raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+            (epigraph (horizonFunction (indicatorVA C))) ↔
+          ∃ c : ((E × ℝ) × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set ((E × ℝ) × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  (hC.raySpaceCone_horizonFunction_indicatorVA_epigraph_isFinitelyGeneratedCone
+    hCne).exists_generator_formula
+
+/-- The ray-space cone of the indicator-horizon epigraph of a nonempty closed polyhedral set
+admits a finite conic-coefficient formula. -/
+theorem
+    IsClosedPolyhedral.exists_raySpaceCone_horizonFunction_indicatorVA_epigraph_generator_formula
+    [FiniteDimensional ℝ E] {C : Set E}
+    (hC : IsClosedPolyhedral C) (hCne : C.Nonempty) :
+    ∃ u : Finset ((E × ℝ) × ℝ),
+      ∀ {p : (E × ℝ) × ℝ},
+        p ∈ raySpaceCone (epigraph (horizonFunction (indicatorVA C)))
+            (epigraph (horizonFunction (indicatorVA C))) ↔
+          ∃ c : ((E × ℝ) × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set ((E × ℝ) × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hC.isPolyhedral.exists_raySpaceCone_horizonFunction_indicatorVA_epigraph_generator_formula
+    hCne
+
 theorem IsConvexPiecewiseLinear.isProper {f : E → EReal}
     (hf : IsConvexPiecewiseLinear f) :
     IsProper f :=
@@ -768,6 +2831,17 @@ theorem IsConvexPiecewiseLinear.hasClosedPolyhedralEpigraph {f : E → EReal}
     (hf : IsConvexPiecewiseLinear f) :
     HasClosedPolyhedralEpigraph f :=
   hf.2
+
+theorem IsConvexPiecewiseLinear.hasPolyhedralEpigraph
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    HasPolyhedralEpigraph f :=
+  IsClosedPolyhedral.isPolyhedral hf.2
+
+theorem IsConvexPiecewiseLinear.epigraph_nonempty {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    (epigraph f).Nonempty :=
+  epigraph_nonempty_of_isProper hf.1
 
 theorem IsConvexPiecewiseLinear.isClosed_epigraph {f : E → EReal}
     (hf : IsConvexPiecewiseLinear f) :
@@ -837,6 +2911,95 @@ theorem IsConvexPiecewiseLinear.exists_nonempty_effectiveDomain_generator_formul
       hf.hasClosedPolyhedralEpigraph
       hf.isProper
 
+/-- A convex piecewise-linear function has a finitely generated
+effective-domain horizon cone. -/
+theorem IsConvexPiecewiseLinear.horizonCone_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsFinitelyGeneratedCone (horizonCone (effectiveDomain f)) :=
+  hf.hasClosedPolyhedralEpigraph.horizonCone_effectiveDomain_isFinitelyGeneratedCone
+    (by simpa [effectiveDomain] using hf.isProper.1)
+
+/-- A convex piecewise-linear function has a closed polyhedral
+effective-domain horizon cone. -/
+theorem IsConvexPiecewiseLinear.horizonCone_effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsClosedPolyhedral (horizonCone (effectiveDomain f)) :=
+  hf.hasClosedPolyhedralEpigraph.horizonCone_effectiveDomain_isClosedPolyhedral
+    (by simpa [effectiveDomain] using hf.isProper.1)
+
+/-- A convex piecewise-linear function has finite effective-domain horizon-cone
+generators. -/
+theorem IsConvexPiecewiseLinear.exists_horizonCone_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ t : Finset E,
+      horizonCone (effectiveDomain f) = conicHull (↑t : Set E) :=
+  hf.hasClosedPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generators
+    (by simpa [effectiveDomain] using hf.isProper.1)
+
+/-- A convex piecewise-linear function has an explicit finite conic-coefficient
+formula for its effective-domain horizon cone. -/
+theorem IsConvexPiecewiseLinear.exists_horizonCone_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ t : Finset E,
+      ∀ {w : E},
+        w ∈ horizonCone (effectiveDomain f) ↔
+          ∃ c : E →₀ ℝ,
+            ↑c.support ⊆ (↑t : Set E) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = w :=
+  hf.hasClosedPolyhedralEpigraph.exists_horizonCone_effectiveDomain_generator_formula
+    (by simpa [effectiveDomain] using hf.isProper.1)
+
+/-- A convex piecewise-linear function has a finitely generated
+effective-domain ray-space cone. -/
+theorem IsConvexPiecewiseLinear.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsFinitelyGeneratedCone
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  hf.hasClosedPolyhedralEpigraph.raySpaceCone_effectiveDomain_isFinitelyGeneratedCone
+    (by simpa [effectiveDomain] using hf.isProper.1)
+
+/-- A convex piecewise-linear function has a closed polyhedral
+effective-domain ray-space cone. -/
+theorem IsConvexPiecewiseLinear.raySpaceCone_effectiveDomain_isClosedPolyhedral
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    IsClosedPolyhedral
+      (raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f))) :=
+  hf.hasClosedPolyhedralEpigraph.raySpaceCone_effectiveDomain_isClosedPolyhedral
+    (by simpa [effectiveDomain] using hf.isProper.1)
+
+/-- A convex piecewise-linear function has finite effective-domain ray-space
+cone generators. -/
+theorem IsConvexPiecewiseLinear.exists_raySpaceCone_effectiveDomain_generators
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ u : Finset (E × ℝ),
+      raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) =
+        conicHull (↑u : Set (E × ℝ)) :=
+  hf.hasClosedPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generators
+    (by simpa [effectiveDomain] using hf.isProper.1)
+
+/-- A convex piecewise-linear function has an explicit finite conic-coefficient
+formula for its effective-domain ray-space cone. -/
+theorem IsConvexPiecewiseLinear.exists_raySpaceCone_effectiveDomain_generator_formula
+    [FiniteDimensional ℝ E] {f : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) :
+    ∃ u : Finset (E × ℝ),
+      ∀ {p : E × ℝ},
+        p ∈ raySpaceCone (effectiveDomain f) (horizonCone (effectiveDomain f)) ↔
+          ∃ c : (E × ℝ) →₀ ℝ,
+            ↑c.support ⊆ (↑u : Set (E × ℝ)) ∧
+            (∀ y, 0 ≤ c y) ∧
+            c.sum (fun y r => r • y) = p :=
+  hf.hasClosedPolyhedralEpigraph.exists_raySpaceCone_effectiveDomain_generator_formula
+    (by simpa [effectiveDomain] using hf.isProper.1)
+
 theorem IsConvexPiecewiseLinear.isConvexPiecewiseLinear_indicatorVA_effectiveDomain
     [FiniteDimensional ℝ E] {f : E → EReal}
     (hf : IsConvexPiecewiseLinear f) :
@@ -870,7 +3033,8 @@ theorem HasClosedPolyhedralEpigraph.horizonFunction_sup_eq_sup_of_nonempty_effec
     (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
     (hproperf : IsProper f) (hproperg : IsProper g)
     (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
-    horizonFunction (fun x => f x ⊔ g x) = fun w => horizonFunction f w ⊔ horizonFunction g w := by
+    horizonFunction (fun x => f x ⊔ g x) =
+      fun w => horizonFunction f w ⊔ horizonFunction g w := by
   have hproperSup :
       IsProper (fun x => f x ⊔ g x) :=
     hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
@@ -891,11 +3055,80 @@ theorem HasClosedPolyhedralEpigraph.sup_regular_of_nonempty_effectiveDomain_inte
     IsProper (fun x => f x ⊔ g x) ∧
       LowerSemicontinuous (fun x => f x ⊔ g x) ∧
       Convex ℝ (epigraph (fun x => f x ⊔ g x)) ∧
-      horizonFunction (fun x => f x ⊔ g x) = fun w => horizonFunction f w ⊔ horizonFunction g w := by
-  refine ⟨hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom, ?_, ?_, ?_⟩
+      horizonFunction (fun x => f x ⊔ g x) =
+        fun w => horizonFunction f w ⊔ horizonFunction g w := by
+  refine
+    ⟨hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom,
+      ?_, ?_, ?_⟩
   · exact hf.lowerSemicontinuous_sup hg
   · exact hf.convex_epigraph_sup hg
   · exact hf.horizonFunction_sup_eq_sup_of_nonempty_effectiveDomain_inter hg hproperf hproperg hdom
+
+/-- Finite pointwise suprema of proper closed-polyhedral-epigraph functions are
+proper when the effective domains have a common point. -/
+theorem HasClosedPolyhedralEpigraph.isProper_iSup_of_nonempty_iInter_effectiveDomain
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (_hf : ∀ i, HasClosedPolyhedralEpigraph (f i))
+    (hproper : ∀ i, IsProper (f i))
+    (hdom : (⋂ i, effectiveDomain (f i)).Nonempty) :
+    IsProper (fun x => ⨆ i, f i x) :=
+  isProper_iSup_of_finite_of_isProper_of_nonempty_iInter_effectiveDomain hproper hdom
+
+/-- Lower semicontinuity is preserved by finite pointwise suprema of
+closed-polyhedral-epigraph functions. -/
+theorem HasClosedPolyhedralEpigraph.lowerSemicontinuous_iSup
+    {ι : Type*} {f : ι → E → EReal}
+    (hf : ∀ i, HasClosedPolyhedralEpigraph (f i)) :
+    LowerSemicontinuous (fun x => ⨆ i, f i x) :=
+  RW.lowerSemicontinuous_iSup fun i => (hf i).lowerSemicontinuous
+
+/-- Convex epigraphs are preserved by finite pointwise suprema of
+closed-polyhedral-epigraph functions. -/
+theorem HasClosedPolyhedralEpigraph.convex_epigraph_iSup
+    {ι : Type*} {f : ι → E → EReal}
+    (hf : ∀ i, HasClosedPolyhedralEpigraph (f i)) :
+    Convex ℝ (epigraph (fun x => ⨆ i, f i x)) :=
+  RW.convex_epigraph_iSup fun i => (hf i).convex
+
+/-- Finite-family form of Proposition 3.30 for closed-polyhedral-epigraph
+functions: under a common effective-domain point, the horizon function commutes
+with the pointwise supremum. -/
+theorem HasClosedPolyhedralEpigraph.horizonFunction_iSup_eq_iSup_of_nonempty_iInter_effectiveDomain
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, HasClosedPolyhedralEpigraph (f i))
+    (hproper : ∀ i, IsProper (f i))
+    (hdom : (⋂ i, effectiveDomain (f i)).Nonempty) :
+    horizonFunction (fun x => ⨆ i, f i x) = fun w => ⨆ i, horizonFunction (f i) w := by
+  have hproperSup :
+      IsProper (fun x => ⨆ i, f i x) :=
+    HasClosedPolyhedralEpigraph.isProper_iSup_of_nonempty_iInter_effectiveDomain
+      hf hproper hdom
+  exact RW.horizonFunction_iSup_eq_iSup
+    (fun i => (hf i).convex)
+    (fun i => (hf i).lowerSemicontinuous)
+    hproper
+    (epigraph_nonempty_of_isProper hproperSup)
+
+/-- Regularity package for finite pointwise suprema of closed-polyhedral-epigraph
+functions with a common finite-domain point. -/
+theorem HasClosedPolyhedralEpigraph.iSup_regular_of_nonempty_iInter_effectiveDomain
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, HasClosedPolyhedralEpigraph (f i))
+    (hproper : ∀ i, IsProper (f i))
+    (hdom : (⋂ i, effectiveDomain (f i)).Nonempty) :
+    IsProper (fun x => ⨆ i, f i x) ∧
+      LowerSemicontinuous (fun x => ⨆ i, f i x) ∧
+      Convex ℝ (epigraph (fun x => ⨆ i, f i x)) ∧
+      horizonFunction (fun x => ⨆ i, f i x) = fun w => ⨆ i, horizonFunction (f i) w := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact
+      HasClosedPolyhedralEpigraph.isProper_iSup_of_nonempty_iInter_effectiveDomain
+        hf hproper hdom
+  · exact HasClosedPolyhedralEpigraph.lowerSemicontinuous_iSup hf
+  · exact HasClosedPolyhedralEpigraph.convex_epigraph_iSup hf
+  · exact
+      HasClosedPolyhedralEpigraph.horizonFunction_iSup_eq_iSup_of_nonempty_iInter_effectiveDomain
+        hf hproper hdom
 
 theorem IsConvexPiecewiseLinear.isProper_sup_of_nonempty_effectiveDomain_inter
     {f g : E → EReal} (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
@@ -916,7 +3149,8 @@ theorem IsConvexPiecewiseLinear.convex_epigraph_sup
 theorem IsConvexPiecewiseLinear.horizonFunction_sup_eq_sup_of_nonempty_effectiveDomain_inter
     {f g : E → EReal} (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g)
     (hdom : (effectiveDomain f ∩ effectiveDomain g).Nonempty) :
-    horizonFunction (fun x => f x ⊔ g x) = fun w => horizonFunction f w ⊔ horizonFunction g w := by
+    horizonFunction (fun x => f x ⊔ g x) =
+      fun w => horizonFunction f w ⊔ horizonFunction g w := by
   have hproperSup :
       IsProper (fun x => f x ⊔ g x) :=
     hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hdom
@@ -935,11 +3169,220 @@ theorem IsConvexPiecewiseLinear.sup_regular_of_nonempty_effectiveDomain_inter
     IsProper (fun x => f x ⊔ g x) ∧
       LowerSemicontinuous (fun x => f x ⊔ g x) ∧
       Convex ℝ (epigraph (fun x => f x ⊔ g x)) ∧
-      horizonFunction (fun x => f x ⊔ g x) = fun w => horizonFunction f w ⊔ horizonFunction g w := by
+      horizonFunction (fun x => f x ⊔ g x) =
+        fun w => horizonFunction f w ⊔ horizonFunction g w := by
   refine ⟨hf.isProper_sup_of_nonempty_effectiveDomain_inter hg hdom, ?_, ?_, ?_⟩
   · exact hf.lowerSemicontinuous_sup hg
   · exact hf.convex_epigraph_sup hg
   · exact hf.horizonFunction_sup_eq_sup_of_nonempty_effectiveDomain_inter hg hdom
+
+/-- Finite pointwise suprema of convex piecewise-linear functions are proper
+when the effective domains have a common point. -/
+theorem IsConvexPiecewiseLinear.isProper_iSup_of_nonempty_iInter_effectiveDomain
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i))
+    (hdom : (⋂ i, effectiveDomain (f i)).Nonempty) :
+    IsProper (fun x => ⨆ i, f i x) :=
+  isProper_iSup_of_finite_of_isProper_of_nonempty_iInter_effectiveDomain
+    (fun i => (hf i).isProper) hdom
+
+/-- Lower semicontinuity is preserved by finite pointwise suprema of convex
+piecewise-linear functions. -/
+theorem IsConvexPiecewiseLinear.lowerSemicontinuous_iSup
+    {ι : Type*} {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i)) :
+    LowerSemicontinuous (fun x => ⨆ i, f i x) :=
+  RW.lowerSemicontinuous_iSup fun i => (hf i).lowerSemicontinuous
+
+/-- Convex epigraphs are preserved by finite pointwise suprema of convex
+piecewise-linear functions. -/
+theorem IsConvexPiecewiseLinear.convex_epigraph_iSup
+    {ι : Type*} {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i)) :
+    Convex ℝ (epigraph (fun x => ⨆ i, f i x)) :=
+  RW.convex_epigraph_iSup fun i => (hf i).hasClosedPolyhedralEpigraph.convex
+
+/-- Finite-family form of Proposition 3.30 for convex piecewise-linear
+functions with a common effective-domain point. -/
+theorem IsConvexPiecewiseLinear.horizonFunction_iSup_eq_iSup_of_nonempty_iInter_effectiveDomain
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i))
+    (hdom : (⋂ i, effectiveDomain (f i)).Nonempty) :
+    horizonFunction (fun x => ⨆ i, f i x) = fun w => ⨆ i, horizonFunction (f i) w :=
+  HasClosedPolyhedralEpigraph.horizonFunction_iSup_eq_iSup_of_nonempty_iInter_effectiveDomain
+    (fun i => (hf i).hasClosedPolyhedralEpigraph)
+    (fun i => (hf i).isProper)
+    hdom
+
+/-- Regularity package for finite pointwise suprema of convex piecewise-linear
+functions with a common finite-domain point. -/
+theorem IsConvexPiecewiseLinear.iSup_regular_of_nonempty_iInter_effectiveDomain
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i))
+    (hdom : (⋂ i, effectiveDomain (f i)).Nonempty) :
+    IsProper (fun x => ⨆ i, f i x) ∧
+      LowerSemicontinuous (fun x => ⨆ i, f i x) ∧
+      Convex ℝ (epigraph (fun x => ⨆ i, f i x)) ∧
+      horizonFunction (fun x => ⨆ i, f i x) = fun w => ⨆ i, horizonFunction (f i) w := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact IsConvexPiecewiseLinear.isProper_iSup_of_nonempty_iInter_effectiveDomain hf hdom
+  · exact IsConvexPiecewiseLinear.lowerSemicontinuous_iSup hf
+  · exact IsConvexPiecewiseLinear.convex_epigraph_iSup hf
+  · exact
+      IsConvexPiecewiseLinear.horizonFunction_iSup_eq_iSup_of_nonempty_iInter_effectiveDomain
+        hf hdom
+
+theorem HasClosedPolyhedralEpigraph.isProper_inf_of_closedPolyhedralEpigraph
+    {f g : E → EReal}
+    (_hf : HasClosedPolyhedralEpigraph f) (_hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g) :
+    IsProper (fun x => f x ⊓ g x) :=
+  isProper_inf_of_isProper hproperf hproperg
+
+theorem HasClosedPolyhedralEpigraph.lowerSemicontinuous_inf_of_closedPolyhedralEpigraph
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g) :
+    LowerSemicontinuous (fun x => f x ⊓ g x) :=
+  RW.lowerSemicontinuous_inf hf.lowerSemicontinuous hg.lowerSemicontinuous
+
+theorem HasClosedPolyhedralEpigraph.horizonFunction_inf_eq_inf_of_closedPolyhedralEpigraph
+    {f g : E → EReal}
+    (_hf : HasClosedPolyhedralEpigraph f) (_hg : HasClosedPolyhedralEpigraph g) :
+    horizonFunction (fun x => f x ⊓ g x) =
+      fun w => horizonFunction f w ⊓ horizonFunction g w :=
+  RW.horizonFunction_inf_eq_inf
+
+/-- Regularity package for binary pointwise infima of proper
+closed-polyhedral-epigraph functions. -/
+theorem HasClosedPolyhedralEpigraph.inf_regular
+    {f g : E → EReal}
+    (hf : HasClosedPolyhedralEpigraph f) (hg : HasClosedPolyhedralEpigraph g)
+    (hproperf : IsProper f) (hproperg : IsProper g) :
+    IsProper (fun x => f x ⊓ g x) ∧
+      LowerSemicontinuous (fun x => f x ⊓ g x) ∧
+      horizonFunction (fun x => f x ⊓ g x) =
+        fun w => horizonFunction f w ⊓ horizonFunction g w := by
+  refine ⟨hf.isProper_inf_of_closedPolyhedralEpigraph hg hproperf hproperg, ?_, ?_⟩
+  · exact hf.lowerSemicontinuous_inf_of_closedPolyhedralEpigraph hg
+  · exact hf.horizonFunction_inf_eq_inf_of_closedPolyhedralEpigraph hg
+
+/-- Finite pointwise infima of proper closed-polyhedral-epigraph functions are
+proper. -/
+theorem HasClosedPolyhedralEpigraph.isProper_iInf_of_finite_of_closedPolyhedralEpigraph
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (_hf : ∀ i, HasClosedPolyhedralEpigraph (f i))
+    (hproper : ∀ i, IsProper (f i)) :
+    IsProper (fun x => ⨅ i, f i x) :=
+  RW.isProper_iInf_of_finite hproper
+
+/-- Lower semicontinuity is preserved by finite pointwise infima of
+closed-polyhedral-epigraph functions. -/
+theorem HasClosedPolyhedralEpigraph.lowerSemicontinuous_iInf_of_finite_of_closedPolyhedralEpigraph
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, HasClosedPolyhedralEpigraph (f i)) :
+    LowerSemicontinuous (fun x => ⨅ i, f i x) :=
+  RW.lowerSemicontinuous_iInf_of_finite fun i => (hf i).lowerSemicontinuous
+
+/-- Finite-family form of Proposition 3.30 for closed-polyhedral-epigraph
+functions: the horizon function commutes with the pointwise infimum. -/
+theorem
+    HasClosedPolyhedralEpigraph.horizonFunction_iInf_eq_iInf_of_finite_of_closedPolyhedralEpigraph
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (_hf : ∀ i, HasClosedPolyhedralEpigraph (f i)) :
+    horizonFunction (fun x => ⨅ i, f i x) = fun w => ⨅ i, horizonFunction (f i) w :=
+  RW.horizonFunction_iInf_eq_iInf_of_finite f
+
+/-- Regularity package for finite pointwise infima of proper
+closed-polyhedral-epigraph functions. -/
+theorem HasClosedPolyhedralEpigraph.iInf_regular_of_finite
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, HasClosedPolyhedralEpigraph (f i))
+    (hproper : ∀ i, IsProper (f i)) :
+    IsProper (fun x => ⨅ i, f i x) ∧
+      LowerSemicontinuous (fun x => ⨅ i, f i x) ∧
+      horizonFunction (fun x => ⨅ i, f i x) = fun w => ⨅ i, horizonFunction (f i) w := by
+  refine ⟨?_, ?_, ?_⟩
+  · exact
+      HasClosedPolyhedralEpigraph.isProper_iInf_of_finite_of_closedPolyhedralEpigraph
+        hf hproper
+  · exact
+      HasClosedPolyhedralEpigraph.lowerSemicontinuous_iInf_of_finite_of_closedPolyhedralEpigraph
+        hf
+  · exact
+      HasClosedPolyhedralEpigraph.horizonFunction_iInf_eq_iInf_of_finite_of_closedPolyhedralEpigraph
+        hf
+
+theorem IsConvexPiecewiseLinear.isProper_inf_of_cpl
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g) :
+    IsProper (fun x => f x ⊓ g x) :=
+  isProper_inf_of_isProper hf.isProper hg.isProper
+
+theorem IsConvexPiecewiseLinear.lowerSemicontinuous_inf_of_cpl
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g) :
+    LowerSemicontinuous (fun x => f x ⊓ g x) :=
+  RW.lowerSemicontinuous_inf hf.lowerSemicontinuous hg.lowerSemicontinuous
+
+theorem IsConvexPiecewiseLinear.horizonFunction_inf_eq_inf_of_cpl
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g) :
+    horizonFunction (fun x => f x ⊓ g x) =
+      fun w => horizonFunction f w ⊓ horizonFunction g w :=
+  HasClosedPolyhedralEpigraph.horizonFunction_inf_eq_inf_of_closedPolyhedralEpigraph
+    hf.hasClosedPolyhedralEpigraph
+    hg.hasClosedPolyhedralEpigraph
+
+/-- Regularity package for binary pointwise infima of convex piecewise-linear
+functions. -/
+theorem IsConvexPiecewiseLinear.inf_regular
+    {f g : E → EReal}
+    (hf : IsConvexPiecewiseLinear f) (hg : IsConvexPiecewiseLinear g) :
+    IsProper (fun x => f x ⊓ g x) ∧
+      LowerSemicontinuous (fun x => f x ⊓ g x) ∧
+      horizonFunction (fun x => f x ⊓ g x) =
+        fun w => horizonFunction f w ⊓ horizonFunction g w := by
+  refine ⟨hf.isProper_inf_of_cpl hg, ?_, ?_⟩
+  · exact hf.lowerSemicontinuous_inf_of_cpl hg
+  · exact hf.horizonFunction_inf_eq_inf_of_cpl hg
+
+/-- Finite pointwise infima of convex piecewise-linear functions are proper. -/
+theorem IsConvexPiecewiseLinear.isProper_iInf_of_finite_of_cpl
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i)) :
+    IsProper (fun x => ⨅ i, f i x) :=
+  RW.isProper_iInf_of_finite fun i => (hf i).isProper
+
+/-- Lower semicontinuity is preserved by finite pointwise infima of convex
+piecewise-linear functions. -/
+theorem IsConvexPiecewiseLinear.lowerSemicontinuous_iInf_of_finite_of_cpl
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i)) :
+    LowerSemicontinuous (fun x => ⨅ i, f i x) :=
+  RW.lowerSemicontinuous_iInf_of_finite fun i => (hf i).lowerSemicontinuous
+
+/-- Finite-family form of Proposition 3.30 for convex piecewise-linear
+functions: the horizon function commutes with the pointwise infimum. -/
+theorem IsConvexPiecewiseLinear.horizonFunction_iInf_eq_iInf_of_finite_of_cpl
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i)) :
+    horizonFunction (fun x => ⨅ i, f i x) = fun w => ⨅ i, horizonFunction (f i) w :=
+  HasClosedPolyhedralEpigraph.horizonFunction_iInf_eq_iInf_of_finite_of_closedPolyhedralEpigraph
+    (fun i => (hf i).hasClosedPolyhedralEpigraph)
+
+/-- Regularity package for finite pointwise infima of convex piecewise-linear
+functions. -/
+theorem IsConvexPiecewiseLinear.iInf_regular_of_finite
+    {ι : Type*} [Finite ι] [Nonempty ι] {f : ι → E → EReal}
+    (hf : ∀ i, IsConvexPiecewiseLinear (f i)) :
+    IsProper (fun x => ⨅ i, f i x) ∧
+      LowerSemicontinuous (fun x => ⨅ i, f i x) ∧
+      horizonFunction (fun x => ⨅ i, f i x) = fun w => ⨅ i, horizonFunction (f i) w := by
+  refine ⟨?_, ?_, ?_⟩
+  · exact IsConvexPiecewiseLinear.isProper_iInf_of_finite_of_cpl hf
+  · exact IsConvexPiecewiseLinear.lowerSemicontinuous_iInf_of_finite_of_cpl hf
+  · exact
+      IsConvexPiecewiseLinear.horizonFunction_iInf_eq_iInf_of_finite_of_cpl hf
 
 theorem IsConvexPiecewiseLinear.convex_epigraph {f : E → EReal}
     (hf : IsConvexPiecewiseLinear f) :
