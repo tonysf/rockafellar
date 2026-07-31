@@ -182,8 +182,54 @@ theorem levelSet_monotone (f : E → EReal) :
   intro a b hab x (hx : f x ≤ a)
   exact le_trans hx hab
 
-/-- `argmin f` is the set of global minimizers. -/
+/-- `argmin f` is the set of global minimizers, with the convention from
+Rockafellar--Wets that an identically-`+∞` problem has no minimizer.  Values
+equal to `-∞` are retained as genuine minimizers. -/
 def argmin (f : E → EReal) : Set E :=
-  {x | f x = ⨅ y, f y}
+  {x | f x = ⨅ y, f y ∧ (⨅ y, f y) < ⊤}
+
+@[simp]
+theorem mem_argmin_iff (f : E → EReal) (x : E) :
+    x ∈ argmin f ↔ f x = ⨅ y, f y ∧ (⨅ y, f y) < ⊤ :=
+  Iff.rfl
+
+/-- For a problem whose infimum is below `+∞`, the book's `argmin` agrees
+with the usual equality-based minimizer set. -/
+theorem argmin_eq_setOf_eq_iInf {f : E → EReal}
+    (hfin : (⨅ y, f y) < ⊤) :
+    argmin f = {x | f x = ⨅ y, f y} := by
+  ext x
+  simp [argmin, hfin]
+
+theorem iInf_lt_top_of_isProper {f : E → EReal} (hproper : IsProper f) :
+    (⨅ y, f y) < ⊤ := by
+  rcases hproper.1 with ⟨x, hx⟩
+  exact lt_of_le_of_lt (iInf_le f x) hx
+
+/-- Proper functions automatically satisfy the nondegeneracy condition in
+`argmin_eq_setOf_eq_iInf`. -/
+theorem argmin_eq_setOf_eq_iInf_of_isProper {f : E → EReal}
+    (hproper : IsProper f) :
+    argmin f = {x | f x = ⨅ y, f y} := by
+  exact argmin_eq_setOf_eq_iInf (iInf_lt_top_of_isProper hproper)
+
+theorem mem_argmin_iff_eq_iInf_of_isProper {f : E → EReal}
+    (hproper : IsProper f) (x : E) :
+    x ∈ argmin f ↔ f x = ⨅ y, f y := by
+  rw [argmin_eq_setOf_eq_iInf_of_isProper hproper]
+  rfl
+
+@[simp]
+theorem argmin_const_top :
+    argmin (fun _ : E ↦ (⊤ : EReal)) = ∅ := by
+  ext x
+  simp [argmin]
+
+@[simp]
+theorem argmin_const_bot :
+    argmin (fun _ : E ↦ (⊥ : EReal)) = Set.univ := by
+  ext x
+  letI : Nonempty E := ⟨x⟩
+  simp [argmin]
 
 end RW

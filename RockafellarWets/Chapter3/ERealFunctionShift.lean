@@ -156,16 +156,26 @@ theorem proximalMappingEReal_add_const
       proximalMappingEReal f lam := by
   funext x
   ext w
-  rw [mem_proximalMappingEReal_iff, mem_proximalMappingEReal_iff,
-    proximalObjectiveEReal_add_const,
-    congrFun (moreauEnvelopeEReal_add_const f c lam) x]
   constructor
-  · intro h
-    apply (erealAddRightOrderIso c).injective
-    simpa only [erealAddRightOrderIso_apply] using h
-  · intro h
-    simpa only [erealAddRightOrderIso_apply] using
-      congrArg (erealAddRightOrderIso c) h
+  · intro hw
+    rcases (mem_proximalMappingEReal_iff.mp hw) with ⟨heq, hfin⟩
+    have hobj := proximalObjectiveEReal_add_const f c lam x w
+    have henv := congrFun (moreauEnvelopeEReal_add_const f c lam) x
+    refine mem_proximalMappingEReal_iff.mpr ⟨?_, ?_⟩
+    · apply (erealAddRightOrderIso c).injective
+      simpa only [erealAddRightOrderIso_apply, ← hobj, ← henv] using heq
+    · rw [henv] at hfin
+      exact lt_top_iff_ne_top.2 fun htop ↦ by simp [htop] at hfin
+  · intro hw
+    rcases (mem_proximalMappingEReal_iff.mp hw) with ⟨heq, hfin⟩
+    have hobj := proximalObjectiveEReal_add_const f c lam x w
+    have henv := congrFun (moreauEnvelopeEReal_add_const f c lam) x
+    refine mem_proximalMappingEReal_iff.mpr ⟨?_, ?_⟩
+    · rw [hobj, henv]
+      simpa only [erealAddRightOrderIso_apply] using
+        congrArg (erealAddRightOrderIso c) heq
+    · rw [henv]
+      exact EReal.add_lt_top (ne_of_lt hfin) (EReal.coe_ne_top _)
 
 end Moreau
 

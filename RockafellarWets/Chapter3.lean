@@ -7,6 +7,7 @@ Formalization of the first part of Chapter 3 of Rockafellar & Wets,
 
 import RockafellarWets.Chapter3.Defs
 import RockafellarWets.Chapter3.CosmicSpace
+import RockafellarWets.Chapter3.CosmicSets
 import RockafellarWets.Chapter3.HorizonCones
 import RockafellarWets.Chapter3.LinearImages
 import RockafellarWets.Chapter3.NonlinearImages
@@ -14,6 +15,7 @@ import RockafellarWets.Chapter3.SetOperations
 import RockafellarWets.Chapter3.Cones
 import RockafellarWets.Chapter3.PointedCones
 import RockafellarWets.Chapter3.FiniteConeSetOperations
+import RockafellarWets.Chapter3.DependentProducts
 import RockafellarWets.Chapter3.GeneratedCones
 import RockafellarWets.Chapter3.PositiveHomogeneity
 import RockafellarWets.Chapter3.HomogeneousOperations
@@ -21,8 +23,11 @@ import RockafellarWets.Chapter3.HomogeneousCompletion
 import RockafellarWets.Chapter3.HomogeneousSublinearCompletion
 import RockafellarWets.Chapter3.PositiveHulls
 import RockafellarWets.Chapter3.PositiveHullExactCompletion
+import RockafellarWets.Chapter3.LowerClosureProperness
 import RockafellarWets.Chapter3.Entropy
 import RockafellarWets.Chapter3.CosmicClosure
+import RockafellarWets.Chapter3.CosmicSetClosure
+import RockafellarWets.Chapter3.CosmicConvexity
 import RockafellarWets.Chapter3.GeneratedSets
 import RockafellarWets.Chapter3.MinkowskiWeyl
 import RockafellarWets.Chapter3.MinkowskiWeylExamples
@@ -34,6 +39,7 @@ import RockafellarWets.Chapter3.Coercivity
 import RockafellarWets.Chapter3.CoercivityCompletion
 import RockafellarWets.Chapter3.CoercivityLimit
 import RockafellarWets.Chapter3.CoercivityHorizonEquivalence
+import RockafellarWets.Chapter3.RadialCoercivity
 import RockafellarWets.Chapter3.ParametricCoercivity
 import RockafellarWets.Chapter3.ConvexHullFunctions
 import RockafellarWets.Chapter3.ConvexHullFunctionSharp

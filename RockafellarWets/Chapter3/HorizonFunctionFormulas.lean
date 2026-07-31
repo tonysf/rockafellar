@@ -11,14 +11,11 @@ This file supplies the two analytic formulas in Theorem 3.21.
   `(xₙ/λₙ,aₙ/λₙ) ∈ epi f`.  This is equivalent to
   `f∞(w) ≤ a`, and is the epigraphical form of the two-variable lower limit
   in the book.
-* Formula 3(4) is proved exactly for real-valued proper closed convex
-  functions.  The horizon value is the supremum of the ray difference
-  quotients, and those quotients converge to that supremum as `τ → ∞`.
-
-The real-valued restriction in the final limit statement avoids the project's
-nonstandard absorbing-`⊥` subtraction.  The preceding ray-bound theorem is
-stated for general `EReal`-valued proper closed convex functions and is the
-subtraction-free form of the same formula.
+* Formula 3(4) is proved for proper closed convex extended-real-valued
+  functions, based at a point of the effective domain.  The horizon value is
+  the supremum of the positive ray difference quotients, and those quotients
+  converge to that supremum as `τ → ∞`.  The original real-valued API is
+  retained as a convenient specialization.
 -/
 
 import RockafellarWets.Chapter3.EpiAddition
@@ -154,6 +151,131 @@ theorem horizonFunction_le_coe_iff_forall_ray_le
       simpa [Prod.smul_mk, Prod.mk_add_mk, smul_eq_mul, hrbar,
         add_comm] using h
 
+/-- The exact extended-real positive ray difference quotient in formula
+`3(4)`.  The parameter is bundled with its positivity proof so division never
+uses zero or a negative extended-real scalar. -/
+noncomputable def extendedRayDifferenceQuotient
+    (f : E → EReal) (xbar w : E) (τ : {τ : ℝ // 0 < τ}) : EReal :=
+  (f (xbar + (τ : ℝ) • w) - f xbar) / ((τ : ℝ) : EReal)
+
+/-- Comparing an extended-real ray quotient with a finite slope is equivalent
+to the subtraction-free affine ray inequality. -/
+theorem extendedRayDifferenceQuotient_le_coe_iff
+    {f : E → EReal} {xbar w : E} (τ : {τ : ℝ // 0 < τ})
+    (hbarTop : f xbar ≠ ⊤) (hbarBot : f xbar ≠ ⊥) (a : ℝ) :
+    extendedRayDifferenceQuotient f xbar w τ ≤ (a : EReal) ↔
+      f (xbar + (τ : ℝ) • w) ≤
+        f xbar + ((((τ : ℝ) * a) : ℝ) : EReal) := by
+  rw [extendedRayDifferenceQuotient,
+    EReal.div_le_iff_le_mul (EReal.coe_pos.2 τ.property) (EReal.coe_ne_top _),
+    EReal.sub_le_iff_le_add (.inl hbarBot) (.inl hbarTop)]
+  simp only [← EReal.coe_mul]
+  simp only [mul_comm, add_comm]
+
+/-- Convexity makes the exact extended-real positive ray difference quotient
+monotone.  Properness rules out the only problematic `-∞` values; `+∞`
+along the ray is handled directly. -/
+theorem monotone_extendedRayDifferenceQuotient
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f))
+    (hproper : IsProper f) {xbar : E} (hxbar : xbar ∈ effectiveDomain f)
+    (w : E) :
+    Monotone (extendedRayDifferenceQuotient f xbar w) := by
+  intro τ σ hτσ
+  have hbarTop : f xbar ≠ ⊤ := ne_of_lt hxbar
+  have hbarBot : f xbar ≠ ⊥ := ne_of_gt (hproper.2 xbar)
+  by_cases hσTop : f (xbar + (σ : ℝ) • w) = ⊤
+  · have hqσ : extendedRayDifferenceQuotient f xbar w σ = ⊤ := by
+      simp [extendedRayDifferenceQuotient, hσTop, hbarTop,
+        EReal.top_div_of_pos_ne_top (EReal.coe_pos.2 σ.property) (EReal.coe_ne_top _)]
+    rw [hqσ]
+    exact le_top
+  · have hσBot : f (xbar + (σ : ℝ) • w) ≠ ⊥ :=
+      ne_of_gt (hproper.2 _)
+    let rbar : ℝ := (f xbar).toReal
+    let rσ : ℝ := (f (xbar + (σ : ℝ) • w)).toReal
+    have hrbar : (rbar : EReal) = f xbar :=
+      EReal.coe_toReal hbarTop hbarBot
+    have hrσ : (rσ : EReal) = f (xbar + (σ : ℝ) • w) :=
+      EReal.coe_toReal hσTop hσBot
+    have hxbarEpi : (xbar, rbar) ∈ epigraph f := by
+      rw [mem_epigraph_iff, hrbar]
+    have hxσEpi : (xbar + (σ : ℝ) • w, rσ) ∈ epigraph f := by
+      rw [mem_epigraph_iff, hrσ]
+    let r : ℝ := (τ : ℝ) / (σ : ℝ)
+    have hr0 : 0 ≤ r := div_nonneg τ.property.le σ.property.le
+    have hr1 : r ≤ 1 := (div_le_one σ.property).2 hτσ
+    have hcombo := hconv hxσEpi hxbarEpi hr0 (sub_nonneg.mpr hr1) (by ring)
+    have hrσne : (σ : ℝ) ≠ 0 := ne_of_gt σ.property
+    have hrmul : r * (σ : ℝ) = (τ : ℝ) := by
+      dsimp [r]
+      exact div_mul_cancel₀ _ hrσne
+    have hpoint :
+        r • (xbar + (σ : ℝ) • w) + (1 - r) • xbar =
+          xbar + (τ : ℝ) • w := by
+      calc
+        r • (xbar + (σ : ℝ) • w) + (1 - r) • xbar =
+            (r + (1 - r)) • xbar + (r * (σ : ℝ)) • w := by module
+        _ = xbar + (τ : ℝ) • w := by rw [hrmul]; module
+    rw [mem_epigraph_iff] at hcombo
+    have hvalue :
+        f (xbar + (τ : ℝ) • w) ≤
+          ((r * rσ + (1 - r) * rbar : ℝ) : EReal) := by
+      rw [← hpoint]
+      simpa [Prod.smul_mk, Prod.mk_add_mk, smul_eq_mul, smul_add,
+        add_assoc] using hcombo
+    let a : ℝ := (rσ - rbar) / (σ : ℝ)
+    have hqτ : extendedRayDifferenceQuotient f xbar w τ ≤ (a : EReal) :=
+      (extendedRayDifferenceQuotient_le_coe_iff τ hbarTop hbarBot a).2 <| by
+        calc
+          f (xbar + (τ : ℝ) • w) ≤
+              ((r * rσ + (1 - r) * rbar : ℝ) : EReal) := hvalue
+          _ = f xbar + (((τ : ℝ) * a : ℝ) : EReal) := by
+            rw [← hrbar, ← EReal.coe_add]
+            congr 1
+            dsimp [a, r]
+            field_simp [hrσne]
+            ring
+    have hqσ : extendedRayDifferenceQuotient f xbar w σ = (a : EReal) := by
+      rw [extendedRayDifferenceQuotient, ← hrσ, ← hrbar, ← EReal.coe_sub,
+        ← EReal.coe_div]
+    exact hqτ.trans_eq hqσ.symm
+
+/-- The exact supremum clause of Theorem 3.21, formula `3(4)`, for a proper
+closed convex extended-real-valued function. -/
+theorem horizonFunction_eq_iSup_extendedRayDifferenceQuotient
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f))
+    (hlsc : LowerSemicontinuous f) (hproper : IsProper f)
+    {xbar : E} (hxbar : xbar ∈ effectiveDomain f) (w : E) :
+    horizonFunction f w =
+      ⨆ τ : {τ : ℝ // 0 < τ}, extendedRayDifferenceQuotient f xbar w τ := by
+  apply ereal_eq_of_forall_real_upper_bounds
+  intro a
+  rw [horizonFunction_le_coe_iff_forall_ray_le
+    hconv hlsc hproper hxbar]
+  constructor
+  · intro h
+    refine iSup_le fun τ ↦ ?_
+    exact (extendedRayDifferenceQuotient_le_coe_iff τ
+      (ne_of_lt hxbar) (ne_of_gt (hproper.2 xbar)) a).2 (h τ τ.property)
+  · intro h τ hτ
+    let t : {t : ℝ // 0 < t} := ⟨τ, hτ⟩
+    exact (extendedRayDifferenceQuotient_le_coe_iff t
+      (ne_of_lt hxbar) (ne_of_gt (hproper.2 xbar)) a).1
+        ((le_iSup (extendedRayDifferenceQuotient f xbar w) t).trans h)
+
+/-- The exact limit clause of Theorem 3.21, formula `3(4)`, for a proper
+closed convex extended-real-valued function. -/
+theorem tendsto_extendedRayDifferenceQuotient_atTop
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f))
+    (hlsc : LowerSemicontinuous f) (hproper : IsProper f)
+    {xbar : E} (hxbar : xbar ∈ effectiveDomain f) (w : E) :
+    Tendsto (extendedRayDifferenceQuotient f xbar w) atTop
+      (𝓝 (horizonFunction f w)) := by
+  rw [horizonFunction_eq_iSup_extendedRayDifferenceQuotient
+    hconv hlsc hproper hxbar w]
+  apply tendsto_atTop_iSup
+  exact monotone_extendedRayDifferenceQuotient hconv hproper hxbar w
+
 /-- The real ray difference quotient appearing in formula 3(4). -/
 noncomputable def rayDifferenceQuotient
     (f : E → ℝ) (xbar w : E) (τ : ℝ) : ℝ :=
@@ -202,6 +324,15 @@ theorem monotoneOn_rayDifferenceQuotient
 noncomputable def rayDifferenceQuotientEReal (f : E → ℝ) (xbar w : E)
     (τ : {τ : ℝ // 0 < τ}) : EReal :=
   (rayDifferenceQuotient f xbar w τ : ℝ)
+
+/-- The original real-valued quotient is the finite-valued specialization of
+the exact extended-real quotient. -/
+theorem extendedRayDifferenceQuotient_coe
+    (f : E → ℝ) (xbar w : E) (τ : {τ : ℝ // 0 < τ}) :
+    extendedRayDifferenceQuotient (fun x ↦ (f x : EReal)) xbar w τ =
+      rayDifferenceQuotientEReal f xbar w τ := by
+  rw [extendedRayDifferenceQuotient, rayDifferenceQuotientEReal,
+    rayDifferenceQuotient, ← EReal.coe_sub, ← EReal.coe_div]
 
 /-- Formula 3(4), supremum clause, for a real-valued proper closed convex
 function. -/
@@ -266,6 +397,25 @@ theorem tendsto_rayDifferenceQuotientEReal_atTop
     ((rayDifferenceQuotient f xbar w τ : ℝ) : EReal) ≤
       ((rayDifferenceQuotient f xbar w σ : ℝ) : EReal)
   exact_mod_cast hmono
+
+/-! Focused regression checks for finite and infinite ray values. -/
+
+theorem extendedRayDifferenceQuotient_linear_regression
+    (τ : {τ : ℝ // 0 < τ}) :
+    extendedRayDifferenceQuotient (fun x : ℝ ↦ (x : EReal)) 0 1 τ = 1 := by
+  have hτne : ((τ : ℝ) : EReal) ≠ 0 := EReal.coe_ne_zero.2 τ.property.ne'
+  rw [extendedRayDifferenceQuotient,
+    show (0 : ℝ) + (τ : ℝ) • 1 = τ by simp]
+  change ((((τ : ℝ) : EReal) - 0) / ((τ : ℝ) : EReal)) = 1
+  rw [sub_zero,
+    EReal.div_self (EReal.coe_ne_bot _) (EReal.coe_ne_top _) hτne]
+
+theorem extendedRayDifferenceQuotient_top_regression
+    (τ : {τ : ℝ // 0 < τ}) :
+    extendedRayDifferenceQuotient (indicatorVA ({0} : Set ℝ)) 0 1 τ = ⊤ := by
+  have hτne : (τ : ℝ) ≠ 0 := τ.property.ne'
+  simp [extendedRayDifferenceQuotient, indicatorVA, hτne,
+    EReal.top_div_of_pos_ne_top (EReal.coe_pos.2 τ.property) (EReal.coe_ne_top _)]
 
 end RayFormula
 

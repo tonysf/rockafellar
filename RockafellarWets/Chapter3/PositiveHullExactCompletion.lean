@@ -250,15 +250,10 @@ def IsLowerClosure
     (f cl_f : E → EReal) : Prop :=
   epigraph cl_f = closure (epigraph f)
 
-/-- Exercise 3.49(c), arbitrary proper convex case.  If `cl_f` denotes the
-proper epigraphical lower closure of `f`, its closed perspective is sublinear.
-No lower-semicontinuity assumption is imposed on `f`; it is obtained for
-`cl_f` from the defining closure identity.
-
-Properness of `cl_f` is explicit because the project does not yet contain the
-finite-dimensional theorem that the epigraphical lower closure of every
-proper convex function is proper. -/
-theorem sublinear_closedPerspectiveFunction_lowerClosure
+/-- Compatibility form of Exercise 3.49(c), retaining an explicit properness
+hypothesis on the chosen epigraphical lower closure.  The book-facing theorem
+which discharges this hypothesis is in `LowerClosureProperness.lean`. -/
+theorem sublinear_closedPerspectiveFunction_lowerClosure_of_isProper
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E]
     {f cl_f : E → EReal} (hproper : IsProper f)

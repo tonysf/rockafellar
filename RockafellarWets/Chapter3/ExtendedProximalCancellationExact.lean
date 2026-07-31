@@ -69,7 +69,7 @@ private theorem finiteMoreauEnvelope_increment_le_of_mem_proximal
     exact EReal.coe_le_coe_iff.mp hcandE
   have hminE : proximalObjectiveEReal f lam x (P x) =
       moreauEnvelopeEReal f lam x :=
-    mem_proximalMappingEReal_iff.mp hx
+    (mem_proximalMappingEReal_iff.mp hx).1
   have hmin : fp + (1 / (2 * lam)) * ‖P x - x‖ ^ 2 =
       finiteMoreauEnvelope f lam x := by
     rw [proximalObjectiveEReal, hfp, ← EReal.coe_add, henvx] at hminE

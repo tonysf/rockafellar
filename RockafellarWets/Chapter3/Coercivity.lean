@@ -546,7 +546,7 @@ theorem argmin_nonempty_of_isInfCompact_of_lsc_of_isProper
     (hifc : IsInfCompact f) (hlsc : LowerSemicontinuous f) (hproper : IsProper f) :
     (argmin f).Nonempty := by
   rcases exists_eq_iInf_of_isInfCompact_of_lsc_of_isProper hifc hlsc hproper with ⟨x, hx⟩
-  exact ⟨x, by simpa [argmin] using hx⟩
+  exact ⟨x, (mem_argmin_iff_eq_iInf_of_isProper hproper x).2 hx⟩
 
 /-- For a proper function, any minimizer point identifies `argmin f` with the
 finite level set at its attained value. -/
@@ -566,7 +566,8 @@ theorem argmin_eq_levelSet_toReal_of_eq_iInf_of_isProper
   · intro hy
     have hy_eq : f y = f x := by
       calc
-        f y = ⨅ z, f z := by simpa [argmin] using hy
+        f y = ⨅ z, f z :=
+          (mem_argmin_iff_eq_iInf_of_isProper hproper y).1 hy
         _ = f x := hx.symm
     change f y ≤ (((f x).toReal : ℝ) : EReal)
     simpa [hy_eq, EReal.coe_toReal (ne_of_lt hx_top) (ne_of_gt hx_bot)]
@@ -577,7 +578,7 @@ theorem argmin_eq_levelSet_toReal_of_eq_iInf_of_isProper
       rw [hx]
       exact iInf_le (fun z : E => f z) y
     have hy_eq : f y = f x := le_antisymm hy_le hx_le
-    simpa [argmin, hy_eq, hx]
+    exact (mem_argmin_iff_eq_iInf_of_isProper hproper y).2 (hy_eq.trans hx)
 
 /-- For a proper function, any global minimizer identifies `argmin f` with the
 finite level set at its attained value. -/
@@ -628,7 +629,7 @@ theorem HasClosedPolyhedralEpigraph.exists_argmin_generator_formula_of_nonempty
               (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) := by
   rcases harg with ⟨x₀, hx₀⟩
   have hx₀_inf : f x₀ = ⨅ y, f y := by
-    simpa [argmin] using hx₀
+    exact (mem_argmin_iff_eq_iInf_of_isProper hproper x₀).1 hx₀
   refine ⟨(f x₀).toReal, ?_⟩
   rcases hf.exists_levelSet_generator_formula ((f x₀).toReal) with ⟨s, t, hst⟩
   refine ⟨s, t, ?_⟩
@@ -655,7 +656,7 @@ theorem HasClosedPolyhedralEpigraph.exists_nonempty_argmin_generator_formula_of_
               (∑ y ∈ s, w y • y) + c.sum (fun y r => r • y) = (x, α) := by
   rcases harg with ⟨x₀, hx₀⟩
   have hx₀_inf : f x₀ = ⨅ y, f y := by
-    simpa [argmin] using hx₀
+    exact (mem_argmin_iff_eq_iInf_of_isProper hproper x₀).1 hx₀
   have hargEq : argmin f = levelSet f ((f x₀).toReal) :=
     argmin_eq_levelSet_toReal_of_eq_iInf_of_isProper hx₀_inf hproper
   have hlevel : (levelSet f ((f x₀).toReal)).Nonempty := by

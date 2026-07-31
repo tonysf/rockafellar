@@ -35,7 +35,8 @@ omit [InnerProductSpace ℝ E] in
 theorem mem_proximalMappingEReal_iff
     {f : E → EReal} {lam : ℝ} {x w : E} :
     w ∈ proximalMappingEReal f lam x ↔
-      proximalObjectiveEReal f lam x w = moreauEnvelopeEReal f lam x := by
+      proximalObjectiveEReal f lam x w = moreauEnvelopeEReal f lam x ∧
+        moreauEnvelopeEReal f lam x < ⊤ := by
   rfl
 
 omit [InnerProductSpace ℝ E] in
@@ -188,7 +189,7 @@ theorem moreauEnvelopeEReal_finite
   rcases proximalMappingEReal_nonempty hconv hlsc hproper hlam x with ⟨w, hw⟩
   have hwEq : proximalObjectiveEReal f lam x w =
       moreauEnvelopeEReal f lam x :=
-    mem_proximalMappingEReal_iff.mp hw
+    (mem_proximalMappingEReal_iff.mp hw).1
   have hproperObj := isProper_proximalObjectiveEReal hproper lam x
   constructor
   · rw [← hwEq]
@@ -214,7 +215,7 @@ theorem mem_effectiveDomain_of_mem_proximalMappingEReal
     w ∈ effectiveDomain f := by
   have hwEq : proximalObjectiveEReal f lam x w =
       moreauEnvelopeEReal f lam x :=
-    mem_proximalMappingEReal_iff.mp hw
+    (mem_proximalMappingEReal_iff.mp hw).1
   have henvTop := (moreauEnvelopeEReal_finite
     hconv hlsc hproper hlam x).2
   have hsum : proximalObjectiveEReal f lam x w ≠ ⊤ := by
@@ -298,11 +299,11 @@ theorem norm_sub_proximalEReal_le_two_mul
     exact EReal.coe_le_coe_iff.mp hfmidE
   have huLeE : proximalObjectiveEReal f lam x u ≤
       proximalObjectiveEReal f lam x m := by
-    rw [mem_proximalMappingEReal_iff.mp hu, moreauEnvelopeEReal]
+    rw [(mem_proximalMappingEReal_iff.mp hu).1, moreauEnvelopeEReal]
     exact iInf_le _ m
   have hvLeE : proximalObjectiveEReal f lam y v ≤
       proximalObjectiveEReal f lam y m := by
-    rw [mem_proximalMappingEReal_iff.mp hv, moreauEnvelopeEReal]
+    rw [(mem_proximalMappingEReal_iff.mp hv).1, moreauEnvelopeEReal]
     exact iInf_le _ m
   have huLe : fu + a * ‖u - x‖ ^ 2 ≤ fm + a * ‖m - x‖ ^ 2 := by
     simpa only [proximalObjectiveEReal, hfu, hfm, a, ← EReal.coe_add,

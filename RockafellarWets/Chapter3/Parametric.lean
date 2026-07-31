@@ -44,12 +44,20 @@ the infimum over the decision variable `x`. -/
 noncomputable def valueFunction (f : E × F → EReal) (u : F) : EReal :=
   ⨅ x : E, f (x, u)
 
-/-- The finite minimizer set of the slice `x ↦ f (x,u)`. This is the
-parametric argmin set from Corollary 3.32, adjusted to avoid the degenerate
-case `inf = ⊤`, where the raw equality-based `argmin` would be too large in
-the extended-real setting. -/
+/-- The minimizer set of the slice `x ↦ f (x,u)`, using the book's
+`argmin` convention that an identically-`+∞` slice has no minimizers while
+points attaining `-∞` remain minimizers. -/
 def paramArgmin (f : E × F → EReal) (u : F) : Set E :=
-  {x | valueFunction f u = f (x, u) ∧ valueFunction f u < ⊤ ∧ valueFunction f u > ⊥}
+  argmin (fun x : E ↦ f (x, u))
+
+omit [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [NormedAddCommGroup F] [NormedSpace ℝ F] in
+@[simp]
+theorem mem_paramArgmin_iff (f : E × F → EReal) (u : F) (x : E) :
+    x ∈ paramArgmin f u ↔
+      f (x, u) = valueFunction f u ∧ valueFunction f u < ⊤ := by
+  rw [paramArgmin, mem_argmin_iff]
+  rfl
 
 def valueProjection : ((E × F) × ℝ) →ₗ[ℝ] F × ℝ where
   toFun p := (p.1.2, p.2)
@@ -902,7 +910,7 @@ theorem horizonFunction_pos_of_nonempty_bounded_paramArgmin
   have hnotle : ¬ horizonFunction f (x, (0 : F)) ≤ 0 := by
     intro hxnonpos
     rcases hne with ⟨xBar, hxBar⟩
-    rcases hxBar with ⟨hxEq, hxTop, hxBot⟩
+    rcases (mem_paramArgmin_iff f uBar xBar).1 hxBar with ⟨hxEq, hxTop⟩
     have hray :
         ∀ ⦃τ : ℝ⦄, 0 ≤ τ → τ • x + xBar ∈ paramArgmin f uBar := by
       intro τ hτ
@@ -915,10 +923,10 @@ theorem horizonFunction_pos_of_nonempty_bounded_paramArgmin
                     (apply_smul_add_le_of_horizonFunction_nonpos
                       (f := f) hconv hlsc hproper
                       (x := (xBar, uBar)) (w := (x, (0 : F))) hxnonpos (τ := τ) hτ)
-          _ = valueFunction f uBar := hxEq.symm
+          _ = valueFunction f uBar := hxEq
       have hge : valueFunction f uBar ≤ f (τ • x + xBar, uBar) :=
         iInf_le (fun x' : E => f (x', uBar)) (τ • x + xBar)
-      exact ⟨le_antisymm hge hle, hxTop, hxBot⟩
+      exact (mem_paramArgmin_iff f uBar _).2 ⟨le_antisymm hle hge, hxTop⟩
     have hxcone : x ∈ horizonCone (paramArgmin f uBar) := by
       refine mem_horizonCone_of_forall_smul_add_mem
         (C := paramArgmin f uBar) (x := xBar) (w := x) ?_
@@ -931,8 +939,9 @@ theorem horizonFunction_pos_of_nonempty_bounded_paramArgmin
     exact hx0 (by simpa using hxmem)
   exact lt_of_not_ge hnotle
 
-/-- Under the positivity condition `3(8)`, every finite minimizer set of a
-slice is bounded. -/
+/-- Under the positivity condition `3(8)`, every minimizer set of a slice is
+bounded.  The book-correct `argmin` convention excludes only an
+identically-`⊤` slice and retains any `⊥`-valued minimizers. -/
 theorem isBounded_paramArgmin_of_horizonFunction_pos
     [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
     {f : E × F → EReal}
@@ -945,22 +954,20 @@ theorem isBounded_paramArgmin_of_horizonFunction_pos
     have hpair_bdd : IsBounded ((fun x : E => (x, u)) '' paramArgmin f u) := by
       refine hbounded.subset ?_
       rintro _ ⟨x, hx, rfl⟩
-      rcases hx with ⟨hxEq, hxTop, hxBot⟩
+      rcases (mem_paramArgmin_iff f u x).1 hx with ⟨hxEq, hxTop⟩
       refine ⟨?_, ?_⟩
       · exact ⟨by simp, by simpa [Metric.mem_closedBall, le_of_lt heps]⟩
       · rw [levelSet]
         calc
-          f (x, u) = valueFunction f u := hxEq.symm
-          _ = (((valueFunction f u).toReal : ℝ) : EReal) := by
-                symm
-                exact EReal.coe_toReal (ne_of_lt hxTop) (ne_of_gt hxBot)
-          _ ≤ (((valueFunction f u).toReal : ℝ) : EReal) := le_rfl
+          f (x, u) = valueFunction f u := hxEq
+          _ ≤ (((valueFunction f u).toReal : ℝ) : EReal) :=
+                EReal.le_coe_toReal (ne_of_lt hxTop)
     have hfst :
         Prod.fst '' ((fun x : E => (x, u)) '' paramArgmin f u) = paramArgmin f u := by
       ext x
       constructor
-      · rintro ⟨p, ⟨y, hy, rfl⟩, hp⟩
-        simpa using hp ▸ hy
+      · rintro ⟨p, ⟨y, hy, rfl⟩, rfl⟩
+        exact hy
       · intro hx
         exact ⟨(x, u), ⟨x, hx, rfl⟩, rfl⟩
     rw [← hfst]
@@ -999,9 +1006,8 @@ theorem lowerSemicontinuous_valueFunction_of_horizonFunction_pos
     (f := f) hlsc hLB]
   exact hclosed
 
-/-- **Corollary 3.32** (boundedness part, adapted to the extended-real Lean
-setting): if one finite parametric minimizer set is nonempty and bounded, then
-all finite parametric minimizer sets are bounded. -/
+/-- **Corollary 3.32** (boundedness part): if one parametric minimizer set is
+nonempty and bounded, then all parametric minimizer sets are bounded. -/
 theorem isBounded_paramArgmin_of_nonempty_bounded_paramArgmin
     [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
     {f : E × F → EReal} (hconv : Convex ℝ (epigraph f)) (hlsc : LowerSemicontinuous f)
@@ -1014,9 +1020,9 @@ theorem isBounded_paramArgmin_of_nonempty_bounded_paramArgmin
   intro u
   exact isBounded_paramArgmin_of_horizonFunction_pos hpos u
 
-/-- **Corollary 3.32** (value-function consequences, adapted statement): if one
-finite parametric minimizer set is nonempty and bounded, then the value
-function is lsc and convex, and its horizon function is given by formula `3(9)`. -/
+/-- **Corollary 3.32** (value-function consequences): if one parametric
+minimizer set is nonempty and bounded, then the value function is lsc and
+convex, and its horizon function is given by formula `3(9)`. -/
 theorem valueFunction_regular_of_nonempty_bounded_paramArgmin
     [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
     {f : E × F → EReal} (hconv : Convex ℝ (epigraph f)) (hlsc : LowerSemicontinuous f)
