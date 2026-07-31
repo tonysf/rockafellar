@@ -187,6 +187,148 @@ theorem pkConverges_iff_eventuallyInnerApproximates_and_eventuallyOuterApproxima
       Set.Subset.antisymm houterC
         (hCinner.trans (innerSetLimit_subset_outerSetLimit Cseq))⟩
 
+/-- The arbitrary-center variant in Theorem 4.10(a'). -/
+def EventuallyInnerApproximatesAround
+    (x₀ : E) (C : Set E) (Cseq : ℕ → Set E) : Prop :=
+  ∀ ρ > 0, ∀ ε > 0,
+    ∀ᶠ n in atTop,
+      C ∩ closedBall x₀ ρ ⊆ thickening ε (Cseq n)
+
+/-- The arbitrary-center variant in Theorem 4.10(b'). -/
+def EventuallyOuterApproximatesAround
+    (x₀ : E) (Cseq : ℕ → Set E) (C : Set E) : Prop :=
+  ∀ ρ > 0, ∀ ε > 0,
+    ∀ᶠ n in atTop,
+      Cseq n ∩ closedBall x₀ ρ ⊆ thickening ε C
+
+omit [NormedSpace ℝ E] [FiniteDimensional ℝ E] in
+private theorem closedBall_center_subset_closedBall_zero
+    (x₀ : E) {ρ : ℝ} :
+    closedBall x₀ ρ ⊆ closedBall (0 : E) (ρ + ‖x₀‖) := by
+  intro x hx
+  rw [mem_closedBall] at hx ⊢
+  rw [dist_zero_right]
+  calc
+    ‖x‖ ≤ ‖x - x₀‖ + ‖x₀‖ := norm_le_norm_sub_add _ _
+    _ = dist x x₀ + ‖x₀‖ := by rw [dist_eq_norm]
+    _ ≤ ρ + ‖x₀‖ := add_le_add hx le_rfl
+
+/-- **Theorem 4.10(a').** The inner approximation criterion may be tested
+on balls with arbitrary centers. -/
+theorem subset_innerSetLimit_iff_forall_eventuallyInnerApproximatesAround
+    {C : Set E} {Cseq : ℕ → Set E} (hC : IsClosed C) :
+    C ⊆ innerSetLimit Cseq ↔
+      ∀ x₀ : E, EventuallyInnerApproximatesAround x₀ C Cseq := by
+  rw [subset_innerSetLimit_iff_eventuallyInnerApproximates hC]
+  constructor
+  · intro h x₀ ρ hρ ε hε
+    have hR : 0 < ρ + ‖x₀‖ :=
+      hρ.trans_le (le_add_of_nonneg_right (norm_nonneg x₀))
+    exact (h (ρ + ‖x₀‖) hR ε hε).mono fun _ hn ↦
+      (inter_subset_inter_right C
+        (closedBall_center_subset_closedBall_zero x₀)).trans hn
+  · intro h
+    simpa only [EventuallyInnerApproximatesAround, norm_zero, add_zero] using h 0
+
+/-- **Theorem 4.10(b').** The outer approximation criterion may be tested
+on balls with arbitrary centers. -/
+theorem outerSetLimit_subset_iff_forall_eventuallyOuterApproximatesAround
+    {C : Set E} {Cseq : ℕ → Set E} (hC : IsClosed C) :
+    outerSetLimit Cseq ⊆ C ↔
+      ∀ x₀ : E, EventuallyOuterApproximatesAround x₀ Cseq C := by
+  rw [outerSetLimit_subset_iff_eventuallyOuterApproximates hC]
+  constructor
+  · intro h x₀ ρ hρ ε hε
+    have hR : 0 < ρ + ‖x₀‖ :=
+      hρ.trans_le (le_add_of_nonneg_right (norm_nonneg x₀))
+    exact (h (ρ + ‖x₀‖) hR ε hε).mono fun _ hn x hx ↦
+      hn ⟨hx.1, closedBall_center_subset_closedBall_zero x₀ hx.2⟩
+  · intro h
+    simpa only [EventuallyOuterApproximatesAround, norm_zero, add_zero] using h 0
+
+/-- It is enough in Theorem 4.10(a) to impose the inclusions only above one
+fixed nonnegative radius. -/
+theorem subset_innerSetLimit_iff_exists_large_ball_approximation
+    {C : Set E} {Cseq : ℕ → Set E} (hC : IsClosed C) :
+    C ⊆ innerSetLimit Cseq ↔
+      ∃ ρ₀ : ℝ, 0 ≤ ρ₀ ∧
+        ∀ ρ : ℝ, ρ₀ ≤ ρ → 0 < ρ → ∀ ε > 0,
+          ∀ᶠ n in atTop,
+            C ∩ closedBall (0 : E) ρ ⊆ thickening ε (Cseq n) := by
+  rw [subset_innerSetLimit_iff_eventuallyInnerApproximates hC]
+  constructor
+  · intro h
+    exact ⟨0, le_rfl, fun ρ _ hρ ε hε ↦ h ρ hρ ε hε⟩
+  · rintro ⟨ρ₀, _hρ₀, h⟩ ρ hρ ε hε
+    let R : ℝ := max ρ₀ ρ
+    have hρR : ρ ≤ R := le_max_right _ _
+    have hRpos : 0 < R := hρ.trans_le hρR
+    exact (h R (le_max_left _ _) hRpos ε hε).mono fun _ hn ↦
+      (inter_subset_inter_right C (closedBall_subset_closedBall hρR)).trans hn
+
+/-- It is enough in Theorem 4.10(b) to impose the inclusions only above one
+fixed nonnegative radius. -/
+theorem outerSetLimit_subset_iff_exists_large_ball_approximation
+    {C : Set E} {Cseq : ℕ → Set E} (hC : IsClosed C) :
+    outerSetLimit Cseq ⊆ C ↔
+      ∃ ρ₀ : ℝ, 0 ≤ ρ₀ ∧
+        ∀ ρ : ℝ, ρ₀ ≤ ρ → 0 < ρ → ∀ ε > 0,
+          ∀ᶠ n in atTop,
+            Cseq n ∩ closedBall (0 : E) ρ ⊆ thickening ε C := by
+  rw [outerSetLimit_subset_iff_eventuallyOuterApproximates hC]
+  constructor
+  · intro h
+    exact ⟨0, le_rfl, fun ρ _ hρ ε hε ↦ h ρ hρ ε hε⟩
+  · rintro ⟨ρ₀, _hρ₀, h⟩ ρ hρ ε hε
+    let R : ℝ := max ρ₀ ρ
+    have hρR : ρ ≤ R := le_max_right _ _
+    have hRpos : 0 < R := hρ.trans_le hρR
+    exact (h R (le_max_left _ _) hRpos ε hε).mono fun _ hn x hx ↦
+      hn ⟨hx.1, closedBall_subset_closedBall hρR hx.2⟩
+
+/-- Rational-radius and rational-error form of Theorem 4.10(a). -/
+theorem subset_innerSetLimit_iff_rational_ball_approximation
+    {C : Set E} {Cseq : ℕ → Set E} (hC : IsClosed C) :
+    C ⊆ innerSetLimit Cseq ↔
+      ∀ ρ : ℚ, 0 < ρ → ∀ ε : ℚ, 0 < ε →
+        ∀ᶠ n in atTop,
+          C ∩ closedBall (0 : E) (ρ : ℝ) ⊆
+            thickening (ε : ℝ) (Cseq n) := by
+  rw [subset_innerSetLimit_iff_eventuallyInnerApproximates hC]
+  constructor
+  · intro h ρ hρ ε hε
+    exact h (ρ : ℝ) (by exact_mod_cast hρ) (ε : ℝ) (by exact_mod_cast hε)
+  · intro h ρ hρ ε hε
+    obtain ⟨qρ, hρqρ⟩ := exists_rat_gt ρ
+    obtain ⟨qε, hqε, hqεε⟩ := exists_pos_rat_lt hε
+    have hqρpos : 0 < qρ := by
+      exact_mod_cast hρ.trans hρqρ
+    exact (h qρ hqρpos qε hqε).mono fun _ hn ↦
+      (inter_subset_inter_right C <|
+        closedBall_subset_closedBall hρqρ.le).trans <|
+        hn.trans (thickening_mono hqεε.le (Cseq _))
+
+/-- Rational-radius and rational-error form of Theorem 4.10(b). -/
+theorem outerSetLimit_subset_iff_rational_ball_approximation
+    {C : Set E} {Cseq : ℕ → Set E} (hC : IsClosed C) :
+    outerSetLimit Cseq ⊆ C ↔
+      ∀ ρ : ℚ, 0 < ρ → ∀ ε : ℚ, 0 < ε →
+        ∀ᶠ n in atTop,
+          Cseq n ∩ closedBall (0 : E) (ρ : ℝ) ⊆
+            thickening (ε : ℝ) C := by
+  rw [outerSetLimit_subset_iff_eventuallyOuterApproximates hC]
+  constructor
+  · intro h ρ hρ ε hε
+    exact h (ρ : ℝ) (by exact_mod_cast hρ) (ε : ℝ) (by exact_mod_cast hε)
+  · intro h ρ hρ ε hε
+    obtain ⟨qρ, hρqρ⟩ := exists_rat_gt ρ
+    obtain ⟨qε, hqε, hqεε⟩ := exists_pos_rat_lt hε
+    have hqρpos : 0 < qρ := by
+      exact_mod_cast hρ.trans hρqρ
+    exact (h qρ hqρpos qε hqε).mono fun _ hn x hx ↦
+      thickening_mono hqεε.le C <|
+        hn ⟨hx.1, closedBall_subset_closedBall hρqρ.le hx.2⟩
+
 end UniformApproximation
 
 end RW

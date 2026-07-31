@@ -9,6 +9,7 @@ import RockafellarWets.Chapter4.SetLimits
 import RockafellarWets.Chapter4.SetLimitCharacterizations
 import RockafellarWets.Chapter4.SetLimitDistances
 import RockafellarWets.Chapter4.HitAndMiss
+import RockafellarWets.Chapter4.RationalHitAndMiss
 import RockafellarWets.Chapter4.DistanceConvergence
 import RockafellarWets.Chapter4.UniformApproximation
 import RockafellarWets.Chapter4.ProjectionConvergence
@@ -23,7 +24,17 @@ import RockafellarWets.Chapter4.ConvexTruncations
 import RockafellarWets.Chapter4.StarShapedLimits
 import RockafellarWets.Chapter4.SetConvergenceCompactness
 import RockafellarWets.Chapter4.ClusterLimits
-import RockafellarWets.Chapter4.FiniteUnions
+import RockafellarWets.Chapter4.HorizonLimits
+import RockafellarWets.Chapter4.HorizonLimitSubsequences
+import RockafellarWets.Chapter4.MixedCosmicLimits
+import RockafellarWets.Chapter4.EventuallyBounded
+import RockafellarWets.Chapter4.TotalConvergence
+import RockafellarWets.Chapter4.TotalConvergenceAutomatic
+import RockafellarWets.Chapter4.TotalConvergenceAutomaticCompletion
 import RockafellarWets.Chapter4.ImageLimits
+import RockafellarWets.Chapter4.TotalLinearImages
+import RockafellarWets.Chapter4.OrthogonalProjections
 import RockafellarWets.Chapter4.Products
+import RockafellarWets.Chapter4.TotalProducts
 import RockafellarWets.Chapter4.FiniteSums
+import RockafellarWets.Chapter4.FiniteSumConvergence
