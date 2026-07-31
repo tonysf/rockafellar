@@ -2542,7 +2542,7 @@ theorem isBounded_iff_gaugeFunction_pos_iff_ne_zero
       by_contra hxne
       exact (not_lt_of_ge (le_of_eq hxzero)) ((hpos x).2 hxne)
     · intro hx
-      simpa [hx] using gaugeFunction_zero C
+      simp [hx]
 
 /-- Under the standard bounded/interior/symmetry hypotheses, the gauge has the
 expected norm properties: it is finite everywhere, lower semicontinuous,

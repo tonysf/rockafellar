@@ -13,6 +13,7 @@ This file formalizes the first layer of Section C:
 import RockafellarWets.Chapter3.PositiveHomogeneity
 import RockafellarWets.Chapter3.SetOperations
 import RockafellarWets.Chapter3.PointedCones
+import RockafellarWets.Chapter3.NonlinearImages
 import RockafellarWets.Chapter1.Semicontinuity
 
 open Set EReal Filter AffineSpace Topology
@@ -181,6 +182,7 @@ theorem epigraph_horizonFunction_eq_horizonCone_epigraph {f : E → EReal}
   refine le_antisymm (epigraph_horizonFunction_subset_horizonCone_epigraph hf) ?_
   exact horizonCone_epigraph_subset_epigraph_horizonFunction f
 
+omit [NormedAddCommGroup E] [NormedSpace ℝ E] in
 /-- Equality of real epigraphs determines an `EReal`-valued function. -/
 theorem eq_of_epigraph_eq {f g : E → EReal} (hfg : epigraph f = epigraph g) :
     f = g := by
@@ -948,5 +950,47 @@ theorem monotoneOn_lines_of_boundedAbove_ray
   simpa [← add_assoc, ← add_smul, sub_add_cancel] using
     (apply_smul_add_le_of_horizonFunction_nonpos hconv hlsc hproper
       (x := τ • w + x) (w := w) hw (τ := τ' - τ) hδ)
+
+/-- The sequence-to-direction hypothesis in **Corollary 3.22** forces the
+corresponding horizon value to be nonpositive.  The book writes
+`xν → dir w`; in the closed-ball model a direction is represented by a unit
+vector `u : CosmicBoundary E`. -/
+theorem horizonFunction_nonpos_of_boundedAbove_cosmicSequence
+    {f : E → EReal} {x : ℕ → E} {u : CosmicBoundary E} {α : ℝ}
+    (hcosmic :
+      Tendsto (fun n ↦ cosmicEmbed (x n)) atTop
+        (𝓝 (cosmicDirection u)))
+    (hupper : ∀ n, f (x n) ≤ α) :
+    horizonFunction f (u : E) ≤ 0 := by
+  have hu :
+      (u : E) ∈ horizonCone (levelSet f α) :=
+    mem_horizonCone_of_tendsto_cosmicDirection
+      (C := levelSet f α) (x := x) (u := u)
+      (fun n ↦ by simpa [levelSet] using hupper n) hcosmic
+  simpa [levelSet] using
+    horizonCone_levelSet_subset_levelSet_horizonFunction
+      (f := f) α hu
+
+/-- **Corollary 3.22** (sequence-to-direction form): if a sequence converges
+cosmically to `dir u` while its function values stay bounded above, then a
+proper lsc convex function is nonincreasing on every line parallel to `u`. -/
+theorem monotoneOn_lines_of_boundedAbove_cosmicSequence
+    {f : E → EReal} (hconv : Convex ℝ (epigraph f))
+    (hlsc : LowerSemicontinuous f) (hproper : IsProper f)
+    {xseq : ℕ → E} {u : CosmicBoundary E} {α : ℝ}
+    (hcosmic :
+      Tendsto (fun n ↦ cosmicEmbed (xseq n)) atTop
+        (𝓝 (cosmicDirection u)))
+    (hupper : ∀ n, f (xseq n) ≤ α) :
+    ∀ ⦃x : E⦄ ⦃τ τ' : ℝ⦄, τ ≤ τ' →
+      f (τ' • (u : E) + x) ≤ f (τ • (u : E) + x) := by
+  have hu : horizonFunction f (u : E) ≤ 0 :=
+    horizonFunction_nonpos_of_boundedAbove_cosmicSequence hcosmic hupper
+  intro x τ τ' hττ'
+  have hδ : 0 ≤ τ' - τ := sub_nonneg.mpr hττ'
+  simpa [← add_assoc, ← add_smul, sub_add_cancel] using
+    (apply_smul_add_le_of_horizonFunction_nonpos hconv hlsc hproper
+      (x := τ • (u : E) + x) (w := (u : E)) hu
+      (τ := τ' - τ) hδ)
 
 end RW

@@ -24,6 +24,7 @@ theorem epigraph_iSup {ι : Type*} (f : ι → E → EReal) :
   rcases p with ⟨x, a⟩
   simp [mem_epigraph_iff, iSup_le_iff]
 
+omit [NormedAddCommGroup E] [NormedSpace ℝ E] in
 /-- The effective domain of a finite nonempty pointwise supremum is the
 intersection of the effective domains. -/
 theorem effectiveDomain_iSup_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
@@ -40,6 +41,7 @@ theorem effectiveDomain_iSup_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
     have hEq : (⨆ j, f j x) = f i x := le_antisymm (iSup_le hi) hle
     simpa [hEq] using h i
 
+omit [NormedAddCommGroup E] [NormedSpace ℝ E] in
 /-- If a finite nonempty family of proper functions has a common
 effective-domain point, then its pointwise supremum is proper. -/
 theorem isProper_iSup_of_finite_of_isProper_of_nonempty_iInter_effectiveDomain
@@ -145,6 +147,7 @@ theorem lowerSemicontinuous_iInf_of_finite {ι : Type*} [Finite ι] [Nonempty ι
   exact isClosed_iUnion_of_finite fun i =>
     isClosed_epigraph_of_lsc_ereal (f i) (hf i)
 
+omit [NormedAddCommGroup E] [NormedSpace ℝ E] in
 /-- The effective domain of a finite nonempty pointwise infimum is the union of
 the effective domains. -/
 theorem effectiveDomain_iInf_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
@@ -161,6 +164,7 @@ theorem effectiveDomain_iInf_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
   · rintro ⟨i, hi⟩
     exact (iInf_le (fun j => f j x) i).trans_lt hi
 
+omit [NormedAddCommGroup E] [NormedSpace ℝ E] in
 /-- A finite nonempty pointwise infimum of proper functions is proper. -/
 theorem isProper_iInf_of_finite {ι : Type*} [Finite ι] [Nonempty ι]
     {f : ι → E → EReal} (hf : ∀ i, IsProper (f i)) :
@@ -193,6 +197,7 @@ theorem lowerSemicontinuous_inf {f g : E → EReal}
       · simpa using hg
       · simpa using hf)
 
+omit [NormedAddCommGroup E] [NormedSpace ℝ E] in
 /-- The effective domain of a binary pointwise infimum is the union of the two
 effective domains. -/
 theorem effectiveDomain_inf {f g : E → EReal} :
@@ -200,6 +205,7 @@ theorem effectiveDomain_inf {f g : E → EReal} :
   ext x
   simp [mem_effectiveDomain_iff, inf_lt_iff]
 
+omit [NormedAddCommGroup E] [NormedSpace ℝ E] in
 /-- The binary pointwise infimum of proper functions is proper. -/
 theorem isProper_inf_of_isProper {f g : E → EReal}
     (hf : IsProper f) (hg : IsProper g) :
