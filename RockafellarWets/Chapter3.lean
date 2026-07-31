@@ -45,7 +45,12 @@ import RockafellarWets.Chapter3.HorizonAddition
 import RockafellarWets.Chapter3.EpiAdditionCompletion
 import RockafellarWets.Chapter3.EpiAdditionBookCompletion
 import RockafellarWets.Chapter3.Cancellation
+import RockafellarWets.Chapter3.ERealInfimum
 import RockafellarWets.Chapter3.ExtendedCancellationCompletion
+import RockafellarWets.Chapter3.EpiCancellation
+import RockafellarWets.Chapter3.ExtendedProximalCancellationCompletion
+import RockafellarWets.Chapter3.ERealFunctionShift
+import RockafellarWets.Chapter3.ExtendedProximalCancellationExact
 import RockafellarWets.Chapter3.ProximalCancellationCompletion
 import RockafellarWets.Chapter3.SetCancellation
 import RockafellarWets.Chapter3.PolyhedralOperations

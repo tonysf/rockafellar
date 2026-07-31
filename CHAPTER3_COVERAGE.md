@@ -19,8 +19,8 @@ literal statement is unavailable under the project definitions.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 36 |
-| Adapted | 19 |
+| Exact | 38 |
+| Adapted | 17 |
 | **Total** | **55** |
 
 ## Results 3.1–3.16
@@ -65,10 +65,10 @@ literal statement is unavailable under the project definitions.
 | 3.31 | **Adapted** | [`Parametric.lean`](RockafellarWets/Chapter3/Parametric.lean) proves condition 3(8), convex necessity, formula 3(9), regularity, and finite attainment; [`ParametricCoercivity.lean`](RockafellarWets/Chapter3/ParametricCoercivity.lean) proves both inheritance clauses using the affine-minorant coercivity encoding. |
 | 3.32 | **Adapted** | [`Parametric.lean`](RockafellarWets/Chapter3/Parametric.lean) proves the convex result using the finite-minimizer `paramArgmin` interface, which deliberately excludes degenerate `⊤`/`⊥` minimizers. |
 | 3.33 | **Exact** | [`EpiAdditionBookCompletion.lean`](RockafellarWets/Chapter3/EpiAdditionBookCompletion.lean) derives both non-counter-coercivity facts from the book's paired horizon-positivity condition and proves the nonconvex properness, lsc, attainment, and horizon inequality without the earlier extra hypotheses; [`EpiAddition.lean`](RockafellarWets/Chapter3/EpiAddition.lean) supplies the convex equalities. |
-| 3.34 | **Adapted** | [`Cancellation.lean`](RockafellarWets/Chapter3/Cancellation.lean) packages the coercive common-summand cancellation endpoint available through the project's real-valued infimal-convolution API; the book's operands are proper extended-real functions. |
+| 3.34 | **Exact** | [`EpiCancellation.lean`](RockafellarWets/Chapter3/EpiCancellation.lean) proves cancellation for proper lsc convex extended-real functions under coercivity of the common epi-summand. The proof factors finite tilted infima and cancels the common factor, with no coercivity or full-domain assumption on the left operands. |
 | 3.35 | **Exact** | [`SetCancellation.lean`](RockafellarWets/Chapter3/SetCancellation.lean) proves bounded-summand cancellation for nonempty closed convex sets (in fact without using convexity of the common bounded set). |
 | 3.36 | **Exact** | [`ExtendedCancellationCompletion.lean`](RockafellarWets/Chapter3/ExtendedCancellationCompletion.lean) defines the genuine extended-real Moreau envelope and proves single-positive-parameter injectivity for proper lsc convex functions, with no coercivity or full-domain assumptions. |
-| 3.37 | **Adapted** | [`ProximalCancellationCompletion.lean`](RockafellarWets/Chapter3/ProximalCancellationCompletion.lean) proves existence of proximal minimizers, a global factor-two Lipschitz selection, the Moreau-envelope constant-difference bridge, and the full proximal-map equality ⇒ additive-constant conclusion. The adaptation is the same real-valued coercive API restriction as 3.34/3.36; no extra selection hypothesis remains. |
+| 3.37 | **Exact** | [`ExtendedProximalCancellationCompletion.lean`](RockafellarWets/Chapter3/ExtendedProximalCancellationCompletion.lean) proves extended-real proximal attainment and constructs a global factor-two Lipschitz selection. [`ExtendedProximalCancellationExact.lean`](RockafellarWets/Chapter3/ExtendedProximalCancellationExact.lean) proves that equality of one positive-parameter proximal mapping is equivalent to the functions differing by a finite constant, for proper lsc convex extended-real functions without coercivity or full-domain assumptions. |
 | 3.38 | **Exact** | [`Orderings.lean`](RockafellarWets/Chapter3/Orderings.lean) proves construction, converse representation, closure under limits, and pointedness/antisymmetry. |
 | 3.39 | **Exact** | [`MatrixOrderings.lean`](RockafellarWets/Chapter3/MatrixOrderings.lean) specializes all six clauses to the positive-semidefinite matrix order. |
 | 3.40 | **Adapted** | [`HomogeneousOperations.lean`](RockafellarWets/Chapter3/HomogeneousOperations.lean) and [`HomogeneousCompletion.lean`](RockafellarWets/Chapter3/HomogeneousCompletion.lean) cover the basic operations. [`HomogeneousSublinearCompletion.lean`](RockafellarWets/Chapter3/HomogeneousSublinearCompletion.lean) gives the exact bottom-regular criterion for sublinearity of epi-addition and a formal counterexample to the unconditional rule under absorbing-`⊥` addition. Indexed unions/infima retain the necessary nonempty-index qualification. |

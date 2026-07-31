@@ -4,17 +4,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 
 # Chapter 3: Functional Cancellation
 
-This file provides the common real-valued cancellation infrastructure for
+This file preserves the common real-valued cancellation infrastructure for
 3.34, 3.36, and 3.37.
 
 The book works with proper lower-semicontinuous convex extended-real-valued
-functions.  The project's current Moreau envelope and infimal convolution API
-is real-valued, and its proved cancellation endpoint additionally assumes
-coercivity of both left summands.  The 3.34 theorem below is therefore a
-real-valued coercive adaptation.  `ExtendedCancellationCompletion.lean`
-proves the exact extended-real form of 3.36, while
-`ProximalCancellationCompletion.lean` supplies the proximal-map bridge for
-3.37.
+functions.  The older Moreau envelope and infimal convolution API in this file
+is real-valued, and its cancellation endpoint additionally assumes coercivity
+of both left summands.  `EpiCancellation.lean` now proves exact extended-real
+3.34, `ExtendedCancellationCompletion.lean` proves exact 3.36, and
+`ExtendedProximalCancellationExact.lean` proves exact 3.37.  The real-valued
+theorems below remain useful compatibility wrappers.
 
 The results here also establish the two algebraic pieces used by the later
 3.37 completion: adding a constant does not change the proximal mapping, and

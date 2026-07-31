@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 
 # Chapter 3: Proximal Cancellation Completion
 
-This file completes the missing direction of Corollary 3.37 within the
-project's real-valued coercive API.  A coercive convex function has a proximal
+This file supplies the real-valued coercive version of Corollary 3.37.  A
+coercive convex function has a proximal
 minimizer at every positive parameter.  Choosing such minimizers and applying
 a midpoint argument gives a globally `2`-Lipschitz selection (the sharper
 standard result is firm nonexpansiveness).
@@ -14,7 +14,8 @@ Equality of proximal mappings therefore supplies a common Lipschitz selection.
 This gives a quadratic increment bound on the difference of the corresponding
 Moreau envelopes, so that difference has zero Fréchet derivative and is
 constant.  The cancellation endpoint in `Cancellation.lean` then determines
-the original functions up to an additive constant.
+the original functions up to an additive constant.  The exact extended-real
+result without coercivity is in `ExtendedProximalCancellationExact.lean`.
 -/
 
 import RockafellarWets.Chapter3.Cancellation

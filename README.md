@@ -29,7 +29,7 @@ correct statement in context.
     calculus, coercivity, parametric minimization, epi-addition, cancellation,
     orderings, positive hulls, and the polyhedral cone/set/function layer.
 - Current frontier:
-  - the Chapter 3 ledger classifies all 55 numbered results: 36 exact and 19
+  - the Chapter 3 ledger classifies all 55 numbered results: 38 exact and 17
     explicitly documented Lean/Mathlib adaptations;
   - the polyhedral layer now contains both finite-halfspace and
     finite-generator representations, their Minkowski–Weyl equivalence, and
