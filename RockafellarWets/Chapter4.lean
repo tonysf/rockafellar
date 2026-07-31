@@ -1,0 +1,29 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+
+# Chapter 4: Set Convergence
+-/
+
+import RockafellarWets.Chapter4.SetLimits
+import RockafellarWets.Chapter4.SetLimitCharacterizations
+import RockafellarWets.Chapter4.SetLimitDistances
+import RockafellarWets.Chapter4.HitAndMiss
+import RockafellarWets.Chapter4.DistanceConvergence
+import RockafellarWets.Chapter4.UniformApproximation
+import RockafellarWets.Chapter4.ProjectionConvergence
+import RockafellarWets.Chapter4.ConnectedLimits
+import RockafellarWets.Chapter4.EscapeToHorizon
+import RockafellarWets.Chapter4.SetLimitExamples
+import RockafellarWets.Chapter4.HausdorffConvergence
+import RockafellarWets.Chapter4.ConeLimits
+import RockafellarWets.Chapter4.ConvexLimits
+import RockafellarWets.Chapter4.ConvexInternalApproximation
+import RockafellarWets.Chapter4.ConvexTruncations
+import RockafellarWets.Chapter4.StarShapedLimits
+import RockafellarWets.Chapter4.SetConvergenceCompactness
+import RockafellarWets.Chapter4.ClusterLimits
+import RockafellarWets.Chapter4.FiniteUnions
+import RockafellarWets.Chapter4.ImageLimits
+import RockafellarWets.Chapter4.Products
+import RockafellarWets.Chapter4.FiniteSums
