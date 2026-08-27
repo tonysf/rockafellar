@@ -10,13 +10,19 @@ clauses named. `Missing` means that no result-specific API has yet been
 integrated.
 
 Formalization is under way: the conventions for domains, ranges, graphs, and
-inverses, formula 5(1), Definition 5.4, and the neighborhood and graph
-characterizations of semicontinuity.
+inverses, formula 5(1), Definition 5.4, and the neighborhood, sequential,
+graph, and preimage characterizations of semicontinuity.
+
+The sequential criteria rest on
+[`SequentialLimits.lean`](RockafellarWets/Chapter5/SequentialLimits.lean),
+which transports the Chapter 4 limits along `atTop` to the limits of formula
+5(1) along the neighborhood filter and back.  It is written as reusable
+machinery rather than inline to 5.6, since later results in the chapter are
+also stated with sequences.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 1 |
-| Partial | 2 |
+| Exact | 3 |
 | Missing | 56 |
 | **Total** | **59** |
 
@@ -25,10 +31,10 @@ characterizations of semicontinuity.
 | 5.1 Constraint systems | Missing | |
 | 5.2 Generalized equations and implicit mappings | Missing | |
 | 5.3 Algorithmic mappings and fixed points | Missing | |
-| 5.4 Continuity and semicontinuity | **Exact** | [`SetLimitsAlong.lean`](RockafellarWets/Chapter5/SetLimitsAlong.lean) restates the Definition 4.1 limits along an arbitrary index filter; [`Semicontinuity.lean`](RockafellarWets/Chapter5/Semicontinuity.lean) defines formula 5(1) along the full neighborhood filter, defines osc, isc, and continuity both absolutely and relative to a set, and proves the equalities the book records immediately afterwards: `lim sup = S(x̄)` under osc, closedness of `S(x̄)` under osc, the closed-valued equality form of isc, and that isc at a point of the domain puts a whole neighborhood inside the domain. |
+| 5.4 Continuity and semicontinuity | **Exact** | [`SetLimitsAlong.lean`](RockafellarWets/Chapter5/SetLimitsAlong.lean) restates the Definition 4.1 limits along an arbitrary index filter; [`Semicontinuity.lean`](RockafellarWets/Chapter5/Semicontinuity.lean) defines formula 5(1) along the full neighborhood filter, defines osc, isc, and continuity both absolutely and relative to a set, and proves the equalities the book records immediately afterwards: `lim sup = S(x̄)` under osc, closedness of `S(x̄)` under osc both absolutely and relative to a set `X`, the closed-valued equality form of isc, and that isc at a point of the domain puts a whole neighborhood inside the domain. |
 | 5.5 Profile mappings | Missing | |
-| 5.6 Criteria for semicontinuity at a point | **Partial** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves the neighborhood criteria (a) and (b) in the book's `X ∩ V ∩ S⁻¹(W)` form. The sequential clauses (c) and (d) are not yet exposed: they need the cluster description of 4.19 transported from `atTop` to the neighborhood filter. |
-| 5.7 Characterizations of semicontinuity | **Partial** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves (a) in full -- osc everywhere is closedness of `gph S`, and `S` is osc exactly when `S⁻¹` is -- and (c) in both the absolute form (`S⁻¹(O)` open for open `O`) and the relative form. Clause (b), the compact-preimage criterion for closed-valued mappings, is not yet exposed. |
+| 5.6 Criteria for semicontinuity at a point | **Exact** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves the neighborhood criteria (a) and (b) in the book's `X ∩ V ∩ S⁻¹(W)` form, and the sequential criteria (c) and (d) quantified over all `xν ∈ X` with `xν → x̄` and `S(xν) → D`, relative to `X` and in the absolute case. The sequential clauses go through the diagonal extraction of [`SequentialLimits.lean`](RockafellarWets/Chapter5/SequentialLimits.lean) followed by the subsequence compactness of 4.18. |
+| 5.7 Characterizations of semicontinuity | **Exact** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves (a) in full -- osc everywhere is closedness of `gph S`, and `S` is osc exactly when `S⁻¹` is; (b) for closed-valued `S`, as `IsClosed (X ↓∩ S⁻¹(B))` for every compact `B` and equivalently as the closure condition `X ∩ cl(X ∩ S⁻¹(B)) ⊂ S⁻¹(B)`, with the absolute case `X = IRⁿ` separately; and (c) in both the absolute form (`S⁻¹(O)` open for open `O`) and the relative form. The forward half of (b) needs no structure on the target; the converse uses compactness of closed balls and is stated for a proper metric target. |
 | 5.8 Feasible-set mappings | Missing | |
 | 5.9 Inner semicontinuity from convexity | Missing | |
 | 5.10 Parameterized convex constraints | Missing | |

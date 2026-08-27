@@ -7,4 +7,5 @@ Released under Apache 2.0 license as described in the file LICENSE.
 
 import RockafellarWets.Chapter5.SetLimitsAlong
 import RockafellarWets.Chapter5.Semicontinuity
+import RockafellarWets.Chapter5.SequentialLimits
 import RockafellarWets.Chapter5.SemicontinuityCriteria

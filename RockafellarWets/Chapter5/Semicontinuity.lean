@@ -105,6 +105,15 @@ theorem subset_svOuterLimit (S : E → Set F) (x : E) : S x ⊆ svOuterLimit S x
   intro U hU
   exact ⟨x, mem_of_mem_nhds hU, ⟨u, hu, mem_of_mem_nhds hV⟩⟩
 
+/-- The relative form: at a point of `X` the constant sequence `xν ≡ x̄` is
+still admissible, since `x̄ ∈ X`. -/
+theorem subset_svOuterLimitWithin (S : E → Set F) {X : Set E} {x : E}
+    (hx : x ∈ X) : S x ⊆ svOuterLimitWithin S X x := by
+  intro u hu V hV
+  rw [Filter.frequently_iff]
+  intro U hU
+  exact ⟨x, mem_of_mem_nhdsWithin hx hU, ⟨u, hu, mem_of_mem_nhds hV⟩⟩
+
 /-- The inner limit is contained in the outer limit. -/
 theorem svInnerLimit_subset_svOuterLimit (S : E → Set F) (x : E) :
     svInnerLimit S x ⊆ svOuterLimit S x :=
@@ -168,6 +177,26 @@ theorem SvOscAt.isClosed {S : E → Set F} {x : E} (h : SvOscAt S x) :
     IsClosed (S x) := by
   rw [← svOscAt_iff_svOuterLimit_eq.1 h]
   exact isClosed_svOuterLimit S x
+
+/-- **Definition 5.4** relative to `X`: the equality form of outer
+semicontinuity. -/
+theorem svOscWithinAt_iff_svOuterLimitWithin_eq {S : E → Set F} {X : Set E}
+    {x : E} (hx : x ∈ X) :
+    SvOscWithinAt S X x ↔ svOuterLimitWithin S X x = S x :=
+  ⟨fun h ↦ Subset.antisymm h (subset_svOuterLimitWithin S hx), fun h ↦ h.subset⟩
+
+/-- The book records that `S(x̄)` is closed under outer semicontinuity
+"whether in the main sense or merely relative to some subset `X`". -/
+theorem SvOscWithinAt.isClosed {S : E → Set F} {X : Set E} {x : E}
+    (hx : x ∈ X) (h : SvOscWithinAt S X x) : IsClosed (S x) := by
+  rw [← (svOscWithinAt_iff_svOuterLimitWithin_eq hx).1 h]
+  exact isClosed_outerSetLimitAlong _ S
+
+/-- An outer semicontinuous mapping relative to `X` is closed-valued on
+`X`. -/
+theorem SvOscOn.isClosed_apply {S : E → Set F} {X : Set E} (h : SvOscOn S X)
+    {x : E} (hx : x ∈ X) : IsClosed (S x) :=
+  (h x hx).isClosed hx
 
 /-- For a closed-valued mapping, inner semicontinuity has the equivalent
 equality form. -/

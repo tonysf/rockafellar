@@ -4,16 +4,19 @@ Released under Apache 2.0 license as described in the file LICENSE.
 
 # Chapter 5: Criteria and Characterizations of Semicontinuity
 
-This file proves the neighborhood criteria of Exercise 5.6(a)(b) and the
-graph and preimage characterizations of Theorem 5.7(a)(c).
+This file proves the neighborhood criteria of Exercise 5.6(a)(b), the
+sequential criteria 5.6(c)(d), and the graph and preimage characterizations
+of Theorem 5.7(a)(b)(c).
 
 The inverse image `S⁻¹(W) = {x | S(x) ∩ W ≠ ∅}` used throughout is the
 set-valued preimage of the book, not the preimage of a single point.
 -/
 
-import RockafellarWets.Chapter5.Semicontinuity
+import RockafellarWets.Chapter5.SequentialLimits
 
 open Filter Set Topology
+
+open scoped Set.Notation
 
 namespace RW
 
@@ -197,5 +200,173 @@ theorem svIscOn_iff_eventually_svPreimage {S : E → Set F} {X : Set E} :
     exact hy.imp fun v hv ↦ ⟨hv.1, hOW hv.2⟩
 
 end OpenPreimageCharacterization
+
+section CompactPreimageCharacterization
+
+variable {E F : Type*} [TopologicalSpace E]
+
+/-- One half of **Theorem 5.7(b)**, and the half that needs no structure on
+the target: outer semicontinuity relative to `X` makes the inverse image of
+every compact set closed relative to `X`.
+
+The compact set is covered by the separating neighborhoods `W u` supplied by
+5.6(a); a finite subcover leaves a finite intersection of the matching
+neighborhoods of the base point, which is still a neighborhood. -/
+theorem SvOscOn.isClosed_svPreimage [TopologicalSpace F] {S : E → Set F}
+    {X : Set E} (h : SvOscOn S X) {B : Set F} (hB : IsCompact B) :
+    IsClosed (X ↓∩ svPreimage S B) := by
+  classical
+  rw [isClosed_preimage_val]
+  rintro x ⟨hxX, hxcl⟩
+  by_contra hcon
+  have hmiss : ∀ u ∈ B, u ∉ S x := fun u huB huS ↦ hcon ⟨u, huS, huB⟩
+  choose! W hWnhds V hVnhds hempty using
+    fun u (hu : u ∉ S x) ↦ svOscWithinAt_iff.1 (h x hxX) u hu
+  obtain ⟨t, htB, hcover⟩ :=
+    hB.elim_nhds_subcover W fun u huB ↦ hWnhds u (hmiss u huB)
+  have hVt : (⋂ u ∈ t, V u) ∈ nhds x :=
+    Finset.iInter_mem_sets t |>.2 fun u hu ↦ hVnhds u (hmiss u (htB u hu))
+  obtain ⟨y, hy⟩ := mem_closure_iff_nhds.1 hxcl _ hVt
+  obtain ⟨hyX, v, hvS, hvB⟩ := hy.2
+  have hyV : y ∈ ⋂ u ∈ t, V u := hy.1
+  obtain ⟨u, hut, hvW⟩ := mem_iUnion₂.1 (hcover hvB)
+  have hyu : y ∈ X ∩ V u ∩ svPreimage S (W u) :=
+    ⟨⟨hyX, mem_iInter₂.1 hyV u hut⟩, v, hvS, hvW⟩
+  rw [hempty u (hmiss u (htB u hut))] at hyu
+  exact hyu
+
+/-- The converse half of **Theorem 5.7(b)** for a closed-valued mapping into
+a proper metric space.  Closed balls around a candidate limit point `u` are
+compact, so relative closedness of their inverse images puts a point of
+`S(x̄)` within every distance of `u`; closed-valuedness then puts `u` itself
+in `S(x̄)`. -/
+theorem svOscOn_of_isClosed_svPreimage [PseudoMetricSpace F] [ProperSpace F]
+    {S : E → Set F} {X : Set E} (hval : ∀ x ∈ X, IsClosed (S x))
+    (h : ∀ B : Set F, IsCompact B → IsClosed (X ↓∩ svPreimage S B)) :
+    SvOscOn S X := by
+  intro x hxX u hu
+  have key : ∀ ε > 0, (S x ∩ Metric.closedBall u ε).Nonempty := by
+    intro ε hε
+    refine isClosed_preimage_val.1 (h _ (isCompact_closedBall u ε)) ⟨hxX, ?_⟩
+    rw [mem_closure_iff_nhds]
+    intro V hV
+    have hfreq := hu (Metric.ball u ε) (Metric.ball_mem_nhds u hε)
+    have hmemX : ∀ᶠ y in nhdsWithin x X, y ∈ X :=
+      Filter.eventually_mem_set.2 self_mem_nhdsWithin
+    have hmemV : ∀ᶠ y in nhdsWithin x X, y ∈ V :=
+      Filter.eventually_mem_set.2 (nhdsWithin_le_nhds hV)
+    obtain ⟨y, hhit, hyX, hyV⟩ :=
+      (hfreq.and_eventually (hmemX.and hmemV)).exists
+    obtain ⟨w, hwS, hwB⟩ := hhit
+    exact ⟨y, hyV, hyX, w, hwS, Metric.ball_subset_closedBall hwB⟩
+  rw [← (hval x hxX).closure_eq, Metric.mem_closure_iff]
+  intro ε hε
+  obtain ⟨v, hvS, hvB⟩ := key (ε / 2) (by positivity)
+  exact ⟨v, hvS, lt_of_le_of_lt (by simpa [dist_comm] using hvB) (by linarith)⟩
+
+/-- **Theorem 5.7(b).**  For a closed-valued mapping, outer semicontinuity
+relative to `X` is exactly closedness relative to `X` of the inverse image of
+every compact set. -/
+theorem svOscOn_iff_isClosed_svPreimage [PseudoMetricSpace F] [ProperSpace F]
+    {S : E → Set F} {X : Set E} (hval : ∀ x ∈ X, IsClosed (S x)) :
+    SvOscOn S X ↔ ∀ B : Set F, IsCompact B → IsClosed (X ↓∩ svPreimage S B) :=
+  ⟨fun h _ hB ↦ h.isClosed_svPreimage hB, svOscOn_of_isClosed_svPreimage hval⟩
+
+/-- **Theorem 5.7(b)** with relative closedness spelled out as a closure
+condition inside `X`, avoiding the subtype. -/
+theorem svOscOn_iff_closure_svPreimage [PseudoMetricSpace F] [ProperSpace F]
+    {S : E → Set F} {X : Set E} (hval : ∀ x ∈ X, IsClosed (S x)) :
+    SvOscOn S X ↔ ∀ B : Set F, IsCompact B →
+      X ∩ closure (X ∩ svPreimage S B) ⊆ svPreimage S B := by
+  simp only [svOscOn_iff_isClosed_svPreimage hval, isClosed_preimage_val]
+
+/-- The absolute case `X = IRⁿ` of 5.7(b): a closed-valued mapping is outer
+semicontinuous exactly when the inverse image of every compact set is
+closed. -/
+theorem svOsc_iff_isClosed_svPreimage [PseudoMetricSpace F] [ProperSpace F]
+    {S : E → Set F} (hval : ∀ x, IsClosed (S x)) :
+    SvOsc S ↔ ∀ B : Set F, IsCompact B → IsClosed (svPreimage S B) := by
+  rw [← svOscOn_univ, svOscOn_iff_isClosed_svPreimage fun x _ ↦ hval x]
+  exact forall_congr' fun B ↦ forall_congr' fun _ ↦ by
+    rw [isClosed_univ.inter_preimage_val_iff, univ_inter]
+
+end CompactPreimageCharacterization
+
+section SequentialCriteria
+
+variable {E F : Type*} [TopologicalSpace E] [FirstCountableTopology E]
+variable [PseudoMetricSpace F] [SecondCountableTopology F]
+
+/-- **Exercise 5.6(c).**  Outer semicontinuity relative to `X` at `x` says
+that every Painleve--Kuratowski limit of images along a sequence in `X`
+tending to `x` is contained in `S(x)`.
+
+One direction only transports `atTop` forward into `𝓝[X] x`.  The other uses
+the diagonal extraction of `SequentialLimits.lean` to reach a candidate point
+of the outer limit in the *inner* limit sense, so that Chapter 4's
+subsequence compactness 4.18 can then produce a convergent sequence of images
+that still captures the point. -/
+theorem svOscWithinAt_iff_seq {S : E → Set F} {X : Set E} {x : E}
+    (hx : x ∈ X) :
+    SvOscWithinAt S X x ↔
+      ∀ y : ℕ → E, (∀ n, y n ∈ X) → Tendsto y atTop (nhds x) →
+        ∀ D : Set F, PKConverges (fun n ↦ S (y n)) D → D ⊆ S x := by
+  constructor
+  · intro h y hyX hyto D hD
+    rw [← hD.outer_eq]
+    exact subset_trans
+      (outerSetLimit_comp_subset (tendsto_nhdsWithin_of_forall_mem hyX hyto)) h
+  · intro h u hu
+    obtain ⟨y, hyX, hyto, hmem⟩ :=
+      exists_seq_mem_innerSetLimit_of_mem_svOuterLimitWithin hx hu
+    obtain ⟨φ, D, hφ, hD⟩ := exists_pkConvergent_subsequence fun n ↦ S (y n)
+    refine h (y ∘ φ) (fun n ↦ hyX _) (hyto.comp hφ.tendsto_atTop) D hD ?_
+    rw [← hD.inner_eq]
+    exact innerSetLimit_subset_subsequence hφ hmem
+
+/-- **Exercise 5.6(d).**  Inner semicontinuity relative to `X` at `x` says
+that every Painleve--Kuratowski limit of images along a sequence in `X`
+tending to `x` contains `S(x)`. -/
+theorem svIscWithinAt_iff_seq {S : E → Set F} {X : Set E} {x : E}
+    (hx : x ∈ X) :
+    SvIscWithinAt S X x ↔
+      ∀ y : ℕ → E, (∀ n, y n ∈ X) → Tendsto y atTop (nhds x) →
+        ∀ D : Set F, PKConverges (fun n ↦ S (y n)) D → S x ⊆ D := by
+  constructor
+  · intro h y hyX hyto D hD
+    rw [← hD.inner_eq]
+    exact subset_trans h (innerSetLimitAlong_subset_innerSetLimit_comp
+      (tendsto_nhdsWithin_of_forall_mem hyX hyto))
+  · intro h
+    by_contra hcon
+    rw [SvIscWithinAt, Set.not_subset] at hcon
+    obtain ⟨u, huS, hunot⟩ := hcon
+    obtain ⟨y, hyX, hyto, hnot⟩ :=
+      exists_seq_not_mem_outerSetLimit_of_not_mem_svInnerLimitWithin hx hunot
+    obtain ⟨φ, D, hφ, hD⟩ := exists_pkConvergent_subsequence fun n ↦ S (y n)
+    have huD : u ∈ D :=
+      h (y ∘ φ) (fun n ↦ hyX _) (hyto.comp hφ.tendsto_atTop) D hD huS
+    rw [← hD.outer_eq] at huD
+    exact hnot (outerSetLimit_subsequence_subset hφ huD)
+
+/-- The absolute case `X = IRⁿ` of 5.6(c). -/
+theorem svOscAt_iff_seq {S : E → Set F} {x : E} :
+    SvOscAt S x ↔
+      ∀ y : ℕ → E, Tendsto y atTop (nhds x) →
+        ∀ D : Set F, PKConverges (fun n ↦ S (y n)) D → D ⊆ S x := by
+  rw [← svOscWithinAt_univ, svOscWithinAt_iff_seq (mem_univ x)]
+  exact forall_congr' fun y ↦
+    ⟨fun h hyto ↦ h (fun _ ↦ mem_univ _) hyto, fun h _ hyto ↦ h hyto⟩
+
+/-- The absolute case `X = IRⁿ` of 5.6(d). -/
+theorem svIscAt_iff_seq {S : E → Set F} {x : E} :
+    SvIscAt S x ↔
+      ∀ y : ℕ → E, Tendsto y atTop (nhds x) →
+        ∀ D : Set F, PKConverges (fun n ↦ S (y n)) D → S x ⊆ D := by
+  rw [← svIscWithinAt_univ, svIscWithinAt_iff_seq (mem_univ x)]
+  exact forall_congr' fun y ↦
+    ⟨fun h hyto ↦ h (fun _ ↦ mem_univ _) hyto, fun h _ hyto ↦ h hyto⟩
+
+end SequentialCriteria
 
 end RW
