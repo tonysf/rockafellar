@@ -629,8 +629,6 @@ instance : ProperSpace (SetMetricModel E) :=
   ⟨fun C₀ r ↦ (isSeqCompact_closedBall C₀ r).isCompact⟩
 
 /-- **Theorem 4.42**, completeness clause. -/
-example : CompleteSpace (SetMetricModel E) := inferInstance
-
 theorem completeSpace : CompleteSpace (SetMetricModel E) := inferInstance
 
 end SetMetricModel

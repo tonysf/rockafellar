@@ -167,6 +167,7 @@ section ConeHausdorff
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [FiniteDimensional ℝ E]
 
+omit [FiniteDimensional ℝ E] in
 /-- A point of one closed cone missing another forces infinite
 Pompeiu--Hausdorff distance: the ray through that point escapes linearly. -/
 theorem hausdorffEDist_eq_top_of_mem_not_mem_isCone {L₁ L₂ : Set E}
@@ -192,6 +193,7 @@ theorem hausdorffEDist_eq_top_of_mem_not_mem_isCone {L₁ L₂ : Set E}
   rw [div_lt_iff₀ hd] at ht
   nlinarith [hd, ht, hle]
 
+omit [FiniteDimensional ℝ E] in
 /-- **Example 4.44**, Pompeiu--Hausdorff clause: distinct closed cones are
 always at infinite Pompeiu--Hausdorff distance. -/
 theorem hausdorffEDist_isCone_eq_top_of_ne {K₁ K₂ : Set E}
@@ -214,6 +216,7 @@ section ConeTruncations
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   [FiniteDimensional ℝ E]
 
+omit [FiniteDimensional ℝ E] in
 /-- Retracting a point of a ray to the unit sphere never moves it away from a
 point of the unit ball.  This is the projection observation the book uses for
 the last identity of Example 4.44. -/
@@ -242,6 +245,7 @@ theorem norm_sub_unit_smul_le {x k : E} (hx : ‖x‖ ≤ 1) (hk : 1 ≤ ‖k‖
       (by linarith : (0 : ℝ) ≤ s + 1 - 2 * ⟪x, u⟫_ℝ)]
   nlinarith [norm_nonneg (x - u), norm_nonneg (x - k)]
 
+omit [FiniteDimensional ℝ E] in
 /-- For a cone, truncating to the unit ball does not change distances from
 points of the unit ball. -/
 theorem infEDist_inter_closedBall_eq_of_isCone {K : Set E} (hK : IsCone K)
@@ -263,6 +267,7 @@ theorem infEDist_inter_closedBall_eq_of_isCone {K : Set E} (hK : IsCone K)
     rw [edist_dist, edist_dist, dist_eq_norm, dist_eq_norm]
     exact ENNReal.ofReal_le_ofReal (norm_sub_unit_smul_le hx hkge)
 
+omit [FiniteDimensional ℝ E] in
 /-- **Example 4.44**, truncation identity: the `1`-distance of the truncated
 inclusions is the Pompeiu--Hausdorff distance between the unit-ball
 truncations. -/
@@ -327,6 +332,7 @@ section ConeCompactness
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [FiniteDimensional ℝ E]
 
+omit [FiniteDimensional ℝ E] in
 theorem isCone_singleton_zero : IsCone ({0} : Set E) :=
   ⟨rfl, by
     intro x hx c _
