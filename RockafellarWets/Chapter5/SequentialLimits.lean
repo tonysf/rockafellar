@@ -206,6 +206,49 @@ theorem svInnerLimitWithin_eq_iInter [FirstCountableTopology E]
     exact hnot (innerSetLimit_subset_outerSetLimit _
       (mem_iInter₂.1 hu y ⟨hyX, hyto⟩))
 
+/-- The absolute case of the index set: every sequence converging to `x`. -/
+theorem svApproachSeqs_univ (x : E) :
+    svApproachSeqs (univ : Set E) x = {y : ℕ → E | Tendsto y atTop (nhds x)} := by
+  ext y
+  simp [svApproachSeqs]
+
+/-- The outer bridge in the absolute case. -/
+theorem svOuterLimit_eq_iUnion [FirstCountableTopology E]
+    [FirstCountableTopology F] (S : E → Set F) (x : E) :
+    svOuterLimit S x =
+      ⋃ y ∈ {y : ℕ → E | Tendsto y atTop (nhds x)},
+        outerSetLimit fun n ↦ S (y n) := by
+  rw [← svOuterLimitWithin_univ, svOuterLimitWithin_eq_iUnion S (mem_univ x),
+    svApproachSeqs_univ]
+
+/-- The inner bridge in the absolute case. -/
+theorem svInnerLimit_eq_iInter [FirstCountableTopology E] (S : E → Set F)
+    (x : E) :
+    svInnerLimit S x =
+      ⋂ y ∈ {y : ℕ → E | Tendsto y atTop (nhds x)},
+        innerSetLimit fun n ↦ S (y n) := by
+  rw [← svInnerLimitWithin_univ, svInnerLimitWithin_eq_iInter S (mem_univ x),
+    svApproachSeqs_univ]
+
+/-- Inner semicontinuity relative to `X`, phrased directly over sequences.
+This is the form in which the convexity criteria of 5.9 are applied. -/
+theorem svIscWithinAt_iff_forall_seq [FirstCountableTopology E]
+    {S : E → Set F} {X : Set E} {x : E} (hx : x ∈ X) :
+    SvIscWithinAt S X x ↔
+      ∀ y : ℕ → E, (∀ n, y n ∈ X) → Tendsto y atTop (nhds x) →
+        S x ⊆ innerSetLimit fun n ↦ S (y n) := by
+  rw [SvIscWithinAt, svInnerLimitWithin_eq_iInter S hx, subset_iInter₂_iff]
+  exact ⟨fun h y hyX hyto ↦ h y ⟨hyX, hyto⟩, fun h y hy ↦ h y hy.1 hy.2⟩
+
+/-- Inner semicontinuity, phrased directly over sequences. -/
+theorem svIscAt_iff_forall_seq [FirstCountableTopology E] {S : E → Set F}
+    {x : E} :
+    SvIscAt S x ↔
+      ∀ y : ℕ → E, Tendsto y atTop (nhds x) →
+        S x ⊆ innerSetLimit fun n ↦ S (y n) := by
+  rw [← svIscWithinAt_univ, svIscWithinAt_iff_forall_seq (mem_univ x)]
+  exact ⟨fun h y hyto ↦ h y (fun _ ↦ mem_univ _) hyto, fun h y _ hyto ↦ h y hyto⟩
+
 end Within
 
 end RW
