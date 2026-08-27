@@ -2,20 +2,22 @@
 
 This ledger tracks Chapter 4 of Rockafellar--Wets result by result. `Exact`
 means that every substantive mathematical clause is available under the
-project's stated finite-dimensional real-space assumptions. `Partial` records
-a sound API for only part of the printed result. `Missing` means that no
-result-specific API has yet been integrated.
+project's stated finite-dimensional real-space assumptions. `Adapted` records
+a mathematically necessary change to a printed statement, together with a
+formal explanation or counterexample.
 
-The first completed batch contains 16 exact results, three partial results,
-and 29 results not yet integrated. Empty-set behavior is built into the
-definitions through extended distance; no nonemptiness convention is hidden
-in the count.
+The current development covers 44 of the 48 results. Empty-set behavior is
+built into the definitions through extended distance; no nonemptiness
+convention is hidden in the count. The sole adaptation is the
+openness/local-compactness assertion in 4.47, which is false for the project's
+literal closed-ball cosmic embedding; the ledger points to a concrete formal
+counterexample in dimension two.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 16 |
-| Partial | 3 |
-| Missing | 29 |
+| Exact | 43 |
+| Adapted | 1 |
+| Missing | 4 |
 | **Total** | **48** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -24,13 +26,13 @@ in the count.
 | 4.2 Characterizations of set limits | **Exact** | [`SetLimitCharacterizations.lean`](RockafellarWets/Chapter4/SetLimitCharacterizations.lean) gives the tail-union, all-subsequence, open- and closed-thickening formulas; [`SetLimitDistances.lean`](RockafellarWets/Chapter4/SetLimitDistances.lean) gives the exact extended-distance liminf/limsup forms. |
 | 4.3 Monotone and sandwiched sequences | **Exact** | [`SetLimitCharacterizations.lean`](RockafellarWets/Chapter4/SetLimitCharacterizations.lean) proves the increasing, decreasing, and sandwich clauses. |
 | 4.4 Closedness of limits | **Exact** | [`SetLimits.lean`](RockafellarWets/Chapter4/SetLimits.lean) proves closedness, termwise-closure invariance, and the constant-set specialization. |
-| 4.5 Hit-and-miss criteria | **Partial** | [`HitAndMiss.lean`](RockafellarWets/Chapter4/HitAndMiss.lean) proves the open-set, compact-set, open-ball, and closed-ball equivalences. The rational-coordinate countable-ball reduction in 4.5(c) is not yet exposed. |
+| 4.5 Hit-and-miss criteria | **Exact** | [`HitAndMiss.lean`](RockafellarWets/Chapter4/HitAndMiss.lean) proves the open-set, compact-set, open-ball, and closed-ball equivalences; [`RationalHitAndMiss.lean`](RockafellarWets/Chapter4/RationalHitAndMiss.lean) supplies the rational-coordinate countable-ball reduction in 4.5(c). |
 | 4.6 Index criterion for convergence | **Exact** | [`HitAndMiss.lean`](RockafellarWets/Chapter4/HitAndMiss.lean) proves convergence to the outer limit from the frequent-hit/eventual-hit condition. |
 | 4.7 Pointwise convergence of distance functions | **Exact** | [`SetLimitDistances.lean`](RockafellarWets/Chapter4/SetLimitDistances.lean) and [`DistanceConvergence.lean`](RockafellarWets/Chapter4/DistanceConvergence.lean) prove both one-sided inequalities and the pointwise convergence equivalence. |
 | 4.8 Equality in distance limits | **Exact** | [`DistanceConvergence.lean`](RockafellarWets/Chapter4/DistanceConvergence.lean) proves the outer-limit equality and sharp inner-limit inequality. |
 | 4.9 Set convergence through projections | **Exact** | [`ProjectionConvergence.lean`](RockafellarWets/Chapter4/ProjectionConvergence.lean) proves the general set-valued projection criterion and the single-valued convex specialization. |
-| 4.10 Uniformity of approximation | **Partial** | [`UniformApproximation.lean`](RockafellarWets/Chapter4/UniformApproximation.lean) proves both bounded-ball equivalences and the combined convergence criterion. Arbitrary-center, sufficiently-large-radius, and rational-parameter wrappers remain to be exposed. |
-| 4.11 Escape to the horizon | **Partial** | [`DistanceConvergence.lean`](RockafellarWets/Chapter4/DistanceConvergence.lean) and [`EscapeToHorizon.lean`](RockafellarWets/Chapter4/EscapeToHorizon.lean) prove the distance, bounded-ball, and both excess-set equivalences. Explicit sufficiently-large-radius and rational-parameter wrappers remain. |
+| 4.10 Uniformity of approximation | **Exact** | [`UniformApproximation.lean`](RockafellarWets/Chapter4/UniformApproximation.lean) proves the bounded-ball equivalences, combined convergence criterion, arbitrary-center formulation, sufficiently-large-radius criterion, and rational-parameter reduction. |
+| 4.11 Escape to the horizon | **Exact** | [`DistanceConvergence.lean`](RockafellarWets/Chapter4/DistanceConvergence.lean) and [`EscapeToHorizon.lean`](RockafellarWets/Chapter4/EscapeToHorizon.lean) prove the distance, bounded-ball, excess-set, sufficiently-large-radius, and rational-parameter equivalences. |
 | 4.12 Limits of connected sets | **Exact** | [`ConnectedLimits.lean`](RockafellarWets/Chapter4/ConnectedLimits.lean) proves the bounded connected-set conclusion and a closed-ball strengthening. |
 | 4.13 Pompeiu--Hausdorff distance | **Exact** | [`HausdorffConvergence.lean`](RockafellarWets/Chapter4/HausdorffConvergence.lean) gives the extended distance and defining formula; [`ConvexTruncations.lean`](RockafellarWets/Chapter4/ConvexTruncations.lean) proves the unrestricted implication and common-bounded equivalence. |
 | 4.14 Limits of cones | **Exact** | [`ConeLimits.lean`](RockafellarWets/Chapter4/ConeLimits.lean) proves the inner, outer, convergent-limit, and nontriviality clauses. |
@@ -39,40 +41,41 @@ in the count.
 | 4.17 Limits of star-shaped sets | **Exact** | [`StarShapedLimits.lean`](RockafellarWets/Chapter4/StarShapedLimits.lean) defines the nonvacuous book notion and proves bounded-limit preservation. |
 | 4.18 Extraction of convergent subsequences | **Exact** | [`SetConvergenceCompactness.lean`](RockafellarWets/Chapter4/SetConvergenceCompactness.lean) proves the escaping/nonempty-convergent-subsequence dichotomy. |
 | 4.19 Cluster description of limits | **Exact** | [`ClusterLimits.lean`](RockafellarWets/Chapter4/ClusterLimits.lean) identifies the inner limit with the intersection and the outer limit with the union of all subsequential set limits. |
-| 4.20 Cosmic limits through horizon limits | Missing | Blocked on the exact closed-ball cosmic bridge. |
-| 4.21 Properties of horizon limits | Missing | Blocked on 4.20. |
-| 4.22 Eventually bounded sequences | Missing | Blocked on 4.20. |
-| 4.23 Total set convergence | Missing | Blocked on 4.20. |
-| 4.24 Horizon criterion for total convergence | Missing | Blocked on 4.20. |
-| 4.25 Automatic cases of total convergence | Missing | Blocked on 4.20. |
-| 4.26 Convergence of images | Missing | |
-| 4.27 Total convergence of linear images | Missing | |
-| 4.28 Projections of convex sets | Missing | |
-| 4.29 Products and sums | Missing | |
-| 4.30 Convergence of convex hulls | Missing | |
-| 4.31 Convergence of unions | Missing | |
-| 4.32 Solutions to convex systems | Missing | |
-| 4.33 Convergence of convex intersections | Missing | |
-| 4.34 Distance function relations | Missing | |
-| 4.35 Uniform convergence of distance functions | Missing | |
-| 4.36 Quantification of set convergence | Missing | |
-| 4.37 Distance estimates | Missing | |
-| 4.38 Pompeiu--Hausdorff distance as a limit | Missing | |
-| 4.39 Distance between convex truncations | Missing | |
-| 4.40 Properties of Pompeiu--Hausdorff distance | Missing | |
+| 4.20 Cosmic limits through horizon limits | **Exact** | [`HorizonLimits.lean`](RockafellarWets/Chapter4/HorizonLimits.lean) and [`MixedCosmicLimits.lean`](RockafellarWets/Chapter4/MixedCosmicLimits.lean) identify ordinary and direction parts of both cosmic limits and give the exact convergence criterion in the project’s equivalent closed-ball compactification. |
+| 4.21 Properties of horizon limits | **Exact** | [`HorizonLimits.lean`](RockafellarWets/Chapter4/HorizonLimits.lean), [`HorizonConeLimits.lean`](RockafellarWets/Chapter4/HorizonConeLimits.lean), and [`HorizonLimitSubsequences.lean`](RockafellarWets/Chapter4/HorizonLimitSubsequences.lean) prove closed-cone structure, closure invariance, (a)–(e), including the termwise-horizon-cone inclusions and subsequence formulas. |
+| 4.22 Eventually bounded sequences | **Exact** | [`EventuallyBounded.lean`](RockafellarWets/Chapter4/EventuallyBounded.lean) defines the bounded-tail condition and proves its equivalence with horizon outer limit `{0}`. |
+| 4.23 Total set convergence | **Exact** | [`TotalConvergence.lean`](RockafellarWets/Chapter4/TotalConvergence.lean) defines `TotalConverges` by convergence of cosmic closures and proves that it entails ordinary convergence. |
+| 4.24 Horizon criterion for total convergence | **Exact** | [`TotalConvergence.lean`](RockafellarWets/Chapter4/TotalConvergence.lean) proves `totalConverges_iff_pkConverges_and_horizonOuter_subset` and equality of the horizon limit. |
+| 4.25 Automatic cases of total convergence | **Exact** | [`TotalConvergenceAutomatic.lean`](RockafellarWets/Chapter4/TotalConvergenceAutomatic.lean) and [`TotalConvergenceAutomaticCompletion.lean`](RockafellarWets/Chapter4/TotalConvergenceAutomaticCompletion.lean) prove the convex, cone, monotone, uniformly/eventually bounded, and Pompeiu–Hausdorff clauses. |
+| 4.26 Convergence of images | **Exact** | [`ImageLimits.lean`](RockafellarWets/Chapter4/ImageLimits.lean) proves both general inclusions, the bounded-image-direction equality criterion, and the eventual-bounded/coercive cases; [`TotalImageEventuallyBounded.lean`](RockafellarWets/Chapter4/TotalImageEventuallyBounded.lean) packages the printed total-convergence conclusion. |
+| 4.27 Total convergence of linear images | **Exact** | [`TotalLinearImages.lean`](RockafellarWets/Chapter4/TotalLinearImages.lean) proves total convergence under the exact horizon-cone/kernel condition, without injectivity or surjectivity assumptions. |
+| 4.28 Projections of convex sets | **Exact** | [`OrthogonalProjections.lean`](RockafellarWets/Chapter4/OrthogonalProjections.lean) gives the coordinate-free finite-dimensional inner-product-space theorem for arbitrary submodule star projections. |
+| 4.29 Products and sums | **Exact** | [`Products.lean`](RockafellarWets/Chapter4/Products.lean), [`TotalProducts.lean`](RockafellarWets/Chapter4/TotalProducts.lean), [`FiniteSums.lean`](RockafellarWets/Chapter4/FiniteSums.lean), and [`FiniteSumConvergence.lean`](RockafellarWets/Chapter4/FiniteSumConvergence.lean) prove every ordinary and total clause for finite dependent families. |
+| 4.30 Convergence of convex hulls | **Exact** | [`ConvexHullConvergence.lean`](RockafellarWets/Chapter4/ConvexHullConvergence.lean) proves the pointed-cone and uniformly bounded clauses; [`ConvexHullTotalConvergence.lean`](RockafellarWets/Chapter4/ConvexHullTotalConvergence.lean) proves the total clause and the exact closed-convex-hull formula. |
+| 4.31 Convergence of unions | **Exact** | [`FiniteUnions.lean`](RockafellarWets/Chapter4/FiniteUnions.lean) and [`UnionConvergence.lean`](RockafellarWets/Chapter4/UnionConvergence.lean) prove ordinary and total convergence for arbitrary finite indexed unions. |
+| 4.32 Solutions to convex systems | **Exact** | [`ConvexSystems.lean`](RockafellarWets/Chapter4/ConvexSystems.lean) and [`ConvexSystemConvergence.lean`](RockafellarWets/Chapter4/ConvexSystemConvergence.lean) prove formulas 4(7)–4(9), the main theorem, and (a)–(c). Operator-norm convergence is the finite-dimensional coordinate-free form of matrix convergence. |
+| 4.33 Convergence of convex intersections | **Exact** | [`ConvexIntersections.lean`](RockafellarWets/Chapter4/ConvexIntersections.lean) proves the finite-family theorem under the exact pairwise nonseparation hypotheses. |
+| 4.34 Distance function relations | **Exact** | [`DistanceFunctionRelations.lean`](RockafellarWets/Chapter4/DistanceFunctionRelations.lean) proves (a)–(d), the convex radius sharpening, and the cone/zero-containing equivalences. |
+| 4.35 Uniform convergence of distance functions | **Exact** | [`LocalSetDistances.lean`](RockafellarWets/Chapter4/LocalSetDistances.lean) proves uniform convergence on bounded sets and both one-sided characterizations. |
+| 4.36 Quantification of set convergence | **Exact** | [`LocalSetDistances.lean`](RockafellarWets/Chapter4/LocalSetDistances.lean) defines both local distances, proves the pseudometric and all-radius/threshold convergence characterizations, and formalizes the book’s counterexample showing the hatted distance is not a pseudometric. |
+| 4.37 Distance estimates | **Exact** | [`LocalSetDistances.lean`](RockafellarWets/Chapter4/LocalSetDistances.lean) proves monotonicity, continuity, (a)–(d), bounded stabilization, and the convex and zero-containing sharpenings. |
+| 4.38 Pompeiu--Hausdorff distance as a limit | **Exact** | [`LocalSetDistances.lean`](RockafellarWets/Chapter4/LocalSetDistances.lean) proves convergence of both local-distance families to the extended Pompeiu–Hausdorff distance, retaining finite real-valued wrappers. |
+| 4.39 Distance between convex truncations | **Exact** | [`ConvexTruncationDistances.lean`](RockafellarWets/Chapter4/ConvexTruncationDistances.lean) proves the two-sided truncation estimate with the book’s factor four and radius threshold. |
+| 4.40 Properties of Pompeiu--Hausdorff distance | **Exact** | [`PompeiuHausdorffProperties.lean`](RockafellarWets/Chapter4/PompeiuHausdorffProperties.lean) proves bounded-sequence convergence, the unequal-horizon infinite-distance obstruction, eventual horizon equality, and the bounded-hyperspace metric. |
 | 4.41 Integrated set-distance estimates | Missing | |
 | 4.42 Metric description of set convergence | Missing | |
 | 4.43 Local compactness of the set hyperspace | Missing | |
 | 4.44 Distances between cones | Missing | |
-| 4.45 Separability and finite-set approximation | Missing | |
-| 4.46 Metric description of cosmic set convergence | Missing | |
-| 4.47 Metric description of total set convergence | Missing | |
-| 4.48 Cosmic metric properties | Missing | |
+| 4.45 Separability and finite-set approximation | **Exact** | [`FiniteSetApproximation.lean`](RockafellarWets/Chapter4/FiniteSetApproximation.lean) constructs internal finite approximants for arbitrary closed sets, strengthens them to finite subsets of any dense set, and supplies the rational-coordinate countable family and its nonempty hyperspace form. |
+| 4.46 Metric description of cosmic set convergence | **Exact** | [`CosmicPointMetric.lean`](RockafellarWets/Chapter4/CosmicPointMetric.lean) and [`CosmicSetMetric.lean`](RockafellarWets/Chapter4/CosmicSetMetric.lean) construct the point and closed-set metrics through unit ray segments/cone truncations, prove the exact convergence characterization, and package compactness, separability, the empty-set convention, and singleton compatibility. |
+| 4.47 Metric description of total set convergence | **Adapted** | [`TotalSetMetric.lean`](RockafellarWets/Chapter4/TotalSetMetric.lean) proves the metric and convergence characterization. [`TotalSetMetricCompletion.lean`](RockafellarWets/Chapter4/TotalSetMetricCompletion.lean) proves separability and packages the completion as a dense isometric embedding into the complete cosmic hyperspace. The printed claim that the full embedding range is open and locally compact is false for the literal closed-ball model: `not_isOpen_range_totalCosmicEmbedding_plane` gives a formal two-dimensional counterexample. The same file identifies an open ordinary-supported subspace contained in the range. |
+| 4.48 Cosmic metric properties | **Exact** | [`CosmicMetricCompletion.lean`](RockafellarWets/Chapter4/CosmicMetricCompletion.lean) proves the piecewise sine-of-angle formulas 4(16)–4(17), realizes cosmic space as the metric completion of ordinary space, proves 4(18), and identifies the cosmic set metric with the point-generated Hausdorff supremum in 4(19), reduced exactly to ordinary embedded points. |
 
 ## Verification cases
 
-The Chapter 4 regression suite will cover constant, increasing, decreasing,
+The foundational modules theorem-check constant, increasing, decreasing,
 sandwiched, and alternating sequences; alternating `∅`/`univ`; convergent
-singletons; and pointwise closure replacement. The basic constant, empty,
-full, monotone, sandwich, and closure-replacement laws are already theorem
-checked in the foundational modules.
+singletons; and pointwise closure replacement. [`OperationExamples.lean`](RockafellarWets/Chapter4/OperationExamples.lean)
+checks the boundary cases for images, products, sums, hulls, unions, and convex
+systems. The local-distance non-triangle example and the two-dimensional
+4.47 openness counterexample are formal declarations, not prose-only caveats.

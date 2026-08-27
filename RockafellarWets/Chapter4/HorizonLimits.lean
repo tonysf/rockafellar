@@ -213,7 +213,7 @@ theorem horizonInnerSetLimit_subset_horizonOuterSetLimit (C : ℕ → Set E) :
     horizonInnerSetLimit C ⊆ horizonOuterSetLimit C :=
   cosmicDirectionCone_mono (innerSetLimit_subset_outerSetLimit _)
 
-/-- Exercise 4.21(b), inner-limit half. -/
+/-- Horizon inner limits are monotone under passage to subsequences. -/
 theorem horizonInnerSetLimit_subset_subsequence {C : ℕ → Set E} {φ : ℕ → ℕ}
     (hφ : StrictMono φ) :
     horizonInnerSetLimit C ⊆ horizonInnerSetLimit (C ∘ φ) := by
@@ -222,7 +222,7 @@ theorem horizonInnerSetLimit_subset_subsequence {C : ℕ → Set E} {φ : ℕ �
     (innerSetLimit_subset_subsequence
       (C := ordinaryCosmicSequence C) hφ)
 
-/-- Exercise 4.21(b), outer-limit half. -/
+/-- Horizon outer limits shrink under passage to subsequences. -/
 theorem horizonOuterSetLimit_subsequence_subset {C : ℕ → Set E} {φ : ℕ → ℕ}
     (hφ : StrictMono φ) :
     horizonOuterSetLimit (C ∘ φ) ⊆ horizonOuterSetLimit C := by
