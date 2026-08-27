@@ -12,6 +12,14 @@ permissions:
   id-token: write # Write access to ID tokens
 
 jobs:
+  ledgers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check coverage ledgers and module imports
+        run: python3 scripts/check_ledgers.py
+
   build:
     runs-on: ubuntu-latest
 
