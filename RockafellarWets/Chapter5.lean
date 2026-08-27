@@ -12,3 +12,4 @@ import RockafellarWets.Chapter5.SemicontinuityCriteria
 import RockafellarWets.Chapter5.ProfileMappings
 import RockafellarWets.Chapter5.FeasibleSets
 import RockafellarWets.Chapter5.ConvexSemicontinuity
+import RockafellarWets.Chapter5.ConvexConstraints
