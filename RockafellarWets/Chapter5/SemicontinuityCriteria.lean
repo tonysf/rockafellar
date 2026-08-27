@@ -47,19 +47,6 @@ theorem svPreimage_univ (S : E → Set F) : svPreimage S univ = svDom S := by
 
 end Preimage
 
-section FilterHelpers
-
-variable {ι E : Type*} [TopologicalSpace E]
-
-/-- Failure of membership in an outer limit, made explicit. -/
-theorem not_mem_outerSetLimitAlong {l : Filter ι} {C : ι → Set E} {x : E} :
-    x ∉ outerSetLimitAlong l C ↔
-      ∃ V ∈ nhds x, ∀ᶠ i in l, C i ∩ V = ∅ := by
-  simp only [mem_outerSetLimitAlong, not_forall, Filter.not_frequently,
-    not_nonempty_iff_eq_empty, exists_prop]
-
-end FilterHelpers
-
 section NeighborhoodCriteria
 
 variable {E F : Type*} [TopologicalSpace E] [TopologicalSpace F]

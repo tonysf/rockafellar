@@ -22,8 +22,8 @@ also stated with sequences.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 7 |
-| Missing | 52 |
+| Exact | 8 |
+| Missing | 51 |
 | **Total** | **59** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -38,7 +38,7 @@ also stated with sequences.
 | 5.8 Feasible-set mappings | **Exact** | [`FeasibleSets.lean`](RockafellarWets/Chapter5/FeasibleSets.lean) defines the parameterized constraint mapping `T`, empty off the parameter set `W`, and proves that `gph T` is closed and hence `T` is osc when `X` and `W` are closed and the constraint functions are continuous on `X × W`; that `T` is osc at every interior point of `W` when `W` is not closed, via the locality of osc and a closed neighborhood inside `W`; and that `dom T` is the set of `w ∈ W` whose constraint system is consistent. |
 | 5.9 Inner semicontinuity from convexity | **Exact** | [`ConvexSemicontinuity.lean`](RockafellarWets/Chapter5/ConvexSemicontinuity.lean) defines convex-valuedness and graph-convexity, proves formula 5(4), and proves all three clauses: (a) in the general relative form with the specializations to `dom S` and to the absolute "in particular" statement `(x̄, u) ∈ int(gph S)`, via 4.15 in one direction and closedness of inner limits with `cl(int C) = cl C` in the other; (b) via 4.32(c) applied to the fibre `{x̄} × IRᵐ` intersected with `gph S`, the non-separation hypothesis being interiority of `x̄` in `dom S`; (c) via the inner-limit half of 4.30, both absolutely and relative to a set. |
 | 5.10 Parameterized convex constraints | **Exact** | [`ConvexConstraints.lean`](RockafellarWets/Chapter5/ConvexConstraints.lean) proves the printed conclusion: a Slater point at `w₀` yields an explicit open neighborhood of `w₀` on which `T` is continuous. The supporting assertions of the Detail are proved too -- closed graph and hence osc everywhere (needing continuity only, no convexity), convexity of each `T(w)`, openness of the strictly feasible set, and the interior identity `int T(w) = {x | fᵢ(x,w) < 0}` that the book takes from 2.34. Since 2.34 is not available in this project's Chapter 2, inner semicontinuity is obtained instead from density of the strictly feasible set in `T(w)`, proved directly from the Slater segment; the interior identity is then derived from the same computation rather than assumed. |
-| 5.11 Continuity of distances | Missing | |
+| 5.11 Continuity of distances | **Exact** | [`DistanceCriteria.lean`](RockafellarWets/Chapter5/DistanceCriteria.lean) proves (a), (b), and (c) relative to a set `X` and in the absolute case, with distances taken as `Metric.infEDist` so that `d(u, ∅) = ∞` as the book requires. Clause (b) needs neither closed-valuedness nor properness; only (a) uses closedness of `S(x̄)` and compactness of closed balls, the latter through the new filter-native compact extraction `outerSetLimitAlong_inter_nonempty_of_frequently` in [`SetLimitsAlong.lean`](RockafellarWets/Chapter5/SetLimitsAlong.lean), which replaces the subsequence step that 4.7 supplies only for sequences. The printed clause (b) reads `u → d(u, S(x))`; this is a misprint for `x → d(u, S(x))`, as clauses (a) and (c) make clear, and the corrected reading is what is proved. |
 | 5.12 Uniformity of approximation in semicontinuity | Missing | |
 | 5.13 Uniform continuity | Missing | |
 | 5.14 Local boundedness | Missing | |

@@ -152,6 +152,11 @@ def SvOscWithinAt (S : E → Set F) (X : Set E) (x : E) : Prop :=
 def SvIscWithinAt (S : E → Set F) (X : Set E) (x : E) : Prop :=
   S x ⊆ svInnerLimitWithin S X x
 
+/-- **Definition 5.4** relative to a set `X`: `S` is continuous at `x`
+relative to `X` when it is both outer and inner semicontinuous there. -/
+def SvContinuousWithinAt (S : E → Set F) (X : Set E) (x : E) : Prop :=
+  SvOscWithinAt S X x ∧ SvIscWithinAt S X x
+
 /-- **Definition 5.4**, set-wide form: `S` is outer semicontinuous relative
 to `X` when it is so at every point of `X`. -/
 def SvOscOn (S : E → Set F) (X : Set E) : Prop := ∀ x ∈ X, SvOscWithinAt S X x
@@ -164,6 +169,13 @@ def SvOsc (S : E → Set F) : Prop := ∀ x, SvOscAt S x
 
 /-- **Definition 5.4**: `S` is inner semicontinuous everywhere. -/
 def SvIsc (S : E → Set F) : Prop := ∀ x, SvIscAt S x
+
+/-- **Definition 5.4**, set-wide form of continuity relative to `X`. -/
+def SvContinuousOn (S : E → Set F) (X : Set E) : Prop :=
+  ∀ x ∈ X, SvContinuousWithinAt S X x
+
+/-- **Definition 5.4**: `S` is continuous everywhere. -/
+def SvContinuous (S : E → Set F) : Prop := ∀ x, SvContinuousAt S x
 
 /-- **Definition 5.4**: the equivalent equality form of outer
 semicontinuity. -/
@@ -273,6 +285,16 @@ theorem svOscWithinAt_univ {S : E → Set F} {x : E} :
 theorem svIscWithinAt_univ {S : E → Set F} {x : E} :
     SvIscWithinAt S univ x ↔ SvIscAt S x := by
   rw [SvIscWithinAt, SvIscAt, svInnerLimitWithin_univ]
+
+theorem svContinuousWithinAt_univ {S : E → Set F} {x : E} :
+    SvContinuousWithinAt S univ x ↔ SvContinuousAt S x := by
+  rw [SvContinuousWithinAt, SvContinuousAt, svOscWithinAt_univ,
+    svIscWithinAt_univ]
+
+theorem svContinuousOn_iff {S : E → Set F} {X : Set E} :
+    SvContinuousOn S X ↔ SvOscOn S X ∧ SvIscOn S X :=
+  ⟨fun h ↦ ⟨fun x hx ↦ (h x hx).1, fun x hx ↦ (h x hx).2⟩,
+    fun h x hx ↦ ⟨h.1 x hx, h.2 x hx⟩⟩
 
 theorem svOscOn_univ {S : E → Set F} : SvOscOn S univ ↔ SvOsc S := by
   constructor

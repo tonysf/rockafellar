@@ -14,6 +14,7 @@ against fifty numbered results, and the two families agree definitionally, so
 nothing is gained by rewriting them in place.
 -/
 
+import Mathlib.Topology.Compactness.Compact
 import RockafellarWets.Chapter4.SetLimits
 
 open Filter Set Topology
@@ -129,6 +130,47 @@ theorem isClosed_innerSetLimitAlong (l : Filter ι) (C : ι → Set E) :
   rcases mem_closure_iff.1 hx U hUopen hxU with ⟨y, hyU, hyLim⟩
   exact (hyLim U (hUopen.mem_nhds hyU)).mono fun i ⟨z, hzC, hzU⟩ ↦
     ⟨z, hzC, hUV hzU⟩
+
+/-- Failure of membership in an outer limit, made explicit. -/
+theorem not_mem_outerSetLimitAlong {l : Filter ι} {C : ι → Set E} {x : E} :
+    x ∉ outerSetLimitAlong l C ↔
+      ∃ V ∈ nhds x, ∀ᶠ i in l, C i ∩ V = ∅ := by
+  simp only [mem_outerSetLimitAlong, not_forall, Filter.not_frequently,
+    not_nonempty_iff_eq_empty, exists_prop]
+
+/-- **Compact extraction for outer limits.**  A compact set that is hit
+frequently along the index filter is met by the outer limit.
+
+Were the outer limit to miss `K` entirely, each point of `K` would carry a
+neighborhood that the sets avoid eventually; finitely many such
+neighborhoods cover `K`, and the finite intersection of the corresponding
+filter sets makes the sets avoid `K` eventually. -/
+theorem outerSetLimitAlong_inter_nonempty_of_frequently {l : Filter ι}
+    {C : ι → Set E} {K : Set E} (hK : IsCompact K)
+    (hfreq : ∃ᶠ i in l, (C i ∩ K).Nonempty) :
+    (outerSetLimitAlong l C ∩ K).Nonempty := by
+  classical
+  by_contra hcon
+  rw [not_nonempty_iff_eq_empty] at hcon
+  have hmiss : ∀ v ∈ K, v ∉ outerSetLimitAlong l C := by
+    intro v hv hmem
+    have hin : v ∈ outerSetLimitAlong l C ∩ K := ⟨hmem, hv⟩
+    rw [hcon] at hin
+    exact hin
+  choose! W hWnhds hWev using fun v (hv : v ∉ outerSetLimitAlong l C) ↦
+    not_mem_outerSetLimitAlong.1 hv
+  obtain ⟨t, htK, hcover⟩ :=
+    hK.elim_nhds_subcover W fun v hv ↦ hWnhds v (hmiss v hv)
+  have hev : ∀ᶠ i in l, ∀ v ∈ t, C i ∩ W v = ∅ :=
+    Filter.eventually_all_finset t |>.2 fun v hv ↦ hWev v (hmiss v (htK v hv))
+  refine absurd hfreq (Filter.not_frequently.2 ?_)
+  filter_upwards [hev] with i hi
+  rw [not_nonempty_iff_eq_empty]
+  refine eq_empty_of_forall_notMem fun z hz ↦ ?_
+  obtain ⟨v, hvt, hzW⟩ := mem_iUnion₂.1 (hcover hz.2)
+  have hzin : z ∈ C i ∩ W v := ⟨hz.1, hzW⟩
+  rw [hi v hvt] at hzin
+  exact hzin
 
 end BasicProperties
 
