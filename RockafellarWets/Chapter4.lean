@@ -52,6 +52,8 @@ import RockafellarWets.Chapter4.DistanceFunctionRelations
 import RockafellarWets.Chapter4.LocalSetDistances
 import RockafellarWets.Chapter4.ConvexTruncationDistances
 import RockafellarWets.Chapter4.PompeiuHausdorffProperties
+import RockafellarWets.Chapter4.IntegratedSetDistance
+import RockafellarWets.Chapter4.ConeSetDistances
 import RockafellarWets.Chapter4.FiniteSetApproximation
 import RockafellarWets.Chapter4.CosmicPointMetric
 import RockafellarWets.Chapter4.CosmicSetMetric

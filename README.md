@@ -19,6 +19,8 @@ correct statement in context.
 
 - `lake build` passes.
 - `RockafellarWets/` is currently `sorry`-free.
+- `scripts/check_ledgers.py` passes: the coverage ledgers agree with their
+  own result rows, and every ledger link and module import resolves.
 - The project currently covers:
   - Chapter 1, *Max and Min*: project definitions, semicontinuity, and Moreau
     envelope material.
@@ -28,17 +30,17 @@ correct statement in context.
     cosmic compactification, horizon cones and functions, cone and set
     calculus, coercivity, parametric minimization, epi-addition, cancellation,
     orderings, positive hulls, and the polyhedral cone/set/function layer.
-  - Chapter 4, *Set Convergence*, through Exercise 4.48, with four remaining
-    gaps in 4.41--4.44: inner, outer, horizon, cosmic, and total limits;
-    convergence under operations; quantitative set distances; hyperspace
-    metrics; compactness; and separability.
+  - Chapter 4, *Set Convergence*, through Exercise 4.48: inner, outer,
+    horizon, cosmic, and total limits; convergence under operations;
+    quantitative set distances; hyperspace metrics; compactness; and
+    separability.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
     conventions;
-  - the Chapter 4 ledger classifies all 48 numbered results: 43 exact, one
+  - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
-    4.47 under the literal closed-ball cosmic embedding, and four missing;
+    4.47 under the literal closed-ball cosmic embedding;
   - Chapter 5 has not started.
 
 See the [Chapter 3 coverage ledger](CHAPTER3_COVERAGE.md) and
@@ -93,6 +95,7 @@ but the intended reading and formalization order remains the book order.
   sources.
 - `CHAPTER3_COVERAGE.md`, `CHAPTER4_COVERAGE.md`: result-by-result coverage
   ledgers.
+- `scripts/`: repository checks run in CI alongside `lake build`.
 - `rockafellar_wets.pdf`: local reference copy of the text used during the
   formalization.
 - `LICENSE`: Apache License 2.0, matching the source-file headers.
@@ -104,6 +107,13 @@ lake build
 ```
 
 The required Lean toolchain is pinned in `lean-toolchain`.
+
+The coverage ledgers are machine-checked against their own rows, and every
+`import RockafellarWets.*` is checked to resolve, by:
+
+```bash
+python3 scripts/check_ledgers.py
+```
 
 ## License
 

@@ -6,18 +6,17 @@ project's stated finite-dimensional real-space assumptions. `Adapted` records
 a mathematically necessary change to a printed statement, together with a
 formal explanation or counterexample.
 
-The current development covers 44 of the 48 results. Empty-set behavior is
-built into the definitions through extended distance; no nonemptiness
-convention is hidden in the count. The sole adaptation is the
+All 48 results are covered. Empty-set behavior is built into the definitions
+through extended distance; no nonemptiness convention is hidden in the count.
+The sole adaptation is the
 openness/local-compactness assertion in 4.47, which is false for the project's
 literal closed-ball cosmic embedding; the ledger points to a concrete formal
 counterexample in dimension two.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 43 |
+| Exact | 47 |
 | Adapted | 1 |
-| Missing | 4 |
 | **Total** | **48** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -62,10 +61,10 @@ counterexample in dimension two.
 | 4.38 Pompeiu--Hausdorff distance as a limit | **Exact** | [`LocalSetDistances.lean`](RockafellarWets/Chapter4/LocalSetDistances.lean) proves convergence of both local-distance families to the extended Pompeiu–Hausdorff distance, retaining finite real-valued wrappers. |
 | 4.39 Distance between convex truncations | **Exact** | [`ConvexTruncationDistances.lean`](RockafellarWets/Chapter4/ConvexTruncationDistances.lean) proves the two-sided truncation estimate with the book’s factor four and radius threshold. |
 | 4.40 Properties of Pompeiu--Hausdorff distance | **Exact** | [`PompeiuHausdorffProperties.lean`](RockafellarWets/Chapter4/PompeiuHausdorffProperties.lean) proves bounded-sequence convergence, the unequal-horizon infinite-distance obstruction, eventual horizon equality, and the bounded-hyperspace metric. |
-| 4.41 Integrated set-distance estimates | Missing | |
-| 4.42 Metric description of set convergence | Missing | |
-| 4.43 Local compactness of the set hyperspace | Missing | |
-| 4.44 Distances between cones | Missing | |
+| 4.41 Integrated set-distance estimates | **Exact** | [`IntegratedSetDistance.lean`](RockafellarWets/Chapter4/IntegratedSetDistance.lean) defines 4(12), proves integrability of the integrand, and proves (a), (b), and both halves of (c), together with the comparison 4(13). The estimates are proved for arbitrary sets: the 4.37 inputs they rest on carry no nonemptiness hypothesis, so the printed "nonempty, closed" assumption is not needed. |
+| 4.42 Metric description of set convergence | **Exact** | [`IntegratedSetDistance.lean`](RockafellarWets/Chapter4/IntegratedSetDistance.lean) proves symmetry, the triangle inequality, and separation on closed nonempty sets; `pkConverges_iff_tendsto_integratedSetDistance` is the convergence characterization; `outerSetLimit_eq_empty_iff_tendsto_integratedSetDistance_atTop` is the escape criterion for one and hence every reference set; completeness follows from the properness proved for 4.43. |
+| 4.43 Local compactness of the set hyperspace | **Exact** | [`IntegratedSetDistance.lean`](RockafellarWets/Chapter4/IntegratedSetDistance.lean) proves every closed ball of the hyperspace sequentially compact from the escape criterion and Theorem 4.18, and registers the `ProperSpace` instance on `SetMetricModel`. |
+| 4.44 Distances between cones | **Exact** | [`ConeSetDistances.lean`](RockafellarWets/Chapter4/ConeSetDistances.lean) proves the linearity `dl_ρ = dl̂_ρ = ρ·dl_1`, the displayed chain `dl = dl_1 = dl̂_1 = dl∞(K₁∩IB, K₂∩IB) ≤ 1`, the infinitude of the Pompeiu–Hausdorff distance between distinct closed cones, and compactness of the closed cones in the hyperspace. The `dl̂ = dl` clause uses the cone half of 4.34 and needs no convexity. |
 | 4.45 Separability and finite-set approximation | **Exact** | [`FiniteSetApproximation.lean`](RockafellarWets/Chapter4/FiniteSetApproximation.lean) constructs internal finite approximants for arbitrary closed sets, strengthens them to finite subsets of any dense set, and supplies the rational-coordinate countable family and its nonempty hyperspace form. |
 | 4.46 Metric description of cosmic set convergence | **Exact** | [`CosmicPointMetric.lean`](RockafellarWets/Chapter4/CosmicPointMetric.lean) and [`CosmicSetMetric.lean`](RockafellarWets/Chapter4/CosmicSetMetric.lean) construct the point and closed-set metrics through unit ray segments/cone truncations, prove the exact convergence characterization, and package compactness, separability, the empty-set convention, and singleton compatibility. |
 | 4.47 Metric description of total set convergence | **Adapted** | [`TotalSetMetric.lean`](RockafellarWets/Chapter4/TotalSetMetric.lean) proves the metric and convergence characterization. [`TotalSetMetricCompletion.lean`](RockafellarWets/Chapter4/TotalSetMetricCompletion.lean) proves separability and packages the completion as a dense isometric embedding into the complete cosmic hyperspace. The printed claim that the full embedding range is open and locally compact is false for the literal closed-ball model: `not_isOpen_range_totalCosmicEmbedding_plane` gives a formal two-dimensional counterexample. The same file identifies an open ordinary-supported subspace contained in the range. |
