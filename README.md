@@ -41,11 +41,12 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - Chapter 5 has not started.
+  - the Chapter 5 ledger is seeded with all 59 numbered results, none yet
+    formalized; it is tracked from the outset rather than reconstructed later.
 
-See the [Chapter 3 coverage ledger](CHAPTER3_COVERAGE.md) and
-[Chapter 4 coverage ledger](CHAPTER4_COVERAGE.md) for conservative,
-result-by-result accounts of exact and adapted coverage.
+See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
+and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,
+result-by-result accounts of exact, adapted, and missing coverage.
 
 ## Roadmap
 
@@ -93,8 +94,8 @@ but the intended reading and formalization order remains the book order.
 - `RockafellarWets/Chapter1`, `RockafellarWets/Chapter2`,
   `RockafellarWets/Chapter3`, `RockafellarWets/Chapter4`: chapter-level Lean
   sources.
-- `CHAPTER3_COVERAGE.md`, `CHAPTER4_COVERAGE.md`: result-by-result coverage
-  ledgers.
+- `CHAPTER3_COVERAGE.md`, `CHAPTER4_COVERAGE.md`, `CHAPTER5_COVERAGE.md`:
+  result-by-result coverage ledgers.
 - `scripts/`: repository checks run in CI alongside `lake build`.
 - `rockafellar_wets.pdf`: local reference copy of the text used during the
   formalization.
