@@ -10,3 +10,4 @@ import RockafellarWets.Chapter5.Semicontinuity
 import RockafellarWets.Chapter5.SequentialLimits
 import RockafellarWets.Chapter5.SemicontinuityCriteria
 import RockafellarWets.Chapter5.ProfileMappings
+import RockafellarWets.Chapter5.FeasibleSets

@@ -87,6 +87,28 @@ theorem innerSetLimitAlong_mono {l : Filter ι} {C D : ι → Set E}
     innerSetLimitAlong l C ⊆ innerSetLimitAlong l D :=
   fun _ hx V hV ↦ (hx V hV).mono fun i ⟨z, hz, hzV⟩ ↦ ⟨z, h i hz, hzV⟩
 
+private theorem outerSetLimitAlong_subset_of_eventuallyEq {l : Filter ι}
+    {C D : ι → Set E} (h : C =ᶠ[l] D) :
+    outerSetLimitAlong l C ⊆ outerSetLimitAlong l D :=
+  fun _ hx V hV ↦ (hx V hV).mp (h.mono fun _ hi hhit ↦ hi ▸ hhit)
+
+private theorem innerSetLimitAlong_subset_of_eventuallyEq {l : Filter ι}
+    {C D : ι → Set E} (h : C =ᶠ[l] D) :
+    innerSetLimitAlong l C ⊆ innerSetLimitAlong l D :=
+  fun _ hx V hV ↦ (hx V hV).mp (h.mono fun _ hi hhit ↦ hi ▸ hhit)
+
+/-- Both limits only see the eventual behavior of the family. -/
+theorem outerSetLimitAlong_congr {l : Filter ι} {C D : ι → Set E}
+    (h : C =ᶠ[l] D) : outerSetLimitAlong l C = outerSetLimitAlong l D :=
+  Subset.antisymm (outerSetLimitAlong_subset_of_eventuallyEq h)
+    (outerSetLimitAlong_subset_of_eventuallyEq h.symm)
+
+/-- Both limits only see the eventual behavior of the family. -/
+theorem innerSetLimitAlong_congr {l : Filter ι} {C D : ι → Set E}
+    (h : C =ᶠ[l] D) : innerSetLimitAlong l C = innerSetLimitAlong l D :=
+  Subset.antisymm (innerSetLimitAlong_subset_of_eventuallyEq h)
+    (innerSetLimitAlong_subset_of_eventuallyEq h.symm)
+
 /-- The outer limit is closed, including when some or all sets are empty.
 The Chapter 4 proof never mentions the index filter. -/
 theorem isClosed_outerSetLimitAlong (l : Filter ι) (C : ι → Set E) :

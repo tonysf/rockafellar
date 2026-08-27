@@ -244,6 +244,27 @@ theorem SvIscWithinAt.eventually_mem_svDom {S : E → Set F} {X : Set E} {x : E}
   obtain ⟨u, hu⟩ := hx
   simpa [svDom] using h hu univ univ_mem
 
+/-- Both limits of 5(1) depend only on the germ of `S` at the base point. -/
+theorem svOuterLimit_congr {S₁ S₂ : E → Set F} {x : E}
+    (h : S₁ =ᶠ[nhds x] S₂) : svOuterLimit S₁ x = svOuterLimit S₂ x :=
+  outerSetLimitAlong_congr h
+
+/-- Both limits of 5(1) depend only on the germ of `S` at the base point. -/
+theorem svInnerLimit_congr {S₁ S₂ : E → Set F} {x : E}
+    (h : S₁ =ᶠ[nhds x] S₂) : svInnerLimit S₁ x = svInnerLimit S₂ x :=
+  innerSetLimitAlong_congr h
+
+/-- Outer semicontinuity at a point is a local property: it only sees the
+values of `S` on a neighborhood of that point. -/
+theorem svOscAt_congr {S₁ S₂ : E → Set F} {x : E} (h : S₁ =ᶠ[nhds x] S₂) :
+    SvOscAt S₁ x ↔ SvOscAt S₂ x := by
+  rw [SvOscAt, SvOscAt, svOuterLimit_congr h, h.self_of_nhds]
+
+/-- Inner semicontinuity at a point is a local property. -/
+theorem svIscAt_congr {S₁ S₂ : E → Set F} {x : E} (h : S₁ =ᶠ[nhds x] S₂) :
+    SvIscAt S₁ x ↔ SvIscAt S₂ x := by
+  rw [SvIscAt, SvIscAt, svInnerLimit_congr h, h.self_of_nhds]
+
 /-- The absolute notions are the case `X = univ` of the relative ones. -/
 theorem svOscWithinAt_univ {S : E → Set F} {x : E} :
     SvOscWithinAt S univ x ↔ SvOscAt S x := by

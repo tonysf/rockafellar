@@ -22,8 +22,8 @@ also stated with sequences.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 4 |
-| Missing | 55 |
+| Exact | 5 |
+| Missing | 54 |
 | **Total** | **59** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -35,7 +35,7 @@ also stated with sequences.
 | 5.5 Profile mappings | **Exact** | [`ProfileMappings.lean`](RockafellarWets/Chapter5/ProfileMappings.lean) defines `epiProfile` and `hypoProfile` over the Chapter 1 extended-real conventions and proves `gph Ef = epi f`, `dom Ef = dom f`, `Ef⁻¹(α) = lev≤α f`, that `Ef` is osc at `x̄` iff `f` is lsc at `x̄`, isc iff `f` is usc, continuous iff `f` is continuous, and that the level-set mapping `α ↦ lev≤α f` is osc everywhere iff `f` is lsc everywhere. The hypographical analogues `gph Hf = hypo f`, `dom Hf`, `Hf⁻¹(α) = lev≥α f`, osc iff usc, and isc iff lsc are proved as well. |
 | 5.6 Criteria for semicontinuity at a point | **Exact** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves the neighborhood criteria (a) and (b) in the book's `X ∩ V ∩ S⁻¹(W)` form, and the sequential criteria (c) and (d) quantified over all `xν ∈ X` with `xν → x̄` and `S(xν) → D`, relative to `X` and in the absolute case. The sequential clauses go through the diagonal extraction of [`SequentialLimits.lean`](RockafellarWets/Chapter5/SequentialLimits.lean) followed by the subsequence compactness of 4.18. |
 | 5.7 Characterizations of semicontinuity | **Exact** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves (a) in full -- osc everywhere is closedness of `gph S`, and `S` is osc exactly when `S⁻¹` is; (b) for closed-valued `S`, as `IsClosed (X ↓∩ S⁻¹(B))` for every compact `B` and equivalently as the closure condition `X ∩ cl(X ∩ S⁻¹(B)) ⊂ S⁻¹(B)`, with the absolute case `X = IRⁿ` separately; and (c) in both the absolute form (`S⁻¹(O)` open for open `O`) and the relative form. The forward half of (b) needs no structure on the target; the converse uses compactness of closed balls and is stated for a proper metric target. |
-| 5.8 Feasible-set mappings | Missing | |
+| 5.8 Feasible-set mappings | **Exact** | [`FeasibleSets.lean`](RockafellarWets/Chapter5/FeasibleSets.lean) defines the parameterized constraint mapping `T`, empty off the parameter set `W`, and proves that `gph T` is closed and hence `T` is osc when `X` and `W` are closed and the constraint functions are continuous on `X × W`; that `T` is osc at every interior point of `W` when `W` is not closed, via the locality of osc and a closed neighborhood inside `W`; and that `dom T` is the set of `w ∈ W` whose constraint system is consistent. |
 | 5.9 Inner semicontinuity from convexity | Missing | |
 | 5.10 Parameterized convex constraints | Missing | |
 | 5.11 Continuity of distances | Missing | |

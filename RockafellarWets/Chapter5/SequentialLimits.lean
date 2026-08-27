@@ -57,28 +57,6 @@ theorem innerSetLimitAlong_subset_innerSetLimit_comp {l : Filter ι}
   rw [← innerSetLimitAlong_atTop, innerSetLimitAlong_comp]
   exact innerSetLimitAlong_mono_filter hy C
 
-private theorem outerSetLimitAlong_subset_of_eventuallyEq {l : Filter ι}
-    {C D : ι → Set E} (h : C =ᶠ[l] D) :
-    outerSetLimitAlong l C ⊆ outerSetLimitAlong l D :=
-  fun _ hx V hV ↦ (hx V hV).mp (h.mono fun _ hi hhit ↦ hi ▸ hhit)
-
-private theorem innerSetLimitAlong_subset_of_eventuallyEq {l : Filter ι}
-    {C D : ι → Set E} (h : C =ᶠ[l] D) :
-    innerSetLimitAlong l C ⊆ innerSetLimitAlong l D :=
-  fun _ hx V hV ↦ (hx V hV).mp (h.mono fun _ hi hhit ↦ hi ▸ hhit)
-
-/-- Both limits only see the eventual behavior of the family. -/
-theorem outerSetLimitAlong_congr {l : Filter ι} {C D : ι → Set E}
-    (h : C =ᶠ[l] D) : outerSetLimitAlong l C = outerSetLimitAlong l D :=
-  Subset.antisymm (outerSetLimitAlong_subset_of_eventuallyEq h)
-    (outerSetLimitAlong_subset_of_eventuallyEq h.symm)
-
-/-- Both limits only see the eventual behavior of the family. -/
-theorem innerSetLimitAlong_congr {l : Filter ι} {C D : ι → Set E}
-    (h : C =ᶠ[l] D) : innerSetLimitAlong l C = innerSetLimitAlong l D :=
-  Subset.antisymm (innerSetLimitAlong_subset_of_eventuallyEq h)
-    (innerSetLimitAlong_subset_of_eventuallyEq h.symm)
-
 end Transport
 
 section Extraction
