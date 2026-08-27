@@ -7,12 +7,13 @@ assumptions. `Adapted` records a mathematically necessary change to a printed
 statement, together with a formal explanation or counterexample. `Missing`
 means that no result-specific API has yet been integrated.
 
-Formalization has not started. The ledger is seeded from the book so that
-coverage is tracked from the first commit rather than reconstructed later.
+Formalization is under way. The conventions for domains, ranges, graphs, and
+inverses are in place, along with formula 5(1) and Definition 5.4.
 
 | Status | Count |
 | --- | ---: |
-| Missing | 59 |
+| Exact | 1 |
+| Missing | 58 |
 | **Total** | **59** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -20,7 +21,7 @@ coverage is tracked from the first commit rather than reconstructed later.
 | 5.1 Constraint systems | Missing | |
 | 5.2 Generalized equations and implicit mappings | Missing | |
 | 5.3 Algorithmic mappings and fixed points | Missing | |
-| 5.4 Continuity and semicontinuity | Missing | |
+| 5.4 Continuity and semicontinuity | **Exact** | [`SetLimitsAlong.lean`](RockafellarWets/Chapter5/SetLimitsAlong.lean) restates the Definition 4.1 limits along an arbitrary index filter; [`Semicontinuity.lean`](RockafellarWets/Chapter5/Semicontinuity.lean) defines formula 5(1) along the full neighborhood filter, defines osc, isc, and continuity both absolutely and relative to a set, and proves the equalities the book records immediately afterwards: `lim sup = S(x̄)` under osc, closedness of `S(x̄)` under osc, the closed-valued equality form of isc, and that isc at a point of the domain puts a whole neighborhood inside the domain. |
 | 5.5 Profile mappings | Missing | |
 | 5.6 Criteria for semicontinuity at a point | Missing | |
 | 5.7 Characterizations of semicontinuity | Missing | |
