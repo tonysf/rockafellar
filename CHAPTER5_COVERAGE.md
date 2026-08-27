@@ -4,16 +4,20 @@ This ledger tracks Chapter 5 of Rockafellar--Wets, *Set-Valued Mappings*,
 result by result. `Exact` means that every substantive mathematical clause is
 available under the project's stated finite-dimensional real-space
 assumptions. `Adapted` records a mathematically necessary change to a printed
-statement, together with a formal explanation or counterexample. `Missing`
-means that no result-specific API has yet been integrated.
+statement, together with a formal explanation or counterexample. `Partial`
+records a sound API for only part of the printed result, with the remaining
+clauses named. `Missing` means that no result-specific API has yet been
+integrated.
 
-Formalization is under way. The conventions for domains, ranges, graphs, and
-inverses are in place, along with formula 5(1) and Definition 5.4.
+Formalization is under way: the conventions for domains, ranges, graphs, and
+inverses, formula 5(1), Definition 5.4, and the neighborhood and graph
+characterizations of semicontinuity.
 
 | Status | Count |
 | --- | ---: |
 | Exact | 1 |
-| Missing | 58 |
+| Partial | 2 |
+| Missing | 56 |
 | **Total** | **59** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -23,8 +27,8 @@ inverses are in place, along with formula 5(1) and Definition 5.4.
 | 5.3 Algorithmic mappings and fixed points | Missing | |
 | 5.4 Continuity and semicontinuity | **Exact** | [`SetLimitsAlong.lean`](RockafellarWets/Chapter5/SetLimitsAlong.lean) restates the Definition 4.1 limits along an arbitrary index filter; [`Semicontinuity.lean`](RockafellarWets/Chapter5/Semicontinuity.lean) defines formula 5(1) along the full neighborhood filter, defines osc, isc, and continuity both absolutely and relative to a set, and proves the equalities the book records immediately afterwards: `lim sup = S(x̄)` under osc, closedness of `S(x̄)` under osc, the closed-valued equality form of isc, and that isc at a point of the domain puts a whole neighborhood inside the domain. |
 | 5.5 Profile mappings | Missing | |
-| 5.6 Criteria for semicontinuity at a point | Missing | |
-| 5.7 Characterizations of semicontinuity | Missing | |
+| 5.6 Criteria for semicontinuity at a point | **Partial** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves the neighborhood criteria (a) and (b) in the book's `X ∩ V ∩ S⁻¹(W)` form. The sequential clauses (c) and (d) are not yet exposed: they need the cluster description of 4.19 transported from `atTop` to the neighborhood filter. |
+| 5.7 Characterizations of semicontinuity | **Partial** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves (a) in full -- osc everywhere is closedness of `gph S`, and `S` is osc exactly when `S⁻¹` is -- and (c) in both the absolute form (`S⁻¹(O)` open for open `O`) and the relative form. Clause (b), the compact-preimage criterion for closed-valued mappings, is not yet exposed. |
 | 5.8 Feasible-set mappings | Missing | |
 | 5.9 Inner semicontinuity from convexity | Missing | |
 | 5.10 Parameterized convex constraints | Missing | |
