@@ -34,7 +34,7 @@ correct statement in context.
     horizon, cosmic, and total limits; convergence under operations;
     quantitative set distances; hyperspace metrics; compactness; and
     separability.
-  - Chapter 5, *Set-Valued Mappings*, through Proposition 5.29: domains, ranges,
+  - Chapter 5, *Set-Valued Mappings*, through Exercise 5.30: domains, ranges,
     graphs, and inverses; set limits along an arbitrary index filter; outer
     and inner semicontinuity, with their neighborhood, sequential, graph, and
     open-preimage characterizations; profile, feasible-set, and convex
@@ -42,8 +42,9 @@ correct statement in context.
     local boundedness, level boundedness, the horizon mapping, the continuity
     criteria for single-valued and locally bounded mappings, optimal-set
     mappings, projections, perturbed mappings, the closedness and horizon
-    criteria for images, and the total-continuity section, including horizon
-    and cosmic set limits along an arbitrary index filter.
+    criteria for images, the total-continuity section, including horizon
+    and cosmic set limits along an arbitrary index filter, and the convergence
+    of images of converging sets.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -51,13 +52,14 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: 23 exact, two
+  - the Chapter 5 ledger classifies all 59 numbered results: 24 exact, two
     documented adaptations, and one partial so far, consecutive from 5.4
-    through 5.29, covering formula 5(1), Definition 5.4, the characterizations
+    through 5.30, covering formula 5(1), Definition 5.4, the characterizations
     of semicontinuity, the whole local-boundedness section, optimal-set
     mappings, the projection half of 5.23, the closedness and horizon criteria
-    for images, and cosmic and total continuity -- where the inner condition
-    printed in 5.27 is shown to be false and corrected against 4.20.
+    for images, cosmic and total continuity -- where the inner condition
+    printed in 5.27 is shown to be false and corrected against 4.20 -- and the
+    images of converging sets.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,

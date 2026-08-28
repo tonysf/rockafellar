@@ -175,6 +175,10 @@ totally to `S(x̄)` as `x → x̄`. -/
 def SvTotallyContinuousAt (S : E → Set F) (x : E) : Prop :=
   TotalConvergesAlong (nhds x) S (S x)
 
+/-- **Definition 5.28**, set-wide form: `S` is totally continuous when it is
+totally continuous at every point, as `SvContinuous` is for 5.4. -/
+def SvTotallyContinuous (S : E → Set F) : Prop := ∀ x, SvTotallyContinuousAt S x
+
 /-- **Definition 5.28**: `S` is totally outer semicontinuous at `x̄` when at
 least `lim sup S(x) ⊂ S(x̄)` and `lim sup∞ S(x) ⊂ S(x̄)∞`. -/
 def SvTotallyOscAt (S : E → Set F) (x : E) : Prop :=
