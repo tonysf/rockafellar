@@ -44,3 +44,4 @@ import RockafellarWets.Chapter5.ContinuousVersusUniform
 import RockafellarWets.Chapter5.GraphicalFromUniform
 import RockafellarWets.Chapter5.ArzelaAscoli
 import RockafellarWets.Chapter5.MonotoneUniformConvergence
+import RockafellarWets.Chapter5.MetricConvergence
