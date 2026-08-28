@@ -150,6 +150,40 @@ theorem svOsc_svInv_iff {S : E → Set F} : SvOsc (svInv S) ↔ SvOsc S := by
 
 end GraphCharacterization
 
+section SubtypeNeighborhoods
+
+variable {E : Type*} [TopologicalSpace E]
+
+/-- The bridge between the book's relative topology on a set `X` and the
+subspace topology on `↥X`: a set `A` is a neighborhood of `x` relative to `X`
+exactly when its trace `X ↓∩ A` is a neighborhood of `x` in `↥X`.
+
+The book's `intₓ` and `clₓ` are therefore the ordinary interior and closure
+in `↥X`, which is what lets Mathlib's absolute `IsNowhereDense` and
+`IsMeagre` be used for the relative notions of Section J. -/
+theorem preimage_val_mem_nhds_iff {X A : Set E} {x : E} (hx : x ∈ X) :
+    X ↓∩ A ∈ nhds (⟨x, hx⟩ : X) ↔ A ∈ nhdsWithin x X := by
+  rw [nhds_subtype_eq_comap_nhdsWithin]
+  refine ⟨fun hmem ↦ ?_, fun h ↦ Filter.preimage_mem_comap h⟩
+  obtain ⟨V, hV, hsub⟩ := hmem
+  filter_upwards [hV, self_mem_nhdsWithin] with y hyV hyX
+  exact hsub (show (⟨y, hyX⟩ : X) ∈ Subtype.val ⁻¹' V from hyV)
+
+/-- The counterpart of `isClosed_preimage_val` for open sets, in the pointwise
+form supplied by the relative criteria of 5.7(c). -/
+theorem isOpen_preimage_val_of_eventually {X A : Set E}
+    (h : ∀ x ∈ X, x ∈ A → ∀ᶠ y in nhdsWithin x X, y ∈ A) : IsOpen (X ↓∩ A) := by
+  rw [isOpen_iff_mem_nhds]
+  rintro ⟨x, hx⟩ hxA
+  exact (preimage_val_mem_nhds_iff hx).2 (h x hx hxA)
+
+/-- Relative closure is closure in `↥X`. -/
+theorem mem_closure_preimage_val {X A : Set E} {x : E} (hx : x ∈ X) :
+    (⟨x, hx⟩ : X) ∈ closure (X ↓∩ A) ↔ x ∈ closure (X ∩ A) := by
+  rw [closure_subtype, Subtype.image_preimage_coe, inter_comm]
+
+end SubtypeNeighborhoods
+
 section OpenPreimageCharacterization
 
 variable {E F : Type*} [TopologicalSpace E] [TopologicalSpace F]
@@ -185,6 +219,15 @@ theorem svIscOn_iff_eventually_svPreimage {S : E → Set F} {X : Set E} :
     have hev := h O hOopen x hx ⟨u, hu, huO⟩
     filter_upwards [hev] with y hy
     exact hy.imp fun v hv ↦ ⟨hv.1, hOW hv.2⟩
+
+/-- **Theorem 5.7(c)** in the subtype form that matches 5.7(b): inner
+semicontinuity relative to `X` makes the inverse image of every open set open
+relative to `X`. -/
+theorem SvIscOn.isOpen_svPreimage {S : E → Set F} {X : Set E}
+    (h : SvIscOn S X) {O : Set F} (hO : IsOpen O) :
+    IsOpen (X ↓∩ svPreimage S O) :=
+  isOpen_preimage_val_of_eventually
+    (svIscOn_iff_eventually_svPreimage.1 h O hO)
 
 end OpenPreimageCharacterization
 
