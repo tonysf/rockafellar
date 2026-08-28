@@ -13,6 +13,12 @@ The image `S(V) = ⋃ {S(x) | x ∈ V}` of a set under a set-valued mapping is
 introduced here, since Chapter 5 has not needed it before.  Note that local
 boundedness is not a nonemptiness condition: at a point outside `cl(dom S)`
 it holds vacuously, because a whole neighborhood there has empty image.
+
+Theorem 5.19 closes the file: under local boundedness, outer semicontinuity
+at `x̄` is the same as closedness of `S(x̄)` together with the property that
+every open set containing `S(x̄)` also contains `S(V)` for some neighborhood
+`V` of `x̄`.  Only one half of that equivalence uses local boundedness, and
+the two halves are recorded separately.
 -/
 
 import Mathlib.Analysis.Normed.Module.Basic
@@ -211,8 +217,10 @@ section InverseBoundedness
 variable {E F : Type*} [NormedAddCommGroup E]
 variable [NormedAddCommGroup F] [ProperSpace F]
 
-/-- An unbounded set carries a sequence whose norms diverge. -/
-private theorem exists_seq_norm_atTop {A : Set E} (h : ¬ IsBounded A) :
+/-- An unbounded set carries a sequence whose norms diverge.  This is the
+standard way to turn a failure of boundedness into a sequence, and 5.18 uses
+it again. -/
+theorem exists_seq_mem_norm_atTop_of_not_isBounded {A : Set E} (h : ¬ IsBounded A) :
     ∃ a : ℕ → E, (∀ n, a n ∈ A) ∧ Tendsto (fun n ↦ ‖a n‖) atTop atTop := by
   rw [isBounded_iff_subset_closedBall (0 : E)] at h
   push_neg at h
@@ -260,7 +268,7 @@ theorem svLocallyBounded_svInv_iff {S : E → Set F} :
     linarith [hnorm n]
   · intro h B hB
     by_contra hnot
-    obtain ⟨xs, hxsA, hxsdiv⟩ := exists_seq_norm_atTop hnot
+    obtain ⟨xs, hxsA, hxsdiv⟩ := exists_seq_mem_norm_atTop_of_not_isBounded hnot
     choose us husB husmem using fun n ↦ mem_svImage.1 (hxsA n)
     have hdiv := h xs us husmem hxsdiv
     obtain ⟨r, hr⟩ := (isBounded_iff_subset_closedBall (0 : F)).1 hB
@@ -270,5 +278,82 @@ theorem svLocallyBounded_svInv_iff {S : E → Set F} :
     linarith
 
 end InverseBoundedness
+
+section OuterSemicontinuity
+
+variable {E F : Type*} [TopologicalSpace E] [PseudoMetricSpace F]
+
+/-- The sufficiency half of **Theorem 5.19**, which needs no local
+boundedness: if `S(x̄)` is closed and every open set around it swallows the
+image of a whole neighborhood of `x̄`, then `S` is osc at `x̄`.
+
+A point `ū` of the outer limit outside `S(x̄)` is separated from the closed
+set `S(x̄)` by a ball, and the complement of that ball is an open set that the
+hypothesis makes eventually contain the values -- contradicting that `ū` is
+approached frequently. -/
+theorem svOscAt_of_forall_isOpen {S : E → Set F} {x : E}
+    (hclosed : IsClosed (S x))
+    (hcond : ∀ O : Set F, IsOpen O → S x ⊆ O → ∃ V ∈ nhds x, svImage S V ⊆ O) :
+    SvOscAt S x := by
+  intro u hu
+  by_contra huS
+  obtain ⟨δ, hδ, hδsub⟩ := Metric.isOpen_iff.1 hclosed.isOpen_compl u huS
+  have hε : 0 < δ / 2 := by positivity
+  have hSO : S x ⊆ (closedBall u (δ / 2))ᶜ := by
+    intro z hz hzball
+    exact hδsub (mem_ball.2 (lt_of_le_of_lt (mem_closedBall.1 hzball) (by linarith))) hz
+  obtain ⟨V, hV, hVO⟩ := hcond _ isClosed_closedBall.isOpen_compl hSO
+  obtain ⟨y, ⟨z, hzS, hzball⟩, hyV⟩ :=
+    ((hu (ball u (δ / 2)) (ball_mem_nhds u hε)).and_eventually
+      (Filter.eventually_mem_set.2 hV)).exists
+  exact hVO (mem_svImage.2 ⟨y, hyV, hzS⟩)
+    (mem_closedBall.2 (mem_ball.1 hzball).le)
+
+variable [ProperSpace F]
+
+/-- The necessity half of **Theorem 5.19**: an outer semicontinuous mapping
+that is locally bounded at `x̄` pushes a whole neighborhood of `x̄` into any
+open set containing `S(x̄)`.
+
+Were that to fail, values outside `O` would be met frequently; local
+boundedness confines them to a bounded set, so they are met frequently inside
+a compact subset of `Oᶜ`, and the compact extraction of `SetLimitsAlong`
+produces a point of the outer limit there.  Outer semicontinuity would place
+that point in `S(x̄) ⊆ O`. -/
+theorem SvOscAt.exists_nhds_svImage_subset {S : E → Set F} {x : E}
+    (hlb : SvLocallyBoundedAt S x) (hosc : SvOscAt S x) {O : Set F}
+    (hO : IsOpen O) (hSO : S x ⊆ O) : ∃ V ∈ nhds x, svImage S V ⊆ O := by
+  by_contra hcon
+  push_neg at hcon
+  obtain ⟨V₀, hV₀, hbdd⟩ := hlb
+  have hfreq : ∃ᶠ y in nhds x, (S y ∩ Oᶜ).Nonempty := by
+    rw [Filter.frequently_iff]
+    intro U hU
+    obtain ⟨v, hv, hvO⟩ := Set.not_subset.1 (hcon U hU)
+    obtain ⟨y, hyU, hyv⟩ := mem_svImage.1 hv
+    exact ⟨y, hyU, ⟨v, hyv, hvO⟩⟩
+  have hKcompact : IsCompact (closure (svImage S V₀) ∩ Oᶜ) :=
+    hbdd.isCompact_closure.inter_right hO.isClosed_compl
+  have hfreq' : ∃ᶠ y in nhds x, (S y ∩ (closure (svImage S V₀) ∩ Oᶜ)).Nonempty := by
+    refine (hfreq.and_eventually (Filter.eventually_mem_set.2 hV₀)).mono ?_
+    rintro y ⟨⟨v, hvS, hvO⟩, hyV₀⟩
+    exact ⟨v, hvS, subset_closure (mem_svImage.2 ⟨y, hyV₀, hvS⟩), hvO⟩
+  obtain ⟨v, hvLim, -, hvO⟩ :=
+    outerSetLimitAlong_inter_nonempty_of_frequently hKcompact hfreq'
+  exact hvO (hSO (hosc hvLim))
+
+/-- **Theorem 5.19.**  At a point of local boundedness, outer semicontinuity
+is equivalent to `S(x̄)` being closed together with the neighborhood condition
+`S(V) ⊂ O` for every open `O ⊃ S(x̄)`. -/
+theorem svOscAt_iff_of_svLocallyBoundedAt {S : E → Set F} {x : E}
+    (hlb : SvLocallyBoundedAt S x) :
+    SvOscAt S x ↔
+      IsClosed (S x) ∧
+        ∀ O : Set F, IsOpen O → S x ⊆ O → ∃ V ∈ nhds x, svImage S V ⊆ O :=
+  ⟨fun hosc ↦ ⟨hosc.isClosed, fun _ hO hSO ↦
+      hosc.exists_nhds_svImage_subset hlb hO hSO⟩,
+    fun h ↦ svOscAt_of_forall_isOpen h.1 h.2⟩
+
+end OuterSemicontinuity
 
 end RW

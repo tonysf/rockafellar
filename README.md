@@ -34,10 +34,12 @@ correct statement in context.
     horizon, cosmic, and total limits; convergence under operations;
     quantitative set distances; hyperspace metrics; compactness; and
     separability.
-  - Chapter 5, *Set-Valued Mappings*, opening sections: domains, ranges,
+  - Chapter 5, *Set-Valued Mappings*, through Theorem 5.19: domains, ranges,
     graphs, and inverses; set limits along an arbitrary index filter; outer
-    and inner semicontinuity; and their neighborhood, graph, and open-preimage
-    characterizations.
+    and inner semicontinuity, with their neighborhood, sequential, graph, and
+    open-preimage characterizations; profile, feasible-set, and convex
+    constraint examples; continuity of distances; uniformity of approximation;
+    local boundedness, level boundedness, and the horizon mapping.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -45,9 +47,10 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: one exact and two
-    partial so far, covering formula 5(1), Definition 5.4, and the
-    neighborhood and graph characterizations of semicontinuity.
+  - the Chapter 5 ledger classifies all 59 numbered results: 16 exact so far,
+    consecutive from 5.4 through 5.19, covering formula 5(1), Definition 5.4,
+    the characterizations of semicontinuity, and the local-boundedness
+    section.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,
