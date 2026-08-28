@@ -14,3 +14,4 @@ import RockafellarWets.Chapter5.FeasibleSets
 import RockafellarWets.Chapter5.ConvexSemicontinuity
 import RockafellarWets.Chapter5.ConvexConstraints
 import RockafellarWets.Chapter5.DistanceCriteria
+import RockafellarWets.Chapter5.UniformSemicontinuity

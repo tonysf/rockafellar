@@ -22,8 +22,8 @@ also stated with sequences.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 8 |
-| Missing | 51 |
+| Exact | 10 |
+| Missing | 49 |
 | **Total** | **59** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -39,8 +39,8 @@ also stated with sequences.
 | 5.9 Inner semicontinuity from convexity | **Exact** | [`ConvexSemicontinuity.lean`](RockafellarWets/Chapter5/ConvexSemicontinuity.lean) defines convex-valuedness and graph-convexity, proves formula 5(4), and proves all three clauses: (a) in the general relative form with the specializations to `dom S` and to the absolute "in particular" statement `(x̄, u) ∈ int(gph S)`, via 4.15 in one direction and closedness of inner limits with `cl(int C) = cl C` in the other; (b) via 4.32(c) applied to the fibre `{x̄} × IRᵐ` intersected with `gph S`, the non-separation hypothesis being interiority of `x̄` in `dom S`; (c) via the inner-limit half of 4.30, both absolutely and relative to a set. |
 | 5.10 Parameterized convex constraints | **Exact** | [`ConvexConstraints.lean`](RockafellarWets/Chapter5/ConvexConstraints.lean) proves the printed conclusion: a Slater point at `w₀` yields an explicit open neighborhood of `w₀` on which `T` is continuous. The supporting assertions of the Detail are proved too -- closed graph and hence osc everywhere (needing continuity only, no convexity), convexity of each `T(w)`, openness of the strictly feasible set, and the interior identity `int T(w) = {x | fᵢ(x,w) < 0}` that the book takes from 2.34. Since 2.34 is not available in this project's Chapter 2, inner semicontinuity is obtained instead from density of the strictly feasible set in `T(w)`, proved directly from the Slater segment; the interior identity is then derived from the same computation rather than assumed. |
 | 5.11 Continuity of distances | **Exact** | [`DistanceCriteria.lean`](RockafellarWets/Chapter5/DistanceCriteria.lean) proves (a), (b), and (c) relative to a set `X` and in the absolute case, with distances taken as `Metric.infEDist` so that `d(u, ∅) = ∞` as the book requires. Clause (b) needs neither closed-valuedness nor properness; only (a) uses closedness of `S(x̄)` and compactness of closed balls, the latter through the new filter-native compact extraction `outerSetLimitAlong_inter_nonempty_of_frequently` in [`SetLimitsAlong.lean`](RockafellarWets/Chapter5/SetLimitsAlong.lean), which replaces the subsequence step that 4.7 supplies only for sequences. The printed clause (b) reads `u → d(u, S(x))`; this is a misprint for `x → d(u, S(x))`, as clauses (a) and (c) make clear, and the corrected reading is what is proved. |
-| 5.12 Uniformity of approximation in semicontinuity | Missing | |
-| 5.13 Uniform continuity | Missing | |
+| 5.12 Uniformity of approximation in semicontinuity | **Exact** | [`UniformSemicontinuity.lean`](RockafellarWets/Chapter5/UniformSemicontinuity.lean) proves (a) and (b) both in the eventual form along `𝓝[X] x̄` and in the book's explicit `∃ V ∈ N(x̄), ∀ x ∈ X ∩ V` form. The book's derivation from 4.10 does not transfer, since this project's 4.10 proofs extract convergent subsequences and no subsequence is available along a neighborhood filter; (a) instead uses the compact extraction `outerSetLimitAlong_inter_nonempty_of_frequently` applied to `ρIB \ thickening ε (S x̄)`, and (b) a finite subcover of the compact set `S(x̄) ∩ ρIB`. Following Chapter 4, `S + εIB` is the open thickening; the `∀ ε > 0` quantifier makes this equivalent to the closed one. |
+| 5.13 Uniform continuity | **Exact** | [`UniformSemicontinuity.lean`](RockafellarWets/Chapter5/UniformSemicontinuity.lean) proves the uniform inclusion over a compact `X`, following the book's guide: both clauses of 5.12 at each point of `X` give an open cover, and a Lebesgue number for it is the required `δ`. Two hypotheses of the printed statement are shown to be unnecessary rather than assumed -- `X ⊂ dom S` is not used, since outer semicontinuity already drives the nearby images out of every bounded ball where `S(x̄)` is empty, and closed-valuedness is automatic from outer semicontinuity relative to `X`. The inner clause of 5.12 must be invoked at the enlarged radius `ρ + ε`, since the intermediate point it produces need not lie in `ρIB`. |
 | 5.14 Local boundedness | Missing | |
 | 5.15 Boundedness of images | Missing | |
 | 5.16 Local boundedness of inverses | Missing | |
