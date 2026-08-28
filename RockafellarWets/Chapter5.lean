@@ -28,3 +28,6 @@ import RockafellarWets.Chapter5.HorizonSetLimitsAlong
 import RockafellarWets.Chapter5.CosmicSemicontinuity
 import RockafellarWets.Chapter5.TotalContinuity
 import RockafellarWets.Chapter5.ImageConvergence
+import RockafellarWets.Chapter5.GraphicalLimits
+import RockafellarWets.Chapter5.GraphicalLimitFormulas
+import RockafellarWets.Chapter5.GraphicalUniformity
