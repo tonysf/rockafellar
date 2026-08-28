@@ -33,3 +33,6 @@ import RockafellarWets.Chapter5.GraphicalLimitFormulas
 import RockafellarWets.Chapter5.GraphicalUniformity
 import RockafellarWets.Chapter5.GraphicalCompactness
 import RockafellarWets.Chapter5.ProjectionGraphicalConvergence
+import RockafellarWets.Chapter5.GeneralizedEquations
+import RockafellarWets.Chapter5.Equicontinuity
+import RockafellarWets.Chapter5.GraphicalPointwise
