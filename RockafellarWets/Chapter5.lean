@@ -50,3 +50,4 @@ import RockafellarWets.Chapter5.MappingOperations
 import RockafellarWets.Chapter5.ConvergingImages
 import RockafellarWets.Chapter5.PositiveHullConvergence
 import RockafellarWets.Chapter5.GenericContinuity
+import RockafellarWets.Chapter5.ContinuousSelections

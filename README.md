@@ -34,7 +34,7 @@ correct statement in context.
     horizon, cosmic, and total limits; convergence under operations;
     quantitative set distances; hyperspace metrics; compactness; and
     separability.
-  - Chapter 5, *Set-Valued Mappings*, through Corollary 5.56: domains, ranges,
+  - Chapter 5, *Set-Valued Mappings*, through Example 5.57: domains, ranges,
     graphs, and inverses; set limits along an arbitrary index filter; outer
     and inner semicontinuity, with their neighborhood, sequential, graph, and
     open-preimage characterizations; profile, feasible-set, and convex
@@ -52,8 +52,9 @@ correct statement in context.
     convergence of mappings with their distance function descriptions, the
     theorems relating the two to each other and to graphical convergence, the
     set-valued Arzelà--Ascoli theorem, the set-valued Dini theorem for
-    monotone sequences, and the generic continuity of semicontinuous mappings
-    and of extended-real-valued functions.
+    monotone sequences, the generic continuity of semicontinuous mappings and
+    of extended-real-valued functions, and the continuous selections given by
+    projections.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -61,9 +62,9 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: 45 exact, seven
+  - the Chapter 5 ledger classifies all 59 numbered results: 46 exact, seven
     documented adaptations, and one partial so far, consecutive from 5.4
-    through 5.56, covering formula 5(1), Definition 5.4, the characterizations
+    through 5.57, covering formula 5(1), Definition 5.4, the characterizations
     of semicontinuity, the whole local-boundedness section, optimal-set
     mappings, the projection half of 5.23, the closedness and horizon criteria
     for images, cosmic and total continuity -- where the inner condition
@@ -81,7 +82,11 @@ correct statement in context.
     convergence its own proof uses -- and the generic continuity theorems 5.55
     and 5.56, whose relative topology on `X` is taken to be the subspace
     topology on `↥X`, where the book's nowhere dense and meager in `X` are
-    Mathlib's own predicates.
+    Mathlib's own predicates, and the continuous selections of 5.57 with the
+    pointwise selection remark that precedes them.  What is left of Chapter 5
+    is the three introductory examples 5.1--5.3 and the two results 5.58 and
+    5.59 that rest on Michael's selection theorem, which Mathlib does not
+    have.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,
