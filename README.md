@@ -34,9 +34,10 @@ correct statement in context.
     horizon, cosmic, and total limits; convergence under operations;
     quantitative set distances; hyperspace metrics; compactness; and
     separability.
-  - Chapter 5, *Set-Valued Mappings*, through Example 5.57: domains, ranges,
-    graphs, and inverses; set limits along an arbitrary index filter; outer
-    and inner semicontinuity, with their neighborhood, sequential, graph, and
+  - Chapter 5, *Set-Valued Mappings*, complete apart from the three
+    introductory examples 5.1--5.3: domains, ranges, graphs, and inverses;
+    set limits along an arbitrary index filter; outer and inner
+    semicontinuity, with their neighborhood, sequential, graph, and
     open-preimage characterizations; profile, feasible-set, and convex
     constraint examples; continuity of distances; uniformity of approximation;
     local boundedness, level boundedness, the horizon mapping, the continuity
@@ -53,8 +54,10 @@ correct statement in context.
     theorems relating the two to each other and to graphical convergence, the
     set-valued Arzelà--Ascoli theorem, the set-valued Dini theorem for
     monotone sequences, the generic continuity of semicontinuous mappings and
-    of extended-real-valued functions, and the continuous selections given by
-    projections.
+    of extended-real-valued functions, the continuous selections given by
+    projections, and Michael's selection theorem with the countable Michael
+    representations of 5.58 and the extension of prescribed selections of
+    5.59.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -62,9 +65,9 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: 46 exact, seven
-    documented adaptations, and one partial so far, consecutive from 5.4
-    through 5.57, covering formula 5(1), Definition 5.4, the characterizations
+  - the Chapter 5 ledger classifies all 59 numbered results: 47 exact, eight
+    documented adaptations, and one partial, consecutive from 5.4 through
+    5.59, covering formula 5(1), Definition 5.4, the characterizations
     of semicontinuity, the whole local-boundedness section, optimal-set
     mappings, the projection half of 5.23, the closedness and horizon criteria
     for images, cosmic and total continuity -- where the inner condition
@@ -83,10 +86,14 @@ correct statement in context.
     and 5.56, whose relative topology on `X` is taken to be the subspace
     topology on `↥X`, where the book's nowhere dense and meager in `X` are
     Mathlib's own predicates, and the continuous selections of 5.57 with the
-    pointwise selection remark that precedes them.  What is left of Chapter 5
-    is the three introductory examples 5.1--5.3 and the two results 5.58 and
-    5.59 that rest on Michael's selection theorem, which Mathlib does not
-    have.
+    pointwise selection remark that precedes them -- and Michael's selection
+    theorem, whose partition-of-unity core turns out to be in Mathlib already
+    under another name, so that the σ-compactness of `dom S` printed in 5.58
+    is dropped, Stone's theorem supplying more than the book's construction
+    extracts by hand, while the closed-valuedness *omitted* from 5.59 is
+    added, the mapping its proof builds inheriting its values from `S`.  What
+    is left of Chapter 5 is the three introductory examples 5.1--5.3 and the
+    remaining clauses of the partial 5.23.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,
