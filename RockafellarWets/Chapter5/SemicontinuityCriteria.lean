@@ -182,7 +182,40 @@ theorem mem_closure_preimage_val {X A : Set E} {x : E} (hx : x ∈ X) :
     (⟨x, hx⟩ : X) ∈ closure (X ↓∩ A) ↔ x ∈ closure (X ∩ A) := by
   rw [closure_subtype, Subtype.image_preimage_coe, inter_comm]
 
+/-- An eventuality along the neighborhood filter of a point of the subspace
+`↥X` is the relative eventuality along `𝓝[X] x`, which is
+`preimage_val_mem_nhds_iff` applied to the set the predicate cuts out. -/
+theorem eventually_nhds_subtype_iff {X : Set E} {x : E} (hx : x ∈ X)
+    {p : E → Prop} :
+    (∀ᶠ y : X in nhds ⟨x, hx⟩, p ↑y) ↔ ∀ᶠ z in nhdsWithin x X, p z :=
+  preimage_val_mem_nhds_iff (A := {z | p z}) hx
+
 end SubtypeNeighborhoods
+
+section SubtypeSemicontinuity
+
+variable {E F : Type*} [TopologicalSpace E] [TopologicalSpace F]
+
+/-- Section J's convention in force for semicontinuity: inner semicontinuity
+relative to `X` at a point of `X` is *absolute* inner semicontinuity of the
+restriction to the subspace `↥X`.
+
+The relative and the subspace notions are therefore interchangeable, and a
+construction that is easier to run with no `WithinAt` bookkeeping -- Michael's
+selection theorem is one -- may be run on `↥X` and transported back. -/
+theorem svIscAt_subtype_iff {S : E → Set F} {X : Set E} {x : E} (hx : x ∈ X) :
+    SvIscAt (fun y : X ↦ S ↑y) ⟨x, hx⟩ ↔ SvIscWithinAt S X x :=
+  ⟨fun h _ hu W hW ↦ (eventually_nhds_subtype_iff hx).1 (h hu W hW),
+    fun h _ hu W hW ↦ (eventually_nhds_subtype_iff hx).2 (h hu W hW)⟩
+
+/-- The pointwise correspondence of `svIscAt_subtype_iff`, quantified over
+`X`. -/
+theorem svIsc_subtype_iff {S : E → Set F} {X : Set E} :
+    SvIsc (fun y : X ↦ S ↑y) ↔ SvIscOn S X :=
+  ⟨fun h x hx ↦ (svIscAt_subtype_iff hx).1 (h ⟨x, hx⟩),
+    fun h y ↦ (svIscAt_subtype_iff y.2).2 (h y y.2)⟩
+
+end SubtypeSemicontinuity
 
 section OpenPreimageCharacterization
 
