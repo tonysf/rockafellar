@@ -23,3 +23,4 @@ import RockafellarWets.Chapter5.OptimalSetMappings
 import RockafellarWets.Chapter5.ProjectionMappings
 import RockafellarWets.Chapter5.PerturbedMappings
 import RockafellarWets.Chapter5.ClosedImages
+import RockafellarWets.Chapter5.HorizonImages
