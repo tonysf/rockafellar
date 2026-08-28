@@ -501,6 +501,13 @@ def SvEventuallyLocallyBoundedAt (Fs : ℕ → E → F) (x : E) : Prop :=
   ∃ V ∈ nhds x, ∃ ρ : ℝ, ∀ᶠ n in atTop, ∀ y ∈ V, ‖Fs n y‖ ≤ ρ
 
 omit [NormedSpace ℝ E] in
+/-- The unfolded form, for negating the condition. -/
+theorem svEventuallyLocallyBoundedAt_iff {Fs : ℕ → E → F} {x : E} :
+    SvEventuallyLocallyBoundedAt Fs x ↔
+      ∃ V ∈ nhds x, ∃ ρ : ℝ, ∀ᶠ n in atTop, ∀ y ∈ V, ‖Fs n y‖ ≤ ρ :=
+  Iff.rfl
+
+omit [NormedSpace ℝ E] in
 /-- **Exercise 5.39**, final remark: for an eventually locally bounded
 sequence, asymptotic equi-outer semicontinuity is the traditional
 `ε`-statement, with no `ρ`. -/

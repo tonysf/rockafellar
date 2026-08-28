@@ -38,3 +38,6 @@ import RockafellarWets.Chapter5.GeneralizedEquations
 import RockafellarWets.Chapter5.Equicontinuity
 import RockafellarWets.Chapter5.GraphicalPointwise
 import RockafellarWets.Chapter5.ContinuousUniformConvergence
+import RockafellarWets.Chapter5.GraphicalContinuousConvergence
+import RockafellarWets.Chapter5.ContinuousVersusUniform
+import RockafellarWets.Chapter5.GraphicalFromUniform

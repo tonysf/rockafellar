@@ -78,8 +78,12 @@ variable {E : Type*} [TopologicalSpace E]
 /-- A sequence of points converging to `x` can be redistributed along an
 arbitrary index sequence, filling the unused indices with `x` itself.  Unlike
 in 5.33 the index sequence need not be injective, so `Function.extend` is
-unfolded directly. -/
-private theorem tendsto_extend_index {m : ℕ → ℕ} {y : ℕ → E} {x : E}
+unfolded directly.
+
+This is the standard repair for a choice made only at *some* late index for
+each `k`: the redistributed sequence lands on some bad argument for the same
+bad index, which is all a contradiction needs.  It is used again in 5.45. -/
+theorem tendsto_extend_index {m : ℕ → ℕ} {y : ℕ → E} {x : E}
     (hy : Tendsto y atTop (nhds x)) :
     Tendsto (Function.extend m y (fun _ ↦ x)) atTop (nhds x) := by
   classical
