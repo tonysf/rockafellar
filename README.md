@@ -49,9 +49,10 @@ correct statement in context.
     set, uniformity criteria, projection example and compactness theorem, the
     approximation of generalized equations, the equicontinuity properties that
     reconcile graphical with pointwise convergence, continuous and uniform
-    convergence of mappings, the theorems relating the two to each other and
-    to graphical convergence, the set-valued Arzelà--Ascoli theorem, and the
-    set-valued Dini theorem for monotone sequences.
+    convergence of mappings with their distance function descriptions, the
+    theorems relating the two to each other and to graphical convergence, the
+    set-valued Arzelà--Ascoli theorem, and the set-valued Dini theorem for
+    monotone sequences.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -59,8 +60,8 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: 38 exact, five
-    documented adaptations, and two partial so far, consecutive from 5.4
+  - the Chapter 5 ledger classifies all 59 numbered results: 39 exact, five
+    documented adaptations, and one partial so far, consecutive from 5.4
     through 5.48, covering formula 5(1), Definition 5.4, the characterizations
     of semicontinuity, the whole local-boundedness section, optimal-set
     mappings, the projection half of 5.23, the closedness and horizon criteria
