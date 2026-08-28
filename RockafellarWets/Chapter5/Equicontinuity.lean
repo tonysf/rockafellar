@@ -96,6 +96,20 @@ def SvEquicontinuousAt (Sseq : ℕ → E → Set F) (x : E) : Prop :=
 def SvAsymptoticallyEquicontinuousAt (Sseq : ℕ → E → Set F) (x : E) : Prop :=
   SvAsymptoticallyEquicontinuousWithinAt Sseq univ x
 
+theorem svAsymptoticallyEquiOscWithinAt_iff {Sseq : ℕ → E → Set F} {X : Set E}
+    {x : E} :
+    SvAsymptoticallyEquiOscWithinAt Sseq X x ↔
+      ∀ ε > 0, ∀ ρ > 0, ∃ V ∈ nhds x, ∀ᶠ n in atTop, ∀ y ∈ V ∩ X,
+        Sseq n y ∩ closedBall 0 ρ ⊆ thickening ε (Sseq n x) :=
+  Iff.rfl
+
+theorem svAsymptoticallyEquiIscWithinAt_iff {Sseq : ℕ → E → Set F} {X : Set E}
+    {x : E} :
+    SvAsymptoticallyEquiIscWithinAt Sseq X x ↔
+      ∀ ε > 0, ∀ ρ > 0, ∃ V ∈ nhds x, ∀ᶠ n in atTop, ∀ y ∈ V ∩ X,
+        Sseq n x ∩ closedBall 0 ρ ⊆ thickening ε (Sseq n y) :=
+  Iff.rfl
+
 theorem svEquiOscAt_iff {Sseq : ℕ → E → Set F} {x : E} :
     SvEquiOscAt Sseq x ↔
       ∀ ε > 0, ∀ ρ > 0, ∃ V ∈ nhds x, ∀ n, ∀ y ∈ V,

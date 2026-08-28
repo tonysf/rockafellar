@@ -19,10 +19,16 @@ condition, and the remaining implication (b) + (c) ⇒ (a) is the book's
 contradiction argument, the only place where compactness of bounded sets in
 the target is used.  Closed-valuedness, which the printed statement assumes,
 is nowhere needed.
+
+Everything is proved relative to a set `X`, since that is the form 5.44 uses;
+the printed statement is the case `X = IRⁿ`.  Relativizing costs one extra
+hypothesis, `x̄ ∈ X`, and it is needed only for the easy inclusions: the
+constant sequence at `x̄` has to be an admissible approaching sequence for the
+pointwise limits to sit inside the relative graphical ones.
 -/
 
 import RockafellarWets.Chapter5.Equicontinuity
-import RockafellarWets.Chapter5.GraphicalLimitFormulas
+import RockafellarWets.Chapter5.RelativeGraphicalConvergence
 
 open Bornology Filter Metric Set Topology
 
@@ -31,19 +37,19 @@ namespace RW
 section Collapse
 
 variable {E F : Type*} [PseudoMetricSpace E] [NormedAddCommGroup F]
-variable {Sseq : ℕ → E → Set F} {S : E → Set F} {x : E}
+variable {Sseq : ℕ → E → Set F} {S : E → Set F} {X : Set E} {x : E}
 
-/-- **Theorem 5.40**, inner half: under asymptotic equi-outer semicontinuity
-the graphical inner limit at `x̄` is the pointwise one. -/
-theorem graphicalInnerLimit_eq_pointwiseInnerLimit
-    (h : SvAsymptoticallyEquiOscAt Sseq x) :
-    graphicalInnerLimit Sseq x = pointwiseInnerLimit Sseq x := by
+/-- **Theorem 5.40**, inner half, relative to `X`: under asymptotic equi-outer
+semicontinuity the relative graphical inner limit at `x̄` is the pointwise
+one. -/
+theorem graphicalInnerLimitWithin_eq_pointwiseInnerLimit (hx : x ∈ X)
+    (h : SvAsymptoticallyEquiOscWithinAt Sseq X x) :
+    graphicalInnerLimitWithin Sseq X x = pointwiseInnerLimit Sseq x := by
   refine Subset.antisymm (fun u hu ↦ ?_)
-    (pointwiseInnerLimit_subset_graphicalInnerLimit Sseq x)
-  obtain ⟨y, v, hv, hy, hvu⟩ := mem_graphicalInnerLimit_iff.1 hu
+    (pointwiseInnerLimit_subset_graphicalInnerLimitWithin Sseq hx)
+  obtain ⟨y, v, hv, hy, hvu⟩ := (mem_graphicalInnerLimitWithin_iff_exists_seq hx).1 hu
   refine mem_innerSetLimit_iff_eventually_ball.2 fun ε hε ↦ ?_
-  obtain ⟨V, hV, hsub⟩ := svAsymptoticallyEquiOscAt_iff.1 h (ε / 2) (by linarith)
-    (‖u‖ + 1) (by positivity)
+  obtain ⟨V, hV, hsub⟩ := h (ε / 2) (by linarith) (‖u‖ + 1) (by positivity)
   filter_upwards [hv, hsub, hy.eventually_mem hV,
     hvu.eventually_mem (ball_mem_nhds u one_pos),
     hvu.eventually_mem (ball_mem_nhds u (half_pos hε))]
@@ -55,7 +61,7 @@ theorem graphicalInnerLimit_eq_pointwiseInnerLimit
     have h2 : dist (v n) u < 1 := mem_ball.1 hclose1
     linarith
   obtain ⟨w, hwS, hwdist⟩ :=
-    Metric.mem_thickening_iff.1 (hsubn (y n) hyn ⟨hvn, hnorm⟩)
+    Metric.mem_thickening_iff.1 (hsubn (y n) ⟨hyn, hvn.1⟩ ⟨hvn.2, hnorm⟩)
   refine ⟨w, hwS, ?_⟩
   rw [mem_ball, dist_comm]
   have h3 : dist u w ≤ dist u (v n) + dist (v n) w := dist_triangle _ _ _
@@ -64,16 +70,23 @@ theorem graphicalInnerLimit_eq_pointwiseInnerLimit
     exact mem_ball.1 hclose
   linarith
 
-/-- **Theorem 5.40**, outer half. -/
-theorem graphicalOuterLimit_eq_pointwiseOuterLimit
+/-- **Theorem 5.40**, inner half, in the printed absolute form. -/
+theorem graphicalInnerLimit_eq_pointwiseInnerLimit
     (h : SvAsymptoticallyEquiOscAt Sseq x) :
-    graphicalOuterLimit Sseq x = pointwiseOuterLimit Sseq x := by
+    graphicalInnerLimit Sseq x = pointwiseInnerLimit Sseq x := by
+  rw [← graphicalInnerLimitWithin_univ]
+  exact graphicalInnerLimitWithin_eq_pointwiseInnerLimit (mem_univ x) h
+
+/-- **Theorem 5.40**, outer half, relative to `X`. -/
+theorem graphicalOuterLimitWithin_eq_pointwiseOuterLimit (hx : x ∈ X)
+    (h : SvAsymptoticallyEquiOscWithinAt Sseq X x) :
+    graphicalOuterLimitWithin Sseq X x = pointwiseOuterLimit Sseq x := by
   refine Subset.antisymm (fun u hu ↦ ?_)
-    (pointwiseOuterLimit_subset_graphicalOuterLimit Sseq x)
-  obtain ⟨φ, y, v, hφ, hv, hy, hvu⟩ := mem_graphicalOuterLimit_iff.1 hu
+    (pointwiseOuterLimit_subset_graphicalOuterLimitWithin Sseq hx)
+  obtain ⟨φ, y, v, hφ, hyX, hv, hy, hvu⟩ :=
+    (mem_graphicalOuterLimitWithin_iff_exists_subsequence hx).1 hu
   refine mem_outerSetLimit_iff_frequently_ball.2 fun ε hε ↦ ?_
-  obtain ⟨V, hV, hsub⟩ := svAsymptoticallyEquiOscAt_iff.1 h (ε / 2) (by linarith)
-    (‖u‖ + 1) (by positivity)
+  obtain ⟨V, hV, hsub⟩ := h (ε / 2) (by linarith) (‖u‖ + 1) (by positivity)
   have hgoal : ∀ᶠ k in atTop, (Sseq (φ k) x ∩ ball u ε).Nonempty := by
     filter_upwards [hφ.tendsto_atTop.eventually hsub, hy.eventually_mem hV,
       hvu.eventually_mem (ball_mem_nhds u one_pos),
@@ -86,7 +99,7 @@ theorem graphicalOuterLimit_eq_pointwiseOuterLimit
       have h2 : dist (v k) u < 1 := mem_ball.1 hclose1
       linarith
     obtain ⟨w, hwS, hwdist⟩ :=
-      Metric.mem_thickening_iff.1 (hsubk (y k) hyk ⟨hv k, hnorm⟩)
+      Metric.mem_thickening_iff.1 (hsubk (y k) ⟨hyk, hyX k⟩ ⟨hv k, hnorm⟩)
     refine ⟨w, hwS, ?_⟩
     rw [mem_ball, dist_comm]
     have h3 : dist u w ≤ dist u (v k) + dist (v k) w := dist_triangle _ _ _
@@ -96,6 +109,13 @@ theorem graphicalOuterLimit_eq_pointwiseOuterLimit
     linarith
   exact Frequently.filter_mono
     ((frequently_map (m := φ)).2 hgoal.frequently) hφ.tendsto_atTop
+
+/-- **Theorem 5.40**, outer half, in the printed absolute form. -/
+theorem graphicalOuterLimit_eq_pointwiseOuterLimit
+    (h : SvAsymptoticallyEquiOscAt Sseq x) :
+    graphicalOuterLimit Sseq x = pointwiseOuterLimit Sseq x := by
+  rw [← graphicalOuterLimitWithin_univ]
+  exact graphicalOuterLimitWithin_eq_pointwiseOuterLimit (mem_univ x) h
 
 /-- Pointwise convergence at a single point, the notion the book uses in the
 last paragraph of 5.31. -/
@@ -113,22 +133,38 @@ theorem pointwiseConvergesAt_iff :
     exact ⟨Subset.antisymm ((innerSetLimit_subset_outerSetLimit _).trans ho) hi,
       Subset.antisymm ho (hi.trans (innerSetLimit_subset_outerSetLimit _))⟩
 
-/-- **Theorem 5.40**, (a) and (b) give (c). -/
-theorem PointwiseConvergesAt.of_graphicalConvergesAt
-    (ha : SvAsymptoticallyEquiOscAt Sseq x) (hb : GraphicalConvergesAt Sseq S x) :
+/-- **Theorem 5.40**, (a) and (b) give (c), relative to `X`. -/
+theorem PointwiseConvergesAt.of_graphicalConvergesWithinAt (hx : x ∈ X)
+    (ha : SvAsymptoticallyEquiOscWithinAt Sseq X x)
+    (hb : GraphicalConvergesWithinAt Sseq S X x) :
     PointwiseConvergesAt Sseq S x := by
   refine pointwiseConvergesAt_iff.2
-    ⟨?_, hb.2.trans (graphicalInnerLimit_eq_pointwiseInnerLimit ha).subset⟩
-  rw [← graphicalOuterLimit_eq_pointwiseOuterLimit ha]
+    ⟨?_, hb.2.trans (graphicalInnerLimitWithin_eq_pointwiseInnerLimit hx ha).subset⟩
+  rw [← graphicalOuterLimitWithin_eq_pointwiseOuterLimit hx ha]
   exact hb.1
 
-/-- **Theorem 5.40**, (a) and (c) give (b). -/
+/-- **Theorem 5.40**, (a) and (c) give (b), relative to `X`. -/
+theorem GraphicalConvergesWithinAt.of_pointwiseConvergesAt (hx : x ∈ X)
+    (ha : SvAsymptoticallyEquiOscWithinAt Sseq X x)
+    (hc : PointwiseConvergesAt Sseq S x) :
+    GraphicalConvergesWithinAt Sseq S X x := by
+  obtain ⟨ho, hi⟩ := pointwiseConvergesAt_iff.1 hc
+  exact ⟨(graphicalOuterLimitWithin_eq_pointwiseOuterLimit hx ha).subset.trans ho,
+    hi.trans (graphicalInnerLimitWithin_eq_pointwiseInnerLimit hx ha).symm.subset⟩
+
+/-- **Theorem 5.40**, (a) and (b) give (c), in the printed absolute form. -/
+theorem PointwiseConvergesAt.of_graphicalConvergesAt
+    (ha : SvAsymptoticallyEquiOscAt Sseq x) (hb : GraphicalConvergesAt Sseq S x) :
+    PointwiseConvergesAt Sseq S x :=
+  PointwiseConvergesAt.of_graphicalConvergesWithinAt (mem_univ x) ha
+    (graphicalConvergesWithinAt_univ_iff.2 hb)
+
+/-- **Theorem 5.40**, (a) and (c) give (b), in the printed absolute form. -/
 theorem GraphicalConvergesAt.of_pointwiseConvergesAt
     (ha : SvAsymptoticallyEquiOscAt Sseq x) (hc : PointwiseConvergesAt Sseq S x) :
-    GraphicalConvergesAt Sseq S x := by
-  obtain ⟨ho, hi⟩ := pointwiseConvergesAt_iff.1 hc
-  exact ⟨(graphicalOuterLimit_eq_pointwiseOuterLimit ha).subset.trans ho,
-    hi.trans (graphicalInnerLimit_eq_pointwiseInnerLimit ha).symm.subset⟩
+    GraphicalConvergesAt Sseq S x :=
+  graphicalConvergesWithinAt_univ_iff.1
+    (GraphicalConvergesWithinAt.of_pointwiseConvergesAt (mem_univ x) ha hc)
 
 /-- **Theorem 5.40**, the global form: an everywhere asymptotically equi-osc
 sequence converges graphically exactly when it converges pointwise. -/
@@ -145,7 +181,7 @@ end Collapse
 section Converse
 
 variable {E F : Type*} [PseudoMetricSpace E] [NormedAddCommGroup F] [ProperSpace F]
-variable {Sseq : ℕ → E → Set F} {S : E → Set F} {x : E}
+variable {Sseq : ℕ → E → Set F} {S : E → Set F} {X : Set E} {x : E}
 
 /-- **Theorem 5.40**, (b) and (c) give (a).
 
@@ -155,25 +191,26 @@ values are bounded, so a cluster point `ū` of them exists; it lies in the
 graphical outer limit, hence in `S(x̄)` by (b), hence in the pointwise inner
 limit by (c) -- which puts points of `Sν(x̄)` arbitrarily close to it, and so
 to the `uν`. -/
-theorem svAsymptoticallyEquiOscAt_of_graphicalConvergesAt_of_pointwiseConvergesAt
-    (hb : GraphicalConvergesAt Sseq S x) (hc : PointwiseConvergesAt Sseq S x) :
-    SvAsymptoticallyEquiOscAt Sseq x := by
+theorem svAsymptoticallyEquiOscWithinAt_of_graphicalConvergesWithinAt_of_pointwiseConvergesAt
+    (hx : x ∈ X) (hb : GraphicalConvergesWithinAt Sseq S X x)
+    (hc : PointwiseConvergesAt Sseq S x) :
+    SvAsymptoticallyEquiOscWithinAt Sseq X x := by
   by_contra hcon
-  rw [svAsymptoticallyEquiOscAt_iff] at hcon
+  rw [svAsymptoticallyEquiOscWithinAt_iff] at hcon
   push_neg at hcon
   obtain ⟨ε, hε, ρ, hρ, hbad⟩ := hcon
   -- Choose escaping data along shrinking neighborhoods and late indices.
   have hpick : ∀ k : ℕ, ∃ (n : ℕ) (y : E) (u : F), k ≤ n ∧
-      dist y x < ((k : ℝ) + 1)⁻¹ ∧ u ∈ Sseq n y ∧ ‖u‖ ≤ ρ ∧
+      dist y x < ((k : ℝ) + 1)⁻¹ ∧ y ∈ X ∧ u ∈ Sseq n y ∧ ‖u‖ ≤ ρ ∧
         u ∉ thickening ε (Sseq n x) := by
     intro k
     have hδ : (0 : ℝ) < ((k : ℝ) + 1)⁻¹ := by positivity
     obtain ⟨n, hn, y, hyV, hysub⟩ :=
       frequently_atTop.1 (hbad (ball x ((k : ℝ) + 1)⁻¹) (ball_mem_nhds x hδ)) k
     obtain ⟨u, huS, hunot⟩ := not_subset.1 hysub
-    exact ⟨n, y, u, hn, mem_ball.1 hyV, huS.1,
+    exact ⟨n, y, u, hn, mem_ball.1 hyV.1, hyV.2, huS.1,
       by simpa [mem_closedBall_zero_iff] using huS.2, hunot⟩
-  choose ns ys us hns hys huS huρ hunot using hpick
+  choose ns ys us hns hys hysX huS huρ hunot using hpick
   have hnsTop : Tendsto ns atTop atTop := tendsto_atTop_mono hns tendsto_id
   have hysTo : Tendsto ys atTop (nhds x) := by
     rw [tendsto_iff_dist_tendsto_zero]
@@ -185,14 +222,15 @@ theorem svAsymptoticallyEquiOscAt_of_graphicalConvergesAt_of_pointwiseConvergesA
       (fun k ↦ by rw [mem_closedBall_zero_iff]; exact huρ k)
   have hnψ : Tendsto (fun k ↦ ns (ψ k)) atTop atTop := hnsTop.comp hψ.tendsto_atTop
   -- It is in the graphical outer limit, hence in `S(x̄)`.
-  have hbarOuter : ubar ∈ graphicalOuterLimit Sseq x := by
+  have hbarOuter : ubar ∈ graphicalOuterLimitWithin Sseq X x := by
+    rw [← graphicalOuterLimit_svRestrict Sseq hx]
     intro W hW
     obtain ⟨V₁, hV₁, V₂, hV₂, hsub⟩ := mem_nhds_prod_iff.1 hW
     have hev : ∀ᶠ k in atTop,
-        (svGraph (Sseq (ns (ψ k))) ∩ W).Nonempty := by
+        (svGraph (svRestrict (Sseq (ns (ψ k))) X) ∩ W).Nonempty := by
       filter_upwards [(hysTo.comp hψ.tendsto_atTop).eventually_mem hV₁,
         huto.eventually_mem hV₂] with k hk1 hk2
-      exact ⟨(ys (ψ k), us (ψ k)), huS (ψ k), hsub ⟨hk1, hk2⟩⟩
+      exact ⟨(ys (ψ k), us (ψ k)), ⟨huS (ψ k), hysX (ψ k)⟩, hsub ⟨hk1, hk2⟩⟩
     exact Frequently.filter_mono
       ((frequently_map (m := fun k ↦ ns (ψ k))).2 hev.frequently) hnψ
   have hbarS : ubar ∈ S x := hb.1 hbarOuter
@@ -209,6 +247,13 @@ theorem svAsymptoticallyEquiOscAt_of_graphicalConvergesAt_of_pointwiseConvergesA
   have h2 : dist ubar w < ε / 2 := by rwa [mem_ball, dist_comm] at hwball
   calc dist (us (ψ k)) w ≤ dist (us (ψ k)) ubar + dist ubar w := dist_triangle _ _ _
     _ < ε := by linarith
+
+/-- **Theorem 5.40**, (b) and (c) give (a), in the printed absolute form. -/
+theorem svAsymptoticallyEquiOscAt_of_graphicalConvergesAt_of_pointwiseConvergesAt
+    (hb : GraphicalConvergesAt Sseq S x) (hc : PointwiseConvergesAt Sseq S x) :
+    SvAsymptoticallyEquiOscAt Sseq x :=
+  svAsymptoticallyEquiOscWithinAt_of_graphicalConvergesWithinAt_of_pointwiseConvergesAt
+    (mem_univ x) (graphicalConvergesWithinAt_univ_iff.2 hb) hc
 
 end Converse
 

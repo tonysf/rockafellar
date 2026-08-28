@@ -45,11 +45,11 @@ correct statement in context.
     criteria for images, the total-continuity section, including horizon
     and cosmic set limits along an arbitrary index filter, the convergence
     of images of converging sets, and the pointwise and graphical limits of
-    mappings with their limit formulas, uniformity criteria, projection
-    example and compactness theorem, the approximation of generalized
-    equations, the equicontinuity properties that reconcile graphical with
-    pointwise convergence, and continuous and uniform convergence of
-    mappings.
+    mappings with their limit formulas, graphical convergence relative to a
+    set, uniformity criteria, projection example and compactness theorem, the
+    approximation of generalized equations, the equicontinuity properties that
+    reconcile graphical with pointwise convergence, and continuous and uniform
+    convergence of mappings.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
