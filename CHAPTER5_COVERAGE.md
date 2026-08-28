@@ -9,16 +9,25 @@ records a sound API for only part of the printed result, with the remaining
 clauses named. `Missing` means that no result-specific API has yet been
 integrated.
 
-Formalization is under way: the conventions for domains, ranges, graphs, and
-inverses, formula 5(1), Definition 5.4, and the neighborhood, sequential,
-graph, and preimage characterizations of semicontinuity.
+Formalization is consecutive from 5.4 through 5.48, covering Sections A--G in
+full and the Arzela--Ascoli and Dini theorems that open Section H.
 
-The sequential criteria rest on
+Sections A--D are filter-native: formula 5(1) is a limit along the
+neighborhood filter, and the sequential criteria rest on
 [`SequentialLimits.lean`](RockafellarWets/Chapter5/SequentialLimits.lean),
-which transports the Chapter 4 limits along `atTop` to the limits of formula
-5(1) along the neighborhood filter and back.  It is written as reusable
-machinery rather than inline to 5.6, since later results in the chapter are
-also stated with sequences.
+which transports the Chapter 4 limits along `atTop` to those limits and back.
+It is written as reusable machinery rather than inline to 5.6, since later
+results in the chapter are also stated with sequences.
+
+Sections E--G are sequential, the pointwise and graphical limits being the
+Chapter 4 `atTop` limits applied to values and to graphs.  Section G runs
+throughout on the `ε`-`ρ` *inclusions* of 4.10 rather than on distance
+functions: continuous convergence, uniform convergence, continuity of the
+limit and equicontinuity all have an inclusion form here, and the whole
+section is the composition of two inclusions through a third set, isolated as
+`inter_closedBall_subset_thickening_trans`.  That is shorter than the book's
+route, which translates everything through 5.42 into scalar functions, and it
+is why 5.43 and 5.46 do not depend on 5.42.
 
 | Status | Count |
 | --- | ---: |
