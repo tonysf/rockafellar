@@ -24,3 +24,6 @@ import RockafellarWets.Chapter5.ProjectionMappings
 import RockafellarWets.Chapter5.PerturbedMappings
 import RockafellarWets.Chapter5.ClosedImages
 import RockafellarWets.Chapter5.HorizonImages
+import RockafellarWets.Chapter5.HorizonSetLimitsAlong
+import RockafellarWets.Chapter5.CosmicSemicontinuity
+import RockafellarWets.Chapter5.TotalContinuity
