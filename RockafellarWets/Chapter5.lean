@@ -46,3 +46,4 @@ import RockafellarWets.Chapter5.ArzelaAscoli
 import RockafellarWets.Chapter5.MonotoneUniformConvergence
 import RockafellarWets.Chapter5.MetricConvergence
 import RockafellarWets.Chapter5.GraphMetric
+import RockafellarWets.Chapter5.MappingOperations

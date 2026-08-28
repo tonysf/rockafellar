@@ -160,4 +160,83 @@ theorem PKConverges.add_of_total_of_horizon_inter_neg_eq_zero
     hcomponents hnocancel
   simpa only [Cseq, C, finiteSetSum_fin_two] using hsum
 
+/-- The canonical linear identification of `E²` with `E × E` turns the
+product-horizon hypothesis of 4.29(d) into the binary form the book writes
+it in, both for 4.29 itself and for 5.51(c). -/
+theorem horizonCone_dependentSetProduct_fin_two {C1 C2 : Set E}
+    (h : horizonCone (C1 ×ˢ C2) = horizonCone C1 ×ˢ horizonCone C2) :
+    horizonCone (dependentSetProduct (![C1, C2] : Fin 2 → Set E)) =
+      dependentSetProduct
+        (fun i ↦ horizonCone ((![C1, C2] : Fin 2 → Set E) i)) := by
+  set L := (LinearEquiv.finTwoArrow ℝ E).toLinearMap with hL
+  have hinj : Function.Injective L := (LinearEquiv.finTwoArrow ℝ E).injective
+  have happ : ∀ f : Fin 2 → E, L f = (f 0, f 1) := fun f ↦ rfl
+  have himg : ∀ A B : Set E,
+      L '' dependentSetProduct (![A, B] : Fin 2 → Set E) = A ×ˢ B := by
+    intro A B
+    ext p
+    constructor
+    · rintro ⟨f, hf, rfl⟩
+      rw [mem_dependentSetProduct] at hf
+      exact ⟨by simpa [happ] using hf 0, by simpa [happ] using hf 1⟩
+    · rintro ⟨ha, hb⟩
+      refine ⟨![p.1, p.2], mem_dependentSetProduct.2 fun i ↦ ?_, ?_⟩
+      · fin_cases i
+        · simpa using ha
+        · simpa using hb
+      · rw [happ]
+        simp
+  have hker : ∀ ⦃v : Fin 2 → E⦄,
+      v ∈ horizonCone (dependentSetProduct (![C1, C2] : Fin 2 → Set E)) →
+        L v = 0 → v = 0 := fun v _ hv ↦ hinj (by rw [hv, map_zero])
+  have hcomp : (fun i ↦ horizonCone ((![C1, C2] : Fin 2 → Set E) i))
+      = (![horizonCone C1, horizonCone C2] : Fin 2 → Set E) := by
+    funext i
+    fin_cases i <;> rfl
+  refine Set.image_injective.2 hinj ?_
+  rw [linearImage_horizonCone_eq hker, himg, hcomp, himg, h]
+
+/-- **Exercise 4.29(d)** in the two-term form, the shape in which 5.51(c)
+consumes it. -/
+theorem TotalConverges.add_of_horizon_prod
+    {C1seq C2seq : ℕ → Set E} {C1 C2 : Set E}
+    (hC1 : TotalConverges C1seq C1)
+    (hC2 : TotalConverges C2seq C2)
+    (hprod : horizonCone (C1 ×ˢ C2) = horizonCone C1 ×ˢ horizonCone C2)
+    (hopposite : horizonCone C1 ∩ -(horizonCone C2) = ({0} : Set E)) :
+    TotalConverges (fun n ↦ C1seq n + C2seq n) (C1 + C2) := by
+  let Cseq : Fin 2 → ℕ → Set E :=
+    fun i n ↦ (![C1seq n, C2seq n] : Fin 2 → Set E) i
+  let C : Fin 2 → Set E := (![C1, C2] : Fin 2 → Set E)
+  have hcomponents : ∀ i, TotalConverges (Cseq i) (C i) := by
+    intro i
+    fin_cases i
+    · exact hC1
+    · exact hC2
+  have hnocancel : ∀ u : Fin 2 → E,
+      (∀ i, u i ∈ horizonCone (C i)) →
+      (∑ i, u i) = 0 → u = 0 := by
+    intro u hu hsum
+    have hu0 : u 0 ∈ horizonCone C1 := hu 0
+    have hu1 : u 1 ∈ horizonCone C2 := hu 1
+    have hsum' : u 0 + u 1 = 0 := by
+      simpa only [Fin.sum_univ_two] using hsum
+    have hu0neg : u 0 ∈ -(horizonCone C2) := by
+      rw [Set.mem_neg, neg_eq_of_add_eq_zero_right hsum']
+      exact hu1
+    have hu0zero : u 0 = 0 := by
+      have hmem : u 0 ∈ ({0} : Set E) := by
+        rw [← hopposite]
+        exact ⟨hu0, hu0neg⟩
+      simpa only [Set.mem_singleton_iff] using hmem
+    have hu1zero : u 1 = 0 := by
+      simpa only [hu0zero, zero_add] using hsum'
+    funext i
+    fin_cases i
+    · exact hu0zero
+    · exact hu1zero
+  have hsum := totalConverges_finiteSetSum hcomponents
+    (horizonCone_dependentSetProduct_fin_two hprod) hnocancel
+  simpa only [Cseq, C, finiteSetSum_fin_two] using hsum
+
 end RW
