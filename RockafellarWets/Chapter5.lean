@@ -36,3 +36,4 @@ import RockafellarWets.Chapter5.ProjectionGraphicalConvergence
 import RockafellarWets.Chapter5.GeneralizedEquations
 import RockafellarWets.Chapter5.Equicontinuity
 import RockafellarWets.Chapter5.GraphicalPointwise
+import RockafellarWets.Chapter5.ContinuousUniformConvergence
