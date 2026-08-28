@@ -20,3 +20,4 @@ import RockafellarWets.Chapter5.LevelBoundedness
 import RockafellarWets.Chapter5.HorizonMappings
 import RockafellarWets.Chapter5.LocallyBoundedContinuity
 import RockafellarWets.Chapter5.OptimalSetMappings
+import RockafellarWets.Chapter5.ProjectionMappings
