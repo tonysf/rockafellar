@@ -18,3 +18,4 @@ import RockafellarWets.Chapter5.UniformSemicontinuity
 import RockafellarWets.Chapter5.LocalBoundedness
 import RockafellarWets.Chapter5.LevelBoundedness
 import RockafellarWets.Chapter5.HorizonMappings
+import RockafellarWets.Chapter5.LocallyBoundedContinuity
