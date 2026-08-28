@@ -134,6 +134,28 @@ theorem svEquiIscAt_iff {Sseq : ℕ → E → Set F} {x : E} :
         Sseq n x ∩ closedBall 0 ρ ⊆ thickening ε (Sseq n y) := by
   simp [SvEquiIscAt, SvEquiIscWithinAt]
 
+/-- Every asymptotic notion passes to subsequences, its index condition being
+eventual. -/
+theorem SvAsymptoticallyEquiOscWithinAt.comp_strictMono {Sseq : ℕ → E → Set F}
+    {X : Set E} {x : E} {φ : ℕ → ℕ} (hφ : StrictMono φ)
+    (h : SvAsymptoticallyEquiOscWithinAt Sseq X x) :
+    SvAsymptoticallyEquiOscWithinAt (fun k ↦ Sseq (φ k)) X x := fun ε hε ρ hρ ↦
+  let ⟨V, hV, hN⟩ := h ε hε ρ hρ
+  ⟨V, hV, hφ.tendsto_atTop.eventually hN⟩
+
+theorem SvAsymptoticallyEquiIscWithinAt.comp_strictMono {Sseq : ℕ → E → Set F}
+    {X : Set E} {x : E} {φ : ℕ → ℕ} (hφ : StrictMono φ)
+    (h : SvAsymptoticallyEquiIscWithinAt Sseq X x) :
+    SvAsymptoticallyEquiIscWithinAt (fun k ↦ Sseq (φ k)) X x := fun ε hε ρ hρ ↦
+  let ⟨V, hV, hN⟩ := h ε hε ρ hρ
+  ⟨V, hV, hφ.tendsto_atTop.eventually hN⟩
+
+theorem SvAsymptoticallyEquicontinuousWithinAt.comp_strictMono {Sseq : ℕ → E → Set F}
+    {X : Set E} {x : E} {φ : ℕ → ℕ} (hφ : StrictMono φ)
+    (h : SvAsymptoticallyEquicontinuousWithinAt Sseq X x) :
+    SvAsymptoticallyEquicontinuousWithinAt (fun k ↦ Sseq (φ k)) X x :=
+  ⟨h.1.comp_strictMono hφ, h.2.comp_strictMono hφ⟩
+
 /-- The remark after 5.38: equicontinuity is stronger than asymptotic
 equicontinuity, each clause holding for all indices rather than eventually. -/
 theorem SvEquiOscWithinAt.asymptotically {Sseq : ℕ → E → Set F} {X : Set E}

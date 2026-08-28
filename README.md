@@ -34,7 +34,7 @@ correct statement in context.
     horizon, cosmic, and total limits; convergence under operations;
     quantitative set distances; hyperspace metrics; compactness; and
     separability.
-  - Chapter 5, *Set-Valued Mappings*, through Proposition 5.46: domains, ranges,
+  - Chapter 5, *Set-Valued Mappings*, through Theorem 5.48: domains, ranges,
     graphs, and inverses; set limits along an arbitrary index filter; outer
     and inner semicontinuity, with their neighborhood, sequential, graph, and
     open-preimage characterizations; profile, feasible-set, and convex
@@ -49,8 +49,9 @@ correct statement in context.
     set, uniformity criteria, projection example and compactness theorem, the
     approximation of generalized equations, the equicontinuity properties that
     reconcile graphical with pointwise convergence, continuous and uniform
-    convergence of mappings, and the theorems relating the two to each other
-    and to graphical convergence.
+    convergence of mappings, the theorems relating the two to each other and
+    to graphical convergence, the set-valued Arzelà--Ascoli theorem, and the
+    set-valued Dini theorem for monotone sequences.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -58,15 +59,15 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: 36 exact, five
+  - the Chapter 5 ledger classifies all 59 numbered results: 38 exact, five
     documented adaptations, and two partial so far, consecutive from 5.4
-    through 5.46, covering formula 5(1), Definition 5.4, the characterizations
+    through 5.48, covering formula 5(1), Definition 5.4, the characterizations
     of semicontinuity, the whole local-boundedness section, optimal-set
     mappings, the projection half of 5.23, the closedness and horizon criteria
     for images, cosmic and total continuity -- where the inner condition
     printed in 5.27 is shown to be false and corrected against 4.20 -- the
     images of converging sets, and the graphical convergence section through
-    5.46 -- where the closed-valuedness hypothesis printed in 5.34(a) is shown
+    5.48 -- where the closed-valuedness hypothesis printed in 5.34(a) is shown
     to be insufficient, and the closed-valuedness *omitted* from the last
     sentence of 5.43(b) and from both clauses of 5.46 is shown to be
     necessary.

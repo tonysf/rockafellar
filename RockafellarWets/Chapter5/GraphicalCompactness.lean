@@ -123,6 +123,24 @@ theorem svEscapesToHorizon_or_exists_graphicalConverges_subsequence
   rw [GraphicalConverges, svGraph_svOfGraph]
   exact hconv
 
+/-- **Theorem 5.36** without the dichotomy: a graphically convergent
+subsequence always exists, the escaping case being convergence of the whole
+sequence to the empty-valued mapping.  This is the form 5.47 uses. -/
+theorem exists_graphicalConverges_subsequence (Sseq : ℕ → E → Set F) :
+    ∃ (φ : ℕ → ℕ) (S : E → Set F), StrictMono φ ∧
+      GraphicalConverges (fun n ↦ Sseq (φ n)) S := by
+  rcases svEscapesToHorizon_or_exists_graphicalConverges_subsequence Sseq with
+    hesc | ⟨φ, S, hφ, -, hconv⟩
+  · refine ⟨id, fun _ ↦ ∅, strictMono_id, ?_⟩
+    have hout : outerSetLimit (fun n ↦ svGraph (Sseq n)) = ∅ :=
+      svEscapesToHorizon_iff_outerSetLimit_eq_empty.1 hesc
+    refine ⟨?_, ?_⟩
+    · rw [svGraph_eq_empty_iff.2 fun _ ↦ rfl]
+      exact subset_empty_iff.1 ((innerSetLimit_subset_outerSetLimit _).trans hout.subset)
+    · rw [svGraph_eq_empty_iff.2 fun _ ↦ rfl]
+      exact hout
+  · exact ⟨φ, S, hφ, hconv⟩
+
 end Escape
 
 end RW
