@@ -47,3 +47,5 @@ import RockafellarWets.Chapter5.MonotoneUniformConvergence
 import RockafellarWets.Chapter5.MetricConvergence
 import RockafellarWets.Chapter5.GraphMetric
 import RockafellarWets.Chapter5.MappingOperations
+import RockafellarWets.Chapter5.ConvergingImages
+import RockafellarWets.Chapter5.PositiveHullConvergence
