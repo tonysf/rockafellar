@@ -22,8 +22,8 @@ also stated with sequences.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 10 |
-| Missing | 49 |
+| Exact | 13 |
+| Missing | 46 |
 | **Total** | **59** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -41,9 +41,9 @@ also stated with sequences.
 | 5.11 Continuity of distances | **Exact** | [`DistanceCriteria.lean`](RockafellarWets/Chapter5/DistanceCriteria.lean) proves (a), (b), and (c) relative to a set `X` and in the absolute case, with distances taken as `Metric.infEDist` so that `d(u, ∅) = ∞` as the book requires. Clause (b) needs neither closed-valuedness nor properness; only (a) uses closedness of `S(x̄)` and compactness of closed balls, the latter through the new filter-native compact extraction `outerSetLimitAlong_inter_nonempty_of_frequently` in [`SetLimitsAlong.lean`](RockafellarWets/Chapter5/SetLimitsAlong.lean), which replaces the subsequence step that 4.7 supplies only for sequences. The printed clause (b) reads `u → d(u, S(x))`; this is a misprint for `x → d(u, S(x))`, as clauses (a) and (c) make clear, and the corrected reading is what is proved. |
 | 5.12 Uniformity of approximation in semicontinuity | **Exact** | [`UniformSemicontinuity.lean`](RockafellarWets/Chapter5/UniformSemicontinuity.lean) proves (a) and (b) both in the eventual form along `𝓝[X] x̄` and in the book's explicit `∃ V ∈ N(x̄), ∀ x ∈ X ∩ V` form. The book's derivation from 4.10 does not transfer, since this project's 4.10 proofs extract convergent subsequences and no subsequence is available along a neighborhood filter; (a) instead uses the compact extraction `outerSetLimitAlong_inter_nonempty_of_frequently` applied to `ρIB \ thickening ε (S x̄)`, and (b) a finite subcover of the compact set `S(x̄) ∩ ρIB`. Following Chapter 4, `S + εIB` is the open thickening; the `∀ ε > 0` quantifier makes this equivalent to the closed one. |
 | 5.13 Uniform continuity | **Exact** | [`UniformSemicontinuity.lean`](RockafellarWets/Chapter5/UniformSemicontinuity.lean) proves the uniform inclusion over a compact `X`, following the book's guide: both clauses of 5.12 at each point of `X` give an open cover, and a Lebesgue number for it is the required `δ`. Two hypotheses of the printed statement are shown to be unnecessary rather than assumed -- `X ⊂ dom S` is not used, since outer semicontinuity already drives the nearby images out of every bounded ball where `S(x̄)` is empty, and closed-valuedness is automatic from outer semicontinuity relative to `X`. The inner clause of 5.12 must be invoked at the enlarged radius `ρ + ε`, since the intermediate point it produces need not lie in `ρIB`. |
-| 5.14 Local boundedness | Missing | |
-| 5.15 Boundedness of images | Missing | |
-| 5.16 Local boundedness of inverses | Missing | |
+| 5.14 Local boundedness | **Exact** | [`LocalBoundedness.lean`](RockafellarWets/Chapter5/LocalBoundedness.lean) introduces the set image `svImage S V = ⋃ {S(x) | x ∈ V}` and defines local boundedness at a point, local boundedness everywhere, and boundedness of a mapping. The remarks the book records immediately afterwards are proved: `S(x̄)` is bounded, a bounded mapping is locally bounded, the equivalent explicit form `S(IB(x̄, δ)) ⊂ IB(0, ρ)` for some `δ, ρ > 0`, and vacuous local boundedness at every point outside `cl(dom S)`. |
+| 5.15 Boundedness of images | **Exact** | [`LocalBoundedness.lean`](RockafellarWets/Chapter5/LocalBoundedness.lean) proves that local boundedness is exactly the property of carrying bounded sets to bounded sets, by covering the compact set `cl B` with finitely many neighborhoods of bounded image, and proves the sequential version stated alongside it. The set-image equivalence needs no normed structure on the target; only the sequential form does. |
+| 5.16 Local boundedness of inverses | **Exact** | [`LocalBoundedness.lean`](RockafellarWets/Chapter5/LocalBoundedness.lean) proves that `S⁻¹` is locally bounded exactly when `‖xν‖ → ∞` with `uν ∈ S(xν)` forces `‖uν‖ → ∞`, via 5.15 applied to `S⁻¹` together with the extraction of a norm-divergent sequence from an unbounded set. |
 | 5.17 Level boundedness as local boundedness | Missing | |
 | 5.18 Horizon criterion for local boundedness | Missing | |
 | 5.19 Outer semicontinuity under local boundedness | Missing | |

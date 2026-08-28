@@ -15,3 +15,4 @@ import RockafellarWets.Chapter5.ConvexSemicontinuity
 import RockafellarWets.Chapter5.ConvexConstraints
 import RockafellarWets.Chapter5.DistanceCriteria
 import RockafellarWets.Chapter5.UniformSemicontinuity
+import RockafellarWets.Chapter5.LocalBoundedness
