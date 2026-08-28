@@ -360,4 +360,91 @@ theorem svContinuousAt_iff_tendsto_pompeiuHausdorffEDist_of_eventually
 
 end HausdorffContinuity
 
+section Relativization
+
+variable {E F : Type*} [TopologicalSpace E] [PseudoMetricSpace F]
+variable {S : E → Set F} {X : Set E} {x : E}
+
+/-- The restriction `S|X` of the paragraph after 5.21: `S(x)` for `x ∈ X`, and
+`∅` elsewhere. -/
+def svRestrict (S : E → Set F) (X : Set E) : E → Set F :=
+  fun x ↦ {u | u ∈ S x ∧ x ∈ X}
+
+omit [TopologicalSpace E] [PseudoMetricSpace F] in
+@[simp]
+theorem mem_svRestrict {u : F} : u ∈ svRestrict S X x ↔ u ∈ S x ∧ x ∈ X := Iff.rfl
+
+omit [TopologicalSpace E] [PseudoMetricSpace F] in
+theorem svRestrict_apply (hx : x ∈ X) : svRestrict S X x = S x := by
+  ext u; simp [hx]
+
+omit [TopologicalSpace E] [PseudoMetricSpace F] in
+theorem svRestrict_eq_empty (hx : x ∉ X) : svRestrict S X x = ∅ := by
+  ext u; simp [hx]
+
+omit [TopologicalSpace E] [PseudoMetricSpace F] in
+/-- The book's remark that `S|X` is an inverse truncation, `S|X = (S⁻¹∩X)⁻¹`. -/
+theorem svRestrict_eq_svInv_svTrunc (S : E → Set F) (X : Set E) :
+    svRestrict S X = svInv (svTrunc (svInv S) X) := rfl
+
+omit [TopologicalSpace E] [PseudoMetricSpace F] in
+theorem svImage_svRestrict (S : E → Set F) (X V : Set E) :
+    svImage (svRestrict S X) V = svImage S (X ∩ V) := by
+  ext u
+  simp only [mem_svImage, mem_svRestrict, mem_inter_iff]
+  exact ⟨fun ⟨y, hyV, hyS, hyX⟩ ↦ ⟨y, ⟨hyX, hyV⟩, hyS⟩,
+    fun ⟨y, ⟨hyX, hyV⟩, hyS⟩ ↦ ⟨y, hyV, hyS, hyX⟩⟩
+
+/-- Relativizing the limit of 5(1) is the same as taking the absolute limit of
+the restricted mapping: the values of `S|X` off `X` are empty, so they never
+contribute to a frequency statement. -/
+theorem svOuterLimit_svRestrict (S : E → Set F) (X : Set E) (x : E) :
+    svOuterLimit (svRestrict S X) x = svOuterLimitWithin S X x := by
+  ext u
+  simp only [svOuterLimit, svOuterLimitWithin, mem_outerSetLimitAlong]
+  refine forall₂_congr fun W _ ↦ ?_
+  rw [nhdsWithin, Filter.frequently_inf_principal]
+  constructor
+  · exact fun h ↦ h.mono fun y ⟨z, ⟨hzS, hyX⟩, hzW⟩ ↦ ⟨hyX, z, hzS, hzW⟩
+  · exact fun h ↦ h.mono fun y ⟨hyX, z, hzS, hzW⟩ ↦ ⟨z, ⟨hzS, hyX⟩, hzW⟩
+
+/-- Outer semicontinuity relative to `X` is outer semicontinuity of `S|X`. -/
+theorem svOscAt_svRestrict_iff (hx : x ∈ X) :
+    SvOscAt (svRestrict S X) x ↔ SvOscWithinAt S X x := by
+  rw [SvOscAt, SvOscWithinAt, svOuterLimit_svRestrict, svRestrict_apply hx]
+
+/-- **Definition 5.14** relative to a set `X`, obtained by replacing the
+neighborhood `V` with `X ∩ V`. -/
+def SvLocallyBoundedWithinAt (S : E → Set F) (X : Set E) (x : E) : Prop :=
+  ∃ V ∈ nhds x, IsBounded (svImage S (X ∩ V))
+
+/-- Relative local boundedness is the ordinary local boundedness of `S|X`. -/
+theorem svLocallyBoundedWithinAt_iff_svRestrict :
+    SvLocallyBoundedWithinAt S X x ↔ SvLocallyBoundedAt (svRestrict S X) x := by
+  constructor
+  · rintro ⟨V, hV, hbdd⟩
+    exact ⟨V, hV, by rwa [svImage_svRestrict]⟩
+  · rintro ⟨V, hV, hbdd⟩
+    exact ⟨V, hV, by rwa [svImage_svRestrict] at hbdd⟩
+
+/-- Local boundedness relative to the whole space is local boundedness. -/
+theorem svLocallyBoundedWithinAt_univ :
+    SvLocallyBoundedWithinAt S univ x ↔ SvLocallyBoundedAt S x := by
+  simp only [SvLocallyBoundedWithinAt, SvLocallyBoundedAt, univ_inter]
+
+/-- **Theorem 5.19** relative to a set `X`, which the book says carries over
+"in the obvious manner, through application to `S|X`".  That is exactly how it
+is obtained here. -/
+theorem SvOscWithinAt.exists_nhds_svImage_inter_subset [ProperSpace F]
+    (hlb : SvLocallyBoundedWithinAt S X x) (hosc : SvOscWithinAt S X x)
+    (hx : x ∈ X) {O : Set F} (hO : IsOpen O) (hSO : S x ⊆ O) :
+    ∃ V ∈ nhds x, svImage S (X ∩ V) ⊆ O := by
+  obtain ⟨V, hV, hVsub⟩ :=
+    ((svOscAt_svRestrict_iff hx).2 hosc).exists_nhds_svImage_subset
+      (svLocallyBoundedWithinAt_iff_svRestrict.1 hlb) hO
+      (by rw [svRestrict_apply hx]; exact hSO)
+  exact ⟨V, hV, by rwa [svImage_svRestrict] at hVsub⟩
+
+end Relativization
+
 end RW

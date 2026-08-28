@@ -34,13 +34,14 @@ correct statement in context.
     horizon, cosmic, and total limits; convergence under operations;
     quantitative set distances; hyperspace metrics; compactness; and
     separability.
-  - Chapter 5, *Set-Valued Mappings*, through Corollary 5.21: domains, ranges,
+  - Chapter 5, *Set-Valued Mappings*, through Example 5.22: domains, ranges,
     graphs, and inverses; set limits along an arbitrary index filter; outer
     and inner semicontinuity, with their neighborhood, sequential, graph, and
     open-preimage characterizations; profile, feasible-set, and convex
     constraint examples; continuity of distances; uniformity of approximation;
-    local boundedness, level boundedness, the horizon mapping, and the
-    continuity criteria for single-valued and locally bounded mappings.
+    local boundedness, level boundedness, the horizon mapping, the continuity
+    criteria for single-valued and locally bounded mappings, and optimal-set
+    mappings.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -48,10 +49,10 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: 18 exact so far,
-    consecutive from 5.4 through 5.21, covering formula 5(1), Definition 5.4,
-    the characterizations of semicontinuity, and the whole local-boundedness
-    section.
+  - the Chapter 5 ledger classifies all 59 numbered results: 19 exact so far,
+    consecutive from 5.4 through 5.22, covering formula 5(1), Definition 5.4,
+    the characterizations of semicontinuity, the whole local-boundedness
+    section, and optimal-set mappings.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,
