@@ -111,35 +111,32 @@ comprehensive sweep of the remainder of the book: main results, examples, and
 exercises will all be formalized, with dependency-critical exercises prioritized
 first whenever they unlock later sections.
 
-1. Chapter 5, *Set-Valued Mappings*: cover domains, ranges, inverses,
-   semicontinuity, local boundedness, graphical convergence, and selection
-   material.
-2. Chapter 6, *Variational Geometry*: develop tangent cones, normal cones,
+1. Chapter 6, *Variational Geometry*: develop tangent cones, normal cones,
    Clarke regularity, multipliers, proximal normals, and tangent-normal
    relations.
-3. Chapter 7, *Epigraphical Limits*: formalize pointwise convergence,
+2. Chapter 7, *Epigraphical Limits*: formalize pointwise convergence,
    epi-convergence, minimization stability, epi-continuity, and epi-distance
    results.
-4. Chapter 8, *Subderivatives and Subgradients*: cover subderivatives,
+3. Chapter 8, *Subderivatives and Subgradients*: cover subderivatives,
    subgradients, convexity and optimality criteria, duality, calmness, and
    graphical differentiation.
-5. Chapter 9, *Lipschitzian Properties*: formalize Lipschitz moduli,
+4. Chapter 9, *Lipschitzian Properties*: formalize Lipschitz moduli,
    subdifferential criteria, the Aubin property, metric regularity, and
    derivative-based characterizations.
-6. Chapter 10, *Subdifferential Calculus*: develop normals to level sets, chain
+5. Chapter 10, *Subdifferential Calculus*: develop normals to level sets, chain
    rules, parametric optimality, PLQ and amenable objects, and coderivative
    calculus.
-7. Chapter 11, *Dualization*: cover Legendre-Fenchel duality, conjugacy, polar
+6. Chapter 11, *Dualization*: cover Legendre-Fenchel duality, conjugacy, polar
    sets and gauges, dual operations, dual optimization, and Lagrangian
    constructions.
-8. Chapter 12, *Monotone Mappings*: formalize monotonicity and maximality,
+7. Chapter 12, *Monotone Mappings*: formalize monotonicity and maximality,
    Minty parameterization, links with convex functions, graphical convergence,
    and variational inequalities.
-9. Chapter 13, *Second-Order Theory*: develop second-order differentiability,
+8. Chapter 13, *Second-Order Theory*: develop second-order differentiability,
    second subderivatives, calculus rules, second-order optimality, and
    prox-regularity.
-10. Chapter 14, *Measurability*: cover measurable mappings and selections,
-    normal integrands, operations on integrands, and integral functionals.
+9. Chapter 14, *Measurability*: cover measurable mappings and selections,
+   normal integrands, operations on integrands, and integral functionals.
 
 Priorities may occasionally shift to match Mathlib support and dependency order,
 but the intended reading and formalization order remains the book order.
