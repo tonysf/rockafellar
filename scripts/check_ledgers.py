@@ -31,6 +31,7 @@ LEDGERS = {
     3: ROOT / "CHAPTER3_COVERAGE.md",
     4: ROOT / "CHAPTER4_COVERAGE.md",
     5: ROOT / "CHAPTER5_COVERAGE.md",
+    6: ROOT / "CHAPTER6_COVERAGE.md",
 }
 
 # `| Exact | 43 |` in the summary table.

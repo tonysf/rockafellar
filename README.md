@@ -60,6 +60,9 @@ correct statement in context.
     continuous selections given by projections, and Michael's selection
     theorem with the countable Michael representations of 5.58 and the
     extension of prescribed selections of 5.59.
+  - Chapter 6, *Variational Geometry*, Section A: tangent cones, geometric
+    derivability, and the reading of both as limits of the magnified
+    difference sets.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -98,11 +101,19 @@ correct statement in context.
     rather than first, since the mappings they name are built from machinery
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
-    missing from Chapter 1 is supplied here.  Chapter 5 is complete.
+    missing from Chapter 1 is supplied here.  Chapter 5 is complete;
+  - the Chapter 6 ledger classifies all 49 numbered results, of which the
+    tangent cones of Section A -- Definition 6.1 and Proposition 6.2 -- are
+    proved.  Formula 6(3) is a Painleve--Kuratowski limit indexed by the
+    scaling parameter rather than by the argument, so the filter-native set
+    limits written for formula 5(1) apply verbatim along `𝓝[>] 0`, and the
+    tangent and derivable cones are the outer and the inner limit of the
+    magnified difference sets `τ⁻¹(C - x̄)`.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
-and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,
-result-by-result accounts of exact, adapted, and missing coverage.
+[Chapter 5](CHAPTER5_COVERAGE.md) and [Chapter 6](CHAPTER6_COVERAGE.md)
+coverage ledgers for conservative, result-by-result accounts of exact,
+adapted, and missing coverage.
 
 ## Roadmap
 
