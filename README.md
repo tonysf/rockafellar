@@ -60,9 +60,12 @@ correct statement in context.
     continuous selections given by projections, and Michael's selection
     theorem with the countable Michael representations of 5.58 and the
     extension of prescribed selections of 5.59.
-  - Chapter 6, *Variational Geometry*, Section A: tangent cones, geometric
-    derivability, and the reading of both as limits of the magnified
-    difference sets.
+  - Chapter 6, *Variational Geometry*, Sections A and B: tangent cones,
+    geometric derivability, and the reading of both as limits of the
+    magnified difference sets; the regular and general normal cones, Clarke
+    regularity, the cone, convexity and closedness properties of both normal
+    cones with their tangent-cone characterization, and the outer
+    semicontinuity of the normal cone mapping relative to the set.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -102,13 +105,23 @@ correct statement in context.
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
-  - the Chapter 6 ledger classifies all 49 numbered results, of which the
-    tangent cones of Section A -- Definition 6.1 and Proposition 6.2 -- are
-    proved.  Formula 6(3) is a Painleve--Kuratowski limit indexed by the
-    scaling parameter rather than by the argument, so the filter-native set
-    limits written for formula 5(1) apply verbatim along `𝓝[>] 0`, and the
-    tangent and derivable cones are the outer and the inner limit of the
-    magnified difference sets `τ⁻¹(C - x̄)`.
+  - the Chapter 6 ledger classifies all 49 numbered results, of which
+    Sections A and B -- 6.1 through 6.6 -- are proved.  Formula 6(3) is a
+    Painleve--Kuratowski limit indexed by the scaling parameter rather than
+    by the argument, so the filter-native set limits written for formula
+    5(1) apply verbatim along `𝓝[>] 0`, and the tangent and derivable cones
+    are the outer and the inner limit of the magnified difference sets
+    `τ⁻¹(C - x̄)`.  Section B is the same story one level up: the general
+    normal cone of 6.3 is the *relative outer limit* of formula 5(1) applied
+    to the regular normal cone mapping, so the closedness asked by 6.5 is
+    the closedness of an outer limit and 6.6 is the statement that a
+    relative outer limit absorbs a second application of itself -- a fact
+    about formula 5(1) in any topological space, where the book argues
+    instead with the closure of a graph.  Section B is stated over an inner
+    product space, as Chapters 1--3 are, since normal vectors need a
+    pairing that tangent vectors do not; finite-dimensionality is asked for
+    by name in the single place the book's proofs use it, the implication
+    `⇐` of 6(6).
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 [Chapter 5](CHAPTER5_COVERAGE.md) and [Chapter 6](CHAPTER6_COVERAGE.md)
