@@ -34,31 +34,32 @@ correct statement in context.
     horizon, cosmic, and total limits; convergence under operations;
     quantitative set distances; hyperspace metrics; compactness; and
     separability.
-  - Chapter 5, *Set-Valued Mappings*, every numbered result: the introductory
-    examples of constraint systems, generalized equations and implicit
-    mappings, and algorithmic mappings and fixed points; domains, ranges,
-    graphs, and inverses; set limits along an arbitrary index filter; outer
-    and inner semicontinuity, with their neighborhood, sequential, graph, and
-    open-preimage characterizations; profile, feasible-set, and convex
-    constraint examples; continuity of distances; uniformity of approximation;
-    local boundedness, level boundedness, the horizon mapping, the continuity
-    criteria for single-valued and locally bounded mappings, optimal-set
-    mappings, projections, perturbed mappings, the closedness and horizon
-    criteria for images, the total-continuity section, including horizon
-    and cosmic set limits along an arbitrary index filter, the convergence
-    of images of converging sets, and the pointwise and graphical limits of
-    mappings with their limit formulas, graphical convergence relative to a
-    set, uniformity criteria, projection example and compactness theorem, the
-    approximation of generalized equations, the equicontinuity properties that
-    reconcile graphical with pointwise convergence, continuous and uniform
-    convergence of mappings with their distance function descriptions, the
-    theorems relating the two to each other and to graphical convergence, the
-    set-valued Arzelà--Ascoli theorem, the set-valued Dini theorem for
-    monotone sequences, the generic continuity of semicontinuous mappings and
-    of extended-real-valued functions, the continuous selections given by
-    projections, and Michael's selection theorem with the countable Michael
-    representations of 5.58 and the extension of prescribed selections of
-    5.59.
+  - Chapter 5, *Set-Valued Mappings*, every numbered result: the
+    introductory examples of constraint systems, generalized equations and
+    implicit mappings, and algorithmic mappings and fixed points; domains,
+    ranges, graphs, and inverses; set limits along an arbitrary index
+    filter; outer and inner semicontinuity, with their neighborhood,
+    sequential, graph, and open-preimage characterizations; profile,
+    feasible-set, and convex constraint examples; continuity of distances;
+    uniformity of approximation; local boundedness, level boundedness, the
+    horizon mapping, the continuity criteria for single-valued and locally
+    bounded mappings, optimal-set mappings, projections and proximal
+    mappings, perturbed mappings, the closedness and horizon criteria for
+    images, the total-continuity section, including horizon and cosmic set
+    limits along an arbitrary index filter, the convergence of images of
+    converging sets, and the pointwise and graphical limits of mappings with
+    their limit formulas, graphical convergence relative to a set,
+    uniformity criteria, projection example and compactness theorem, the
+    approximation of generalized equations, the equicontinuity properties
+    that reconcile graphical with pointwise convergence, continuous and
+    uniform convergence of mappings with their distance function
+    descriptions, the theorems relating the two to each other and to
+    graphical convergence, the set-valued Arzelà--Ascoli theorem, the
+    set-valued Dini theorem for monotone sequences, the generic continuity
+    of semicontinuous mappings and of extended-real-valued functions, the
+    continuous selections given by projections, and Michael's selection
+    theorem with the countable Michael representations of 5.58 and the
+    extension of prescribed selections of 5.59.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -66,37 +67,38 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: 50 exact, eight
-    documented adaptations, and one partial, covering 5.1 through 5.59 --
-    formula 5(1), Definition 5.4, the characterizations
-    of semicontinuity, the whole local-boundedness section, optimal-set
-    mappings, the projection half of 5.23, the closedness and horizon criteria
-    for images, cosmic and total continuity -- where the inner condition
-    printed in 5.27 is shown to be false and corrected against 4.20 -- the
-    images of converging sets, and the graphical convergence section through
-    5.48 -- where the closed-valuedness hypothesis printed in 5.34(a) is shown
-    to be insufficient, and the closed-valuedness *omitted* from the last
-    sentence of 5.43(b) and from both clauses of 5.46 is shown to be
-    necessary -- and the whole of the metric-description section, where the
-    uniform clause of 5.49 is shown to be false as printed and is corrected by
-    the bound its own proof assumes, and where the graph-distance space of
-    5.50 is identified isometrically with the Chapter 4 hyperspace -- and the
-    whole operations section, where the first concluding statement of 5.53 is
+  - the Chapter 5 ledger classifies all 59 numbered results: 51 exact and
+    eight documented adaptations, with no clause outstanding, covering 5.1
+    through 5.59 -- formula 5(1), Definition 5.4, the characterizations of
+    semicontinuity, the whole local-boundedness section, optimal-set
+    mappings, both halves of 5.23, the closedness and horizon criteria for
+    images, cosmic and total continuity -- where the inner condition printed
+    in 5.27 is shown to be false and corrected against 4.20 -- the images of
+    converging sets, and the graphical convergence section through 5.48 --
+    where the closed-valuedness hypothesis printed in 5.34(a) is shown to be
+    insufficient, and the closed-valuedness *omitted* from the last sentence
+    of 5.43(b) and from both clauses of 5.46 is shown to be necessary -- and
+    the whole of the metric-description section, where the uniform clause of
+    5.49 is shown to be false as printed and is corrected by the bound its
+    own proof assumes, and where the graph-distance space of 5.50 is
+    identified isometrically with the Chapter 4 hyperspace -- and the whole
+    operations section, where the first concluding statement of 5.53 is
     shown to be false as printed and is corrected by the total graph
-    convergence its own proof uses -- and the generic continuity theorems 5.55
-    and 5.56, whose relative topology on `X` is taken to be the subspace
-    topology on `↥X`, where the book's nowhere dense and meager in `X` are
-    Mathlib's own predicates, and the continuous selections of 5.57 with the
-    pointwise selection remark that precedes them -- and Michael's selection
-    theorem, whose partition-of-unity core turns out to be in Mathlib already
-    under another name, so that the σ-compactness of `dom S` printed in 5.58
-    is dropped, Stone's theorem supplying more than the book's construction
-    extracts by hand, while the closed-valuedness *omitted* from 5.59 is
-    added, the mapping its proof builds inheriting its values from `S`.  The
-    three introductory examples are stated last rather than first, since the
-    mappings they name are built from machinery the later sections supply.
-    What is left of Chapter 5 is the remaining clauses of the partial 5.23,
-    which wait on an extended-real proximal mapping in Chapter 1.
+    convergence its own proof uses -- and the generic continuity theorems
+    5.55 and 5.56, whose relative topology on `X` is taken to be the
+    subspace topology on `↥X`, where the book's nowhere dense and meager in
+    `X` are Mathlib's own predicates, and the continuous selections of 5.57
+    with the pointwise selection remark that precedes them -- and Michael's
+    selection theorem, whose partition-of-unity core turns out to be in
+    Mathlib already under another name, so that the σ-compactness of `dom S`
+    printed in 5.58 is dropped, Stone's theorem supplying more than the
+    book's construction extracts by hand, while the closed-valuedness
+    *omitted* from 5.59 is added, the mapping its proof builds inheriting
+    its values from `S`.  The three introductory examples are stated last
+    rather than first, since the mappings they name are built from machinery
+    the later sections supply, and the proximal half of 5.23 is 5.22 applied
+    to the proximal integrand, for which the extended-real proximal mapping
+    missing from Chapter 1 is supplied here.  Chapter 5 is complete.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,
