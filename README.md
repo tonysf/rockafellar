@@ -60,12 +60,13 @@ correct statement in context.
     continuous selections given by projections, and Michael's selection
     theorem with the countable Michael representations of 5.58 and the
     extension of prescribed selections of 5.59.
-  - Chapter 6, *Variational Geometry*, Sections A and B: tangent cones,
-    geometric derivability, and the reading of both as limits of the
-    magnified difference sets; the regular and general normal cones, Clarke
-    regularity, the cone, convexity and closedness properties of both normal
-    cones with their tangent-cone characterization, and the outer
-    semicontinuity of the normal cone mapping relative to the set.
+  - Chapter 6, *Variational Geometry*, Sections A and B with 6.9 from
+    Section C: tangent cones, geometric derivability, and the reading of both
+    as limits of the magnified difference sets; the regular and general
+    normal cones, Clarke regularity, the cone, convexity and closedness
+    properties of both normal cones with their tangent-cone characterization,
+    the outer semicontinuity of the normal cone mapping relative to the set,
+    and the tangent and normal cones to a convex set.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -121,7 +122,12 @@ correct statement in context.
     product space, as Chapters 1--3 are, since normal vectors need a
     pairing that tangent vectors do not; finite-dimensionality is asked for
     by name in the single place the book's proofs use it, the implication
-    `⇐` of 6(6).
+    `⇐` of 6(6).  6.9 is proved ahead of 6.7 and 6.8, being self-contained
+    where those two rest on the surjective inverse function theorem: a
+    convex set is geometrically derivable at each of its points, its tangent
+    cone is the closure of the cone of radial directions, and its two normal
+    cones coincide -- the last proved without 6(6), and so without
+    finite-dimensionality, which is needed only for the interior formula.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 [Chapter 5](CHAPTER5_COVERAGE.md) and [Chapter 6](CHAPTER6_COVERAGE.md)

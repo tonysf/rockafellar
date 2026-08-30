@@ -7,3 +7,4 @@ Released under Apache 2.0 license as described in the file LICENSE.
 
 import RockafellarWets.Chapter6.TangentCones
 import RockafellarWets.Chapter6.NormalCones
+import RockafellarWets.Chapter6.ConvexSets
