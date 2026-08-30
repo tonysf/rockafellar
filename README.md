@@ -66,7 +66,8 @@ correct statement in context.
     normal cones, Clarke regularity, the cone, convexity and closedness
     properties of both normal cones with their tangent-cone characterization,
     the outer semicontinuity of the normal cone mapping relative to the set,
-    and the tangent and normal cones to a convex set.
+    the tangent and normal cones to a convex set, and the tangent cone under
+    a smooth change of coordinates.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -128,6 +129,12 @@ correct statement in context.
     cone is the closure of the cone of radial directions, and its two normal
     cones coincide -- the last proved without 6(6), and so without
     finite-dimensionality, which is needed only for the interior formula.
+    Of 6.7 the tangent cone formula is proved, for real Hilbert spaces, by
+    the book's own guide with the basis of `ker ∇F(x̄)` replaced by the
+    orthogonal projection onto it; its two normal cone formulas are
+    outstanding, being blocked by the sup norm Mathlib puts on the augmented
+    product and by the tangent-normal polarity the book itself defers to
+    6.21 and 6.45.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 [Chapter 5](CHAPTER5_COVERAGE.md) and [Chapter 6](CHAPTER6_COVERAGE.md)
