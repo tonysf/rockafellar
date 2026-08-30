@@ -53,3 +53,4 @@ import RockafellarWets.Chapter5.GenericContinuity
 import RockafellarWets.Chapter5.ContinuousSelections
 import RockafellarWets.Chapter5.MichaelSelection
 import RockafellarWets.Chapter5.MichaelRepresentation
+import RockafellarWets.Chapter5.IntroductoryExamples

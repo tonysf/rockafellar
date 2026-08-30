@@ -34,10 +34,11 @@ correct statement in context.
     horizon, cosmic, and total limits; convergence under operations;
     quantitative set distances; hyperspace metrics; compactness; and
     separability.
-  - Chapter 5, *Set-Valued Mappings*, complete apart from the three
-    introductory examples 5.1--5.3: domains, ranges, graphs, and inverses;
-    set limits along an arbitrary index filter; outer and inner
-    semicontinuity, with their neighborhood, sequential, graph, and
+  - Chapter 5, *Set-Valued Mappings*, every numbered result: the introductory
+    examples of constraint systems, generalized equations and implicit
+    mappings, and algorithmic mappings and fixed points; domains, ranges,
+    graphs, and inverses; set limits along an arbitrary index filter; outer
+    and inner semicontinuity, with their neighborhood, sequential, graph, and
     open-preimage characterizations; profile, feasible-set, and convex
     constraint examples; continuity of distances; uniformity of approximation;
     local boundedness, level boundedness, the horizon mapping, the continuity
@@ -65,9 +66,9 @@ correct statement in context.
   - the Chapter 4 ledger classifies all 48 numbered results: 47 exact and one
     documented adaptation for the false openness/local-compactness clause in
     4.47 under the literal closed-ball cosmic embedding;
-  - the Chapter 5 ledger classifies all 59 numbered results: 47 exact, eight
-    documented adaptations, and one partial, consecutive from 5.4 through
-    5.59, covering formula 5(1), Definition 5.4, the characterizations
+  - the Chapter 5 ledger classifies all 59 numbered results: 50 exact, eight
+    documented adaptations, and one partial, covering 5.1 through 5.59 --
+    formula 5(1), Definition 5.4, the characterizations
     of semicontinuity, the whole local-boundedness section, optimal-set
     mappings, the projection half of 5.23, the closedness and horizon criteria
     for images, cosmic and total continuity -- where the inner condition
@@ -91,9 +92,11 @@ correct statement in context.
     under another name, so that the σ-compactness of `dom S` printed in 5.58
     is dropped, Stone's theorem supplying more than the book's construction
     extracts by hand, while the closed-valuedness *omitted* from 5.59 is
-    added, the mapping its proof builds inheriting its values from `S`.  What
-    is left of Chapter 5 is the three introductory examples 5.1--5.3 and the
-    remaining clauses of the partial 5.23.
+    added, the mapping its proof builds inheriting its values from `S`.  The
+    three introductory examples are stated last rather than first, since the
+    mappings they name are built from machinery the later sections supply.
+    What is left of Chapter 5 is the remaining clauses of the partial 5.23,
+    which wait on an extended-real proximal mapping in Chapter 1.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 and [Chapter 5](CHAPTER5_COVERAGE.md) coverage ledgers for conservative,

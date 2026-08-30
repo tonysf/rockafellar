@@ -9,8 +9,14 @@ records a sound API for only part of the printed result, with the remaining
 clauses named. `Missing` means that no result-specific API has yet been
 integrated.
 
-Formalization is consecutive from 5.4 through 5.59, covering Sections A--J in
-full.  Michael's selection theorem, which 5.58 and 5.59 rest on, is not in
+Formalization covers all 59 numbered results, 5.1 through 5.59, Sections A--J
+in full.  The three introductory examples are in
+[`IntroductoryExamples.lean`](RockafellarWets/Chapter5/IntroductoryExamples.lean),
+which comes last in the import order rather than first: the book's
+`S(x) = {F(x)}` for `x ∈ X` is `svRestrict (svSingleton F) X` and its implicit
+and algorithmic mappings run on the composition `svComp` of 5.52, so the
+examples are stated with machinery the later sections supply rather than with
+definitions of their own.  Michael's selection theorem, which 5.58 and 5.59 rest on, is not in
 Mathlib under that name, but the partition-of-unity construction at its
 centre is: `exists_continuous_forall_mem_convex_of_local_const` is the book's
 Parts 1 and 4 at once, and in more generality than the book states them.
@@ -50,17 +56,16 @@ the book's relative statements.
 
 | Status | Count |
 | --- | ---: |
-| Exact | 47 |
+| Exact | 50 |
 | Adapted | 8 |
 | Partial | 1 |
-| Missing | 3 |
 | **Total** | **59** |
 
 | Result | Status | Lean coverage / remaining work |
 |---|---|---|
-| 5.1 Constraint systems | Missing | |
-| 5.2 Generalized equations and implicit mappings | Missing | |
-| 5.3 Algorithmic mappings and fixed points | Missing | |
+| 5.1 Constraint systems | **Exact** | [`IntroductoryExamples.lean`](RockafellarWets/Chapter5/IntroductoryExamples.lean) proves every identification the example makes about the mapping `S(x) = {F(x)}` for `x ∈ X`, `∅` otherwise, which the paragraph before it introduces and which is `svRestrict (svSingleton F) X` in the machinery of 5.20 and 5.21.  Its domain is `X`; its values are subsingletons everywhere, which is the book's "isn't multivalued anywhere"; `F⁻¹(u)` is the solution set `{x ∈ X | F(x) = u}` of the equation system; the set-valued preimage is `X ∩ F⁻¹(D)` for *any* `D`, of which the box case `{x ∈ X | fᵢ(x) ∈ Dᵢ}` is a corollary; and the range of the inverse is `X`.  Coordinates are carried by an arbitrary index type and a dependent family of targets, so nothing depends on the number of equations or unknowns being finite or equal.  The example's closing question -- whether `F⁻¹` might be single-valued when `m = n` -- is settled rather than left open: `subsingleton_svInv_svRestrict_svSingleton_iff` shows the inverse is subsingleton-valued exactly when `F` is injective on `X`, a condition equality of the dimensions neither implies nor requires. |
+| 5.2 Generalized equations and implicit mappings | **Exact** | [`IntroductoryExamples.lean`](RockafellarWets/Chapter5/IntroductoryExamples.lean) defines the implicit mapping `svImplicit S ū w = {x | S(x, w) ∋ ū}` and proves the three readings the example gives it: at a fixed parameter it is the inverse image `S(·, w)⁻¹(ū)`, which with no parameter is the example's first sentence that the solution set of `S(x̄) ∋ ū` is `S⁻¹(ū)`; its graph is the `ū`-level set of `S` with the coordinates exchanged; and for `S(x, w) = F(x, w) + N(x)` the generalized equation `S(x, w) ∋ 0` is the printed special case `-F(x, w) ∈ N(x)`.  The operations paragraph that follows the example is covered in the parts not already carried by [`PerturbedMappings.lean`](RockafellarWets/Chapter5/PerturbedMappings.lean) and [`MappingOperations.lean`](RockafellarWets/Chapter5/MappingOperations.lean), where `svAdd` and `svComp` are defined for 5.51 and 5.52: both displayed descriptions of the composition, as `⋃_{u ∈ S(x)} T(u)` and as `{w | S(x) ∩ T⁻¹(w) ≠ ∅}`, the identity `(T ∘ S)⁻¹ = S⁻¹ ∘ T⁻¹`, and the reduction to ordinary composition on single-valued mappings. |
+| 5.3 Algorithmic mappings and fixed points | **Exact** | [`IntroductoryExamples.lean`](RockafellarWets/Chapter5/IntroductoryExamples.lean) defines `svFixedPoints S = {x | x ∈ S(x)}` and the iterates `svIterate S ν`, with `S⁰(x) = {x}` so that `S¹ = S`, and proves the inclusion the example displays: a sequence generated from `x⁰` by `xν ∈ S(xν₋₁)` has `xν ∈ (S ∘ ⋯ ∘ S)(x⁰)`.  A fixed point is recovered as the constant such sequence, so it lies in every iterate of itself.  **Two convergence statements are added**, since the example's own closing paragraph says that this framework is what makes both the continuity notions and the convergence of a *sequence* of mappings matter, and each is one line over machinery already present: a convergent generated sequence has its limit in that limit's outer limit 5(1), so the limit is a fixed point as soon as `S` is osc there; and for algorithmic mappings `Tν` the pairs `(xν, xν₊₁)` along the shifted index put the limit in the graphical outer limit of the `Tν` at itself, so it is a fixed point of any `S` containing that limit -- which is exactly the hypothesis 5.37(a) is stated with. |
 | 5.4 Continuity and semicontinuity | **Exact** | [`SetLimitsAlong.lean`](RockafellarWets/Chapter5/SetLimitsAlong.lean) restates the Definition 4.1 limits along an arbitrary index filter; [`Semicontinuity.lean`](RockafellarWets/Chapter5/Semicontinuity.lean) defines formula 5(1) along the full neighborhood filter, defines osc, isc, and continuity both absolutely and relative to a set, and proves the equalities the book records immediately afterwards: `lim sup = S(x̄)` under osc, closedness of `S(x̄)` under osc both absolutely and relative to a set `X`, the closed-valued equality form of isc, and that isc at a point of the domain puts a whole neighborhood inside the domain. |
 | 5.5 Profile mappings | **Exact** | [`ProfileMappings.lean`](RockafellarWets/Chapter5/ProfileMappings.lean) defines `epiProfile` and `hypoProfile` over the Chapter 1 extended-real conventions and proves `gph Ef = epi f`, `dom Ef = dom f`, `Ef⁻¹(α) = lev≤α f`, that `Ef` is osc at `x̄` iff `f` is lsc at `x̄`, isc iff `f` is usc, continuous iff `f` is continuous, and that the level-set mapping `α ↦ lev≤α f` is osc everywhere iff `f` is lsc everywhere. The hypographical analogues `gph Hf = hypo f`, `dom Hf`, `Hf⁻¹(α) = lev≥α f`, osc iff usc, and isc iff lsc are proved as well.  Each of the four semicontinuity equivalences is proved once along an arbitrary index filter, in a form that uses no topology on the domain, so that the absolute statements and the statements relative to a set `X` -- which 5.56 needs -- are both instances of the same core.  Closed-valuedness of the profiles is recorded as `isClosed_epiProfile` and `isClosed_hypoProfile`. |
 | 5.6 Criteria for semicontinuity at a point | **Exact** | [`SemicontinuityCriteria.lean`](RockafellarWets/Chapter5/SemicontinuityCriteria.lean) proves the neighborhood criteria (a) and (b) in the book's `X ∩ V ∩ S⁻¹(W)` form, and the sequential criteria (c) and (d) quantified over all `xν ∈ X` with `xν → x̄` and `S(xν) → D`, relative to `X` and in the absolute case. The sequential clauses go through the diagonal extraction of [`SequentialLimits.lean`](RockafellarWets/Chapter5/SequentialLimits.lean) followed by the subsequence compactness of 4.18. |
