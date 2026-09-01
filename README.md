@@ -60,14 +60,13 @@ correct statement in context.
     continuous selections given by projections, and Michael's selection
     theorem with the countable Michael representations of 5.58 and the
     extension of prescribed selections of 5.59.
-  - Chapter 6, *Variational Geometry*, Sections A and B with 6.9 from
-    Section C: tangent cones, geometric derivability, and the reading of both
-    as limits of the magnified difference sets; the regular and general
-    normal cones, Clarke regularity, the cone, convexity and closedness
-    properties of both normal cones with their tangent-cone characterization,
-    the outer semicontinuity of the normal cone mapping relative to the set,
-    the tangent and normal cones to a convex set, and the tangent cone under
-    a smooth change of coordinates.
+  - Chapter 6, *Variational Geometry*, Sections A and B and selected later
+    results: tangent, derivable, regular-tangent, regular-normal, limiting-normal,
+    proximal-normal, and polar cones; convex-set and scalar-interval formulas;
+    tangent and regular-normal change of coordinates; first-order optimality;
+    convex projections and supporting-halfspace envelopes; pointedness and
+    polarity; binary Euclidean-product formulas; and corrected generic
+    continuity of normal-cone mappings.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -107,34 +106,26 @@ correct statement in context.
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
-  - the Chapter 6 ledger classifies all 49 numbered results, of which
-    Sections A and B -- 6.1 through 6.6 -- are proved.  Formula 6(3) is a
-    Painleve--Kuratowski limit indexed by the scaling parameter rather than
-    by the argument, so the filter-native set limits written for formula
-    5(1) apply verbatim along `𝓝[>] 0`, and the tangent and derivable cones
-    are the outer and the inner limit of the magnified difference sets
-    `τ⁻¹(C - x̄)`.  Section B is the same story one level up: the general
-    normal cone of 6.3 is the *relative outer limit* of formula 5(1) applied
-    to the regular normal cone mapping, so the closedness asked by 6.5 is
-    the closedness of an outer limit and 6.6 is the statement that a
-    relative outer limit absorbs a second application of itself -- a fact
-    about formula 5(1) in any topological space, where the book argues
-    instead with the closure of a graph.  Section B is stated over an inner
-    product space, as Chapters 1--3 are, since normal vectors need a
-    pairing that tangent vectors do not; finite-dimensionality is asked for
-    by name in the single place the book's proofs use it, the implication
-    `⇐` of 6(6).  6.9 is proved ahead of 6.7 and 6.8, being self-contained
-    where those two rest on the surjective inverse function theorem: a
-    convex set is geometrically derivable at each of its points, its tangent
-    cone is the closure of the cone of radial directions, and its two normal
-    cones coincide -- the last proved without 6(6), and so without
-    finite-dimensionality, which is needed only for the interior formula.
-    Of 6.7 the tangent cone formula is proved, for real Hilbert spaces, by
-    the book's own guide with the basis of `ker ∇F(x̄)` replaced by the
-    orthogonal projection onto it; its two normal cone formulas are
-    outstanding, being blocked by the sup norm Mathlib puts on the augmented
-    product and by the tangent-normal polarity the book itself defers to
-    6.21 and 6.45.
+  - the Chapter 6 ledger classifies all 49 numbered results: 17 exact, one
+    adapted, four partial, and 27 missing.  Exact coverage now comprises
+    6.1--6.6, 6.9, 6.12, 6.16--6.17, and 6.20--6.26.  The new exact block adds
+    first-order optimality, proximal normals and convex projection identities,
+    supporting-halfspace envelopes, the nonpositive polar and bipolar
+    correspondence, pointedness/interior criteria, orthogonal-subspace and
+    convex tangent-normal polarity, and the regular tangent cone with its
+    locally closed finite-dimensional inner-limit formula.  Result 6.7 remains
+    partial: its tangent and regular-normal formulas are proved using the
+    orthogonal-kernel augmentation on an `L²` product, while the limiting-normal
+    formula still needs the nearby-witness argument.  Results 6.10, 6.11, and
+    6.41 are also partial: the repository has the scalar interval formulas,
+    the differentiable regular-normal characterization plus scalar `C¹`
+    majorant infrastructure, and binary Euclidean-product formulas, but not
+    yet the printed arbitrary finite box, assembled globally smooth witness,
+    or regular-tangent finite-product clauses.  Proposition 6.49 is adapted
+    rather than overstated: the arbitrary-set frontier claim fails for
+    `C = ℚ ⊂ ℝ`, while the formalized theorem holds on
+    `C ∩ frontier C` for arbitrary `C` and recovers the full meagerness and
+    density conclusion on `frontier C` when `C` is closed.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 [Chapter 5](CHAPTER5_COVERAGE.md) and [Chapter 6](CHAPTER6_COVERAGE.md)
@@ -181,11 +172,10 @@ but the intended reading and formalization order remains the book order.
 ## Repository Layout
 
 - `RockafellarWets.lean`: top-level import for the current formalization.
-- `RockafellarWets/Chapter1`, `RockafellarWets/Chapter2`,
-  `RockafellarWets/Chapter3`, `RockafellarWets/Chapter4`: chapter-level Lean
-  sources.
-- `CHAPTER3_COVERAGE.md`, `CHAPTER4_COVERAGE.md`, `CHAPTER5_COVERAGE.md`:
-  result-by-result coverage ledgers.
+- `RockafellarWets/Chapter1` through `RockafellarWets/Chapter6`:
+  chapter-level Lean sources.
+- `CHAPTER3_COVERAGE.md`, `CHAPTER4_COVERAGE.md`, `CHAPTER5_COVERAGE.md`,
+  `CHAPTER6_COVERAGE.md`: result-by-result coverage ledgers.
 - `scripts/`: repository checks run in CI alongside `lake build`.
 - `rockafellar_wets.pdf`: local reference copy of the text used during the
   formalization.
