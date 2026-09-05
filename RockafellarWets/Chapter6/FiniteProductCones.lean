@@ -11,14 +11,16 @@ written as `IR^{n_1} × ⋯ × IR^{n_m}`, and its normal-cone formulas are false
 for the sup norm.
 
 The binary `WithLp 2 (E × F)` API of
-[`ProductCones.lean`](RockafellarWets/Chapter6/ProductCones.lean) is used
+[`ProductCones.lean`](RockafellarWets/Chapter6/ProductCones.lean) is left
 unchanged and is not duplicated; the finite formulas are proved directly in
-coordinates rather than by a dependent induction over binary products.
+coordinates rather than by a dependent induction over binary products, and
+nothing from that module is used.
 
-One auxiliary result is proved here because 6.41 needs it and nothing in the
-repository supplies it yet; it is not a formalization of the results it is
-drawn from.  The locality of `N̂_C(x̄)` under intersection with a neighborhood
-of `x̄`, `regularNormalCone_inter_nhds`, is the one from
+One auxiliary result is proved here because the last clause of 6.41 needs it
+and nothing in the repository supplies it yet; it is not a formalization of
+the results it is drawn from.  The other ingredient, the locality of `N̂_C(x̄)`
+under intersection with a neighborhood of `x̄`, is
+`regularNormalCone_inter_nhds` of
 [`ElementaryCones.lean`](RockafellarWets/Chapter6/ElementaryCones.lean).
 
 * `tangentCone_eq_regularTangentCone_of_isClarkeRegularAt` is the *only*
@@ -729,9 +731,10 @@ theorem tangentCone_l2PiSet_of_isClarkeRegularAt {C : ∀ i, Set (E i)}
     exact hw i
   exact regularTangentCone_subset_tangentCone hx hwreg
 
-/-- The unnumbered display after the example following 6.41: the closed convex
-conic hulls of the tangent cones always multiply, regularity or not.  This is
-the polar of the regular-normal formula. -/
+/-- The closure of the unnumbered display after the example following 6.41:
+the closed convex conic hulls of the tangent cones always multiply, regularity
+or not.  This is the polar of the regular-normal formula; the display as
+printed, without closures, is not proved here. -/
 theorem closure_conicHull_tangentCone_l2PiSet {C : ∀ i, Set (E i)} {x : PiLp 2 E}
     (hx : x ∈ l2PiSet C) :
     closure (conicHull (tangentCone (l2PiSet C) x)) =
