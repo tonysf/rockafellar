@@ -211,7 +211,7 @@ theorem isGeometricallyDerivable_smoothManifold (hx : x ∈ C)
     (hsurj : Function.Surjective (fderiv ℝ G x)) :
     IsGeometricallyDerivable C x := by
   have hGx : G x = 0 := apply_eq_zero_of_eventuallyEq hx hlocal
-  show tangentCone C x ⊆ derivableCone C x
+  change tangentCone C x ⊆ derivableCone C x
   intro w hw
   rw [tangentCone_smoothManifold hx hlocal hG hsurj] at hw
   rw [derivableCone_congr_nhds hlocal, ← hGx]

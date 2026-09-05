@@ -73,7 +73,7 @@ private def radialFDeriv (theta : ℝ → ℝ) (y : E) : E →L[ℝ] ℝ :=
 
 private theorem radialFDeriv_zero (theta : ℝ → ℝ) :
     radialFDeriv theta (0 : E) = 0 := by
-  show (deriv theta ‖(0 : E)‖ / ‖(0 : E)‖) • (innerSL ℝ (0 : E)) = 0
+  change (deriv theta ‖(0 : E)‖ / ‖(0 : E)‖) • (innerSL ℝ (0 : E)) = 0
   simp
 
 private theorem norm_radialFDeriv_le (theta : ℝ → ℝ) (y : E) :
@@ -83,7 +83,7 @@ private theorem norm_radialFDeriv_le (theta : ℝ → ℝ) (y : E) :
     simp
   · have hne : ‖y‖ ≠ 0 := norm_ne_zero_iff.mpr hy
     refine le_of_eq ?_
-    show ‖(deriv theta ‖y‖ / ‖y‖) • (innerSL ℝ y)‖ = |deriv theta ‖y‖|
+    change ‖(deriv theta ‖y‖ / ‖y‖) • (innerSL ℝ y)‖ = |deriv theta ‖y‖|
     rw [norm_smul, innerSL_apply_norm, Real.norm_eq_abs, abs_div,
       abs_of_nonneg (norm_nonneg y), div_mul_cancel₀ _ hne]
 
@@ -98,7 +98,7 @@ private theorem hasFDerivAt_radialFDeriv {theta : ℝ → ℝ} (htheta : ContDif
       simpa using (continuous_norm (E := E)).tendsto (0 : E)
     have hcomp : (fun z : E ↦ theta ‖z‖ - theta 0) =o[𝓝 (0 : E)] fun z : E ↦ ‖z‖ := by
       simpa [Function.comp_def] using hlo.comp_tendsto htend
-    show HasFDerivAtFilter (fun z : E ↦ theta ‖z‖) (0 : E →L[ℝ] ℝ) 0 (𝓝 0)
+    change HasFDerivAtFilter (fun z : E ↦ theta ‖z‖) (0 : E →L[ℝ] ℝ) 0 (𝓝 0)
     rw [hasFDerivAtFilter_iff_isLittleO]
     simpa using isLittleO_norm_right.mp hcomp
   · have hd : HasDerivAt theta (deriv theta ‖y‖) ‖y‖ :=
@@ -107,7 +107,7 @@ private theorem hasFDerivAt_radialFDeriv {theta : ℝ → ℝ} (htheta : ContDif
     have hfun : (theta ∘ fun z : E ↦ ‖z‖) = fun z : E ↦ theta ‖z‖ := rfl
     rw [hfun] at hcomp
     refine hcomp.congr_fderiv ?_
-    show deriv theta ‖y‖ • (‖y‖⁻¹ • innerSL ℝ y) = (deriv theta ‖y‖ / ‖y‖) • innerSL ℝ y
+    change deriv theta ‖y‖ • (‖y‖⁻¹ • innerSL ℝ y) = (deriv theta ‖y‖ / ‖y‖) • innerSL ℝ y
     rw [smul_smul, div_eq_mul_inv]
 
 private theorem continuous_radialFDeriv {theta : ℝ → ℝ} (htheta : ContDiff ℝ 1 theta)

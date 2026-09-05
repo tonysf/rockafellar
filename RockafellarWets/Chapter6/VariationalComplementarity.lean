@@ -134,7 +134,7 @@ theorem isVariationalSolution_iff_isMinOn_linear_of_convex (hC : Convex ℝ C) :
   refine and_congr_right fun _ ↦ ?_
   rw [isMinOn_iff]
   refine forall_congr' fun y ↦ imp_congr_right fun _ ↦ ?_
-  show 0 ≤ ⟪F x, y - x⟫_ℝ ↔ ⟪F x, x⟫_ℝ ≤ ⟪F x, y⟫_ℝ
+  change 0 ≤ ⟪F x, y - x⟫_ℝ ↔ ⟪F x, x⟫_ℝ ≤ ⟪F x, y⟫_ℝ
   rw [inner_sub_right]
   exact sub_nonneg
 

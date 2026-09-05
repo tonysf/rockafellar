@@ -296,11 +296,12 @@ The set `C` is arbitrary here; convexity of `C` is not used.  Note that the
 convex hull cannot be replaced by the conic hull: a uniform positive step
 bound would then be false. -/
 theorem exists_nhds_forall_smul_mem_of_mem_convexHull_range {C : Set E} {xbar : E}
-    {ι : Type*} [Fintype ι] {w : ι → E}
+    {ι : Type*} [Finite ι] {w : ι → E}
     (hw : ∀ i, w i ∈ localRecessionCone C xbar) :
     ∃ V ∈ nhds xbar, ∃ ε > 0, ∀ x ∈ C ∩ V, ∀ τ ∈ Set.Icc (0 : ℝ) ε,
       ∀ z ∈ convexHull ℝ (Set.range w), x + τ • z ∈ C := by
   classical
+  haveI := Fintype.ofFinite ι
   obtain ⟨δ, hδ, H⟩ :=
     exists_pos_forall_add_sum_smul_mem w Finset.univ (fun i _ ↦ hw i) 1 one_pos
   refine ⟨Metric.ball xbar δ, Metric.ball_mem_nhds _ hδ, δ / 2, half_pos hδ, ?_⟩
@@ -321,7 +322,7 @@ theorem exists_nhds_forall_smul_mem_of_mem_convexHull_range {C : Set E} {xbar : 
 `x + τW ⊆ C` for all `x ∈ C ∩ V` and `τ ∈ [0, ε]`, where `W` is the convex
 hull of the finite family. -/
 theorem exists_nhds_forall_singleton_add_smul_convexHull_subset {C : Set E} {xbar : E}
-    {ι : Type*} [Fintype ι] {w : ι → E}
+    {ι : Type*} [Finite ι] {w : ι → E}
     (hw : ∀ i, w i ∈ localRecessionCone C xbar) :
     ∃ V ∈ nhds xbar, ∃ ε > 0, ∀ x ∈ C ∩ V, ∀ τ ∈ Set.Icc (0 : ℝ) ε,
       {x} + τ • convexHull ℝ (Set.range w) ⊆ C := by
@@ -338,7 +339,7 @@ theorem exists_nhds_forall_smul_mem_of_mem_convexHull {C : Set E} {xbar : E}
     {W : Set E} (hWfin : W.Finite) (hW : W ⊆ localRecessionCone C xbar) :
     ∃ V ∈ nhds xbar, ∃ ε > 0, ∀ x ∈ C ∩ V, ∀ τ ∈ Set.Icc (0 : ℝ) ε,
       ∀ z ∈ convexHull ℝ W, x + τ • z ∈ C := by
-  haveI : Fintype (W : Type _) := hWfin.fintype
+  haveI : Finite (W : Type _) := hWfin.to_subtype
   obtain ⟨V, hV, ε, hε, H⟩ :=
     exists_nhds_forall_smul_mem_of_mem_convexHull_range
       (C := C) (xbar := xbar) (w := (Subtype.val : W → E)) (fun i ↦ hW i.2)

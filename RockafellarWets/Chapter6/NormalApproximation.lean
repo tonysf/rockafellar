@@ -392,7 +392,7 @@ theorem mem_graphicalOuterLimit_proximalNormalCone_of_mem_normalCone
       outerSetLimit (fun k ↦ svGraph (proximalNormalCone (Cseq k))) := fun n ↦
     mem_graphicalOuterLimit_proximalNormalCone_of_mem_proximalNormalCone
       hCseq houter (hvs n)
-  show ((xbar, vbar) : E × E) ∈
+  change ((xbar, vbar) : E × E) ∈
     outerSetLimit (fun k ↦ svGraph (proximalNormalCone (Cseq k)))
   exact (isClosed_outerSetLimit _).mem_of_tendsto (hxto.prodMk_nhds hvto)
     (Eventually.of_forall hstep)
@@ -479,7 +479,7 @@ theorem mem_graphicalInnerLimit_proximalNormalCone_of_mem_normalCone
       innerSetLimit (fun k ↦ svGraph (proximalNormalCone (Cseq k))) := fun n ↦
     mem_graphicalInnerLimit_proximalNormalCone_of_mem_proximalNormalCone
       hCseq hconv (hvs n)
-  show ((xbar, vbar) : E × E) ∈
+  change ((xbar, vbar) : E × E) ∈
     innerSetLimit (fun k ↦ svGraph (proximalNormalCone (Cseq k)))
   exact (isClosed_innerSetLimit _).mem_of_tendsto (hxto.prodMk_nhds hvto)
     (Eventually.of_forall hstep)

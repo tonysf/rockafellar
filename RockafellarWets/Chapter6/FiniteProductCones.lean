@@ -15,12 +15,12 @@ The binary `WithLp 2 (E × F)` API of
 unchanged and is not duplicated; the finite formulas are proved directly in
 coordinates rather than by a dependent induction over binary products.
 
-Two auxiliary results are proved here because 6.41 needs them and nothing in
-the repository supplies them yet.  Neither is a formalization of the results
-it is drawn from.
+One auxiliary result is proved here because 6.41 needs it and nothing in the
+repository supplies it yet; it is not a formalization of the results it is
+drawn from.  The locality of `N̂_C(x̄)` under intersection with a neighborhood
+of `x̄`, `regularNormalCone_inter_nhds`, is the one from
+[`ElementaryCones.lean`](RockafellarWets/Chapter6/ElementaryCones.lean).
 
-* `regularNormalCone_inter_nhds` is the locality of `N̂_C(x̄)`, immediate from
-  formula 6(5) because `𝓝[C] x̄ = 𝓝[C ∩ V] x̄` for `V ∈ 𝓝(x̄)`.
 * `tangentCone_eq_regularTangentCone_of_isClarkeRegularAt` is the *only*
   consequence of Clarke regularity that the last clause of 6.41 uses, namely
   `T_C(x̄) = T̂_C(x̄)`.  It is **not** a formalization of 6.28--6.30: none of
@@ -39,6 +39,7 @@ it is drawn from.
 -/
 
 import RockafellarWets.Chapter6.ProductCones
+import RockafellarWets.Chapter6.ElementaryCones
 import RockafellarWets.Chapter6.ProximalNormals
 import RockafellarWets.Chapter6.RegularTangents
 import RockafellarWets.Chapter6.Polarity
@@ -48,30 +49,6 @@ open Filter Metric Set Topology
 open scoped InnerProductSpace
 
 namespace RW
-
-section Locality
-
-variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
-
-/-- The regular normal cone is a local notion: formula 6(5) only reads the
-filter `𝓝[C] x̄`, which does not change when `C` is cut down by a
-neighborhood of `x̄`. -/
-theorem regularNormalCone_inter_nhds {C V : Set F} {x : F} (hV : V ∈ nhds x) :
-    regularNormalCone (C ∩ V) x = regularNormalCone C x := by
-  have hxV : x ∈ V := mem_of_mem_nhds hV
-  have hfilter : nhdsWithin x C = nhdsWithin x (C ∩ V) := nhdsWithin_restrict' C hV
-  ext v
-  constructor
-  · rintro ⟨hxCV, h⟩
-    refine ⟨hxCV.1, fun ε hε ↦ ?_⟩
-    rw [hfilter]
-    exact h ε hε
-  · rintro ⟨hxC, h⟩
-    refine ⟨⟨hxC, hxV⟩, fun ε hε ↦ ?_⟩
-    rw [← hfilter]
-    exact h ε hε
-
-end Locality
 
 section ClarkeRegularTangents
 
@@ -301,7 +278,7 @@ theorem tangentCone_eq_regularTangentCone_of_isClarkeRegularAt
   have hpos : ε ^ 2 ≤ ⟪v, w⟫_ℝ := by
     refine ge_of_tendsto (hvto.inner tendsto_const_nhds) ?_
     filter_upwards with k
-    show ε ^ 2 ≤ ⟪vs (φ k), w⟫_ℝ
+    change ε ^ 2 ≤ ⟪vs (φ k), w⟫_ℝ
     rw [hvsinner (φ k)]
     nlinarith [hlow (φ k), hε.le]
   have hnonpos : ⟪v, w⟫_ℝ ≤ 0 := by
@@ -429,14 +406,14 @@ theorem norm_l2PiUpdate_sub [DecidableEq ι] (x : PiLp 2 E) (i : ι) (y : E i) :
   have hzero : ∀ j ∈ Finset.univ, j ≠ i → ‖(l2PiUpdate x i y - x) j‖ ^ 2 = 0 := by
     intro j _ hj
     have h : (l2PiUpdate x i y - x) j = 0 := by
-      show (l2PiUpdate x i y) j - x j = 0
+      change (l2PiUpdate x i y) j - x j = 0
       rw [l2PiUpdate_of_ne x hj, sub_self]
     rw [h, norm_zero]
     norm_num
   have hsum : ∑ j, ‖(l2PiUpdate x i y - x) j‖ ^ 2 = ‖(l2PiUpdate x i y - x) i‖ ^ 2 :=
     Finset.sum_eq_single i hzero fun hj ↦ absurd (Finset.mem_univ i) hj
   have hi : (l2PiUpdate x i y - x) i = y - x i := by
-    show (l2PiUpdate x i y) i - x i = y - x i
+    change (l2PiUpdate x i y) i - x i = y - x i
     rw [l2PiUpdate_self]
   rw [l2Pi_norm_eq, hsum, hi, Real.sqrt_sq (norm_nonneg _)]
 
@@ -479,10 +456,10 @@ theorem derivableCone_l2PiSet (C : ∀ i, Set (E i)) (x : PiLp 2 E) :
     · have hfun : (fun i ↦ if (0 : ℝ) ≤ ε i then ξ i 0 else x i) = WithLp.ofLp x := by
         funext i
         rw [if_pos (hε i).le, hξ0 i]
-      show WithLp.toLp 2 (fun i ↦ if (0 : ℝ) ≤ ε i then ξ i 0 else x i) = x
+      change WithLp.toLp 2 (fun i ↦ if (0 : ℝ) ≤ ε i then ξ i 0 else x i) = x
       rw [hfun, WithLp.toLp_ofLp]
     · intro t ht i
-      show (if t ≤ ε i then ξ i t else x i) ∈ C i
+      change (if t ≤ ε i then ξ i t else x i) ∈ C i
       by_cases hti : t ≤ ε i
       · rw [if_pos hti]
         exact hξC i t ⟨ht.1, hti⟩
@@ -493,7 +470,7 @@ theorem derivableCone_l2PiSet (C : ∀ i, Set (E i)) (x : PiLp 2 E) :
           fun t : ℝ ↦
             (t⁻¹ • (WithLp.toLp 2 (fun j ↦ if t ≤ ε j then ξ j t else x j) - x)) i := by
         filter_upwards [Ioo_mem_nhdsGT (hε i)] with t ht
-        show t⁻¹ • (ξ i t - x i) = t⁻¹ • ((if t ≤ ε i then ξ i t else x i) - x i)
+        change t⁻¹ • (ξ i t - x i) = t⁻¹ • ((if t ≤ ε i then ξ i t else x i) - x i)
         rw [if_pos ht.2.le]
       exact (hξt i).congr' heq
 
@@ -514,14 +491,14 @@ theorem inner_l2PiUpdate_sub [DecidableEq ι] (v x : PiLp 2 E) (i : ι) (y : E i
   have hzero : ∀ j ∈ Finset.univ, j ≠ i → ⟪v j, (l2PiUpdate x i y - x) j⟫_ℝ = 0 := by
     intro j _ hj
     have h : (l2PiUpdate x i y - x) j = 0 := by
-      show (l2PiUpdate x i y) j - x j = 0
+      change (l2PiUpdate x i y) j - x j = 0
       rw [l2PiUpdate_of_ne x hj, sub_self]
     rw [h, inner_zero_right]
   have hsum : ∑ j, ⟪v j, (l2PiUpdate x i y - x) j⟫_ℝ
       = ⟪v i, (l2PiUpdate x i y - x) i⟫_ℝ :=
     Finset.sum_eq_single i hzero fun hj ↦ absurd (Finset.mem_univ i) hj
   have hi : (l2PiUpdate x i y - x) i = y - x i := by
-    show (l2PiUpdate x i y) i - x i = y - x i
+    change (l2PiUpdate x i y) i - x i = y - x i
     rw [l2PiUpdate_self]
   rw [l2Pi_inner_apply, hsum, hi]
 
@@ -668,7 +645,7 @@ theorem regularTangentCone_l2PiSet {C : ∀ i, Set (E i)} {x : PiLp 2 E}
       ((continuous_l2Pi_apply i).tendsto x).comp hzsto, ?_⟩
     have h := ((continuous_l2Pi_apply i).tendsto w).comp hq
     refine h.congr fun n ↦ ?_
-    show (τs n)⁻¹ • ((zs n) i - (l2PiUpdate x i (ybars n)) i)
+    change (τs n)⁻¹ • ((zs n) i - (l2PiUpdate x i (ybars n)) i)
       = (τs n)⁻¹ • ((zs n) i - ybars n)
     rw [l2PiUpdate_self]
   · intro hw
@@ -747,7 +724,7 @@ theorem tangentCone_l2PiSet_of_isClarkeRegularAt {C : ∀ i, Set (E i)}
   have hwreg : w ∈ regularTangentCone (l2PiSet C) x := by
     rw [regularTangentCone_l2PiSet hx]
     intro i
-    show w i ∈ regularTangentCone (C i) (x i)
+    change w i ∈ regularTangentCone (C i) (x i)
     rw [← tangentCone_eq_regularTangentCone_of_isClarkeRegularAt (hx i) (hreg i)]
     exact hw i
   exact regularTangentCone_subset_tangentCone hx hwreg
