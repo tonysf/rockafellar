@@ -60,13 +60,16 @@ correct statement in context.
     continuous selections given by projections, and Michael's selection
     theorem with the countable Michael representations of 5.58 and the
     extension of prescribed selections of 5.59.
-  - Chapter 6, *Variational Geometry*, Sections A and B and selected later
+  - Chapter 6, *Variational Geometry*, Sections A through C and selected later
     results: tangent, derivable, regular-tangent, regular-normal, limiting-normal,
-    proximal-normal, and polar cones; convex-set and scalar-interval formulas;
-    tangent and regular-normal change of coordinates; first-order optimality;
-    convex projections and supporting-halfspace envelopes; pointedness and
-    polarity; binary Euclidean-product formulas; and corrected generic
-    continuity of normal-cone mappings.
+    proximal-normal, and polar cones; the full change of coordinates and the
+    smooth-manifold cones; convex-set, finite-box, and finite Euclidean-product
+    formulas; first-order optimality, variational inequalities, and
+    complementarity; the everywhere-smooth gradient witness for regular
+    normals; convex projections, proximal approximation of normals, and
+    supporting-halfspace envelopes; pointedness and polarity, with Farkas'
+    lemma for polyhedral cones; local and global recession cones; and
+    corrected generic continuity of normal-cone mappings.
 - Current frontier:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
@@ -106,26 +109,31 @@ correct statement in context.
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
-  - the Chapter 6 ledger classifies all 49 numbered results: 17 exact, one
-    adapted, four partial, and 27 missing.  Exact coverage now comprises
-    6.1--6.6, 6.9, 6.12, 6.16--6.17, and 6.20--6.26.  The new exact block adds
-    first-order optimality, proximal normals and convex projection identities,
-    supporting-halfspace envelopes, the nonpositive polar and bipolar
-    correspondence, pointedness/interior criteria, orthogonal-subspace and
-    convex tangent-normal polarity, and the regular tangent cone with its
-    locally closed finite-dimensional inner-limit formula.  Result 6.7 remains
-    partial: its tangent and regular-normal formulas are proved using the
-    orthogonal-kernel augmentation on an `L²` product, while the limiting-normal
-    formula still needs the nearby-witness argument.  Results 6.10, 6.11, and
-    6.41 are also partial: the repository has the scalar interval formulas,
-    the differentiable regular-normal characterization plus scalar `C¹`
-    majorant infrastructure, and binary Euclidean-product formulas, but not
-    yet the printed arbitrary finite box, assembled globally smooth witness,
-    or regular-tangent finite-product clauses.  Proposition 6.49 is adapted
-    rather than overstated: the arbitrary-set frontier claim fails for
-    `C = ℚ ⊂ ℝ`, while the formalized theorem holds on
-    `C ∩ frontier C` for arbitrary `C` and recovers the full meagerness and
-    density conclusion on `frontier C` when `C` is closed.
+  - the Chapter 6 ledger classifies all 49 numbered results: 26 exact, two
+    adapted, one partial, and 20 missing.  Exact coverage now comprises
+    6.1--6.13, 6.16--6.18, 6.20--6.26, 6.33, 6.41, and 6.45.  The second
+    parallel batch completes the limiting-normal change of coordinates, so
+    that all three formulas of 6.7 are proved, and derives the smooth-manifold
+    cones of 6.8 from it, with geometric derivability supplied by the implicit
+    function theorem; packages the arbitrary finite box of 6.10 and the
+    nonnegative-orthant complementarity of 6.13 on `EuclideanSpace`; assembles
+    the everywhere-`C¹` unique-maximum witness of 6.11; proves the proximal
+    approximation of normals 6.18 under only the printed outer-limit
+    hypothesis; adds local and global recession cones for 6.33--6.34;
+    completes the arbitrary finite product formulas of 6.41, including the
+    regular-tangent equality and the tangent equality under Clarke
+    regularity; and proves Farkas' lemma 6.45 with the polar exchange of
+    finitely generated and H-polyhedral cones.  Exercise 6.34 is adapted
+    rather than overstated: its clause (c) needs `C` nonempty under the book's
+    own rule `∅^∞ = {0}`, and is proved for the ray-defined global recession
+    cone, since the literal intersection of local recession cones is the whole
+    space for an open convex set.  Proposition 6.29 is partial, one
+    implication -- Clarke regularity gives `T_C(x̄) = T̂_C(x̄)` -- being proved
+    as infrastructure for 6.41.  Proposition 6.49 is adapted rather than
+    overstated: the arbitrary-set frontier claim fails for `C = ℚ ⊂ ℝ`, while
+    the formalized theorem holds on `C ∩ frontier C` for arbitrary `C` and
+    recovers the full meagerness and density conclusion on `frontier C` when
+    `C` is closed.
 
 See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
 [Chapter 5](CHAPTER5_COVERAGE.md) and [Chapter 6](CHAPTER6_COVERAGE.md)
