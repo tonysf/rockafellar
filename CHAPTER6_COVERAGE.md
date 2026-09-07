@@ -10,8 +10,9 @@ clauses named.  `Missing` means that no result-specific API has yet been
 integrated.
 
 Formalization covers Sections A and B, results 6.1 through 6.6, and exact
-results 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, 6.28--6.30, and 6.47.  It also supplies sound partial
-APIs for 6.7, 6.10, 6.11, 6.14, 6.27, 6.31, 6.38, 6.41--6.44, and 6.46, and a corrected version
+results 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, 6.28--6.30, 6.38, and
+6.47.  It also supplies sound partial
+APIs for 6.7, 6.10, 6.11, 6.14, 6.27, 6.31, 6.41--6.44, and 6.46, and a corrected version
 of 6.49.  The
 supporting modules include canonical locality and elementary-cone formulas,
 continuous linear right inverses, local sections of submersions, scalar `C¹`
@@ -67,9 +68,9 @@ replaced by the full one, and what makes the closed-set graph formula
 
 | Status | Count |
 | --- | ---: |
-| Exact | 22 |
+| Exact | 23 |
 | Adapted | 1 |
-| Partial | 12 |
+| Partial | 11 |
 | Missing | 14 |
 | **Total** | **49** |
 
@@ -112,7 +113,7 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.35 Recession vectors from tangents and normals | Missing | |
 | 6.36 Interior tangents and recession | Missing | |
 | 6.37 Internal approximation in tangent limits | Missing | |
-| 6.38 Convexified normal and tangent cones | **Partial** | [`ConvexifiedCones.lean`](RockafellarWets/Chapter6/ConvexifiedCones.lean) proves the **polarity pair of clause (b)**: `cl con T_C(x̄) = N̂_C(x̄)*` and `N̂_C(x̄) = [cl con T_C(x̄)]*`, where `cl con` is `closure ∘ conicHull` as in Chapter 3.  Both are one rewrite each once 6.28(a) is available: the first is the bipolar theorem of 6.21 applied to `N̂_C(x̄) = T_C(x̄)*`, and the second is `polarCone_closure_conicHull`, polarity not seeing the closed convex conic hull.  **Clause (a)** is proved too, `cl con N_C(x̄) = T̂_C(x̄)*` and its converse, the same computation run on 6.28(b), which is why it asks for local closedness where clause (b) does not.  **Outstanding**: the two Caratheodory clauses, that under pointedness a member of the convexified cone is a sum of at most `n` members of the original.  The repository has Caratheodory for convex hulls (2.29) but not the conic form 3.15 with its `r ≤ n` bound. |
+| 6.38 Convexified normal and tangent cones | **Exact** | [`ConvexifiedCones.lean`](RockafellarWets/Chapter6/ConvexifiedCones.lean) proves the **polarity pair of clause (b)**: `cl con T_C(x̄) = N̂_C(x̄)*` and `N̂_C(x̄) = [cl con T_C(x̄)]*`, where `cl con` is `closure ∘ conicHull` as in Chapter 3.  Both are one rewrite each once 6.28(a) is available: the first is the bipolar theorem of 6.21 applied to `N̂_C(x̄) = T_C(x̄)*`, and the second is `polarCone_closure_conicHull`, polarity not seeing the closed convex conic hull.  **Clause (a)** is the same computation run on 6.28(b), which is why it asks for local closedness where clause (b) does not.  The **two Caratheodory clauses** are also proved, and they cost almost nothing because Chapter 3 already has the conic form 3.15 with its sharp `r ≤ n` bound: for a cone `K`, `conicHull K = convexHull ℝ K` since `positiveHull K = K`, and for a *closed pointed* `K` that convex hull is already closed by 3.15, so the closure in `cl con K` is vacuous and membership is `mem_convexHull_iff_exists_finrank_sum_mem`, a sum of exactly `n = finrank` members padded by zeros.  The printed `or equivalently` clauses -- `T_C(x̄)` pointed iff `N̂_C(x̄)` has interior, `N_C(x̄)` pointed iff `T̂_C(x̄)` has interior -- are 6.22 read through the two halves of 6.28. |
 | 6.39 Constraint qualification in tangent cone form | Missing | |
 | 6.40 Mangasarian-Fromovitz constraint qualification | Missing | |
 | 6.41 Tangents and normals to product sets | **Partial** | [`ProductCones.lean`](RockafellarWets/Chapter6/ProductCones.lean) gives canonical binary `WithLp 2` infrastructure.  It proves the ordinary tangent inclusion, equality of derivable cones, ordinary tangent equality when both factors are geometrically derivable, exact regular- and limiting-normal product formulas, and the closed-set equivalence between Clarke regularity of the product and of its two factors.  **The printed result is not yet complete**: it is stated for arbitrary finite products, includes the canonical regular-tangent product equality, and derives ordinary tangent equality merely from Clarke regularity.  Those regular-tangent and finite-product clauses are not yet connected to this binary module. |
