@@ -108,9 +108,9 @@ correct statement in context.
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
   - the Chapter 6 ledger classifies all 49 numbered results: 18 exact, one
-    adapted, eleven partial, and 14 missing.  Exact coverage now comprises
+    adapted, ten partial, and 13 missing.  Exact coverage now comprises
     6.1--6.6, 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, 6.28--6.30, 6.38,
-    and 6.47.  The new exact block adds
+    and 6.45--6.47.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
     correspondence, pointedness/interior criteria, orthogonal-subspace and
@@ -136,7 +136,10 @@ correct statement in context.
     equivalent characterizations of Clarke regularity in 6.29, all of the
     consequences in 6.30, and the whole of 6.38 -- whose Caratheodory
     clauses come free from the sharp conic form of 3.15 already in
-    Chapter 3.  The route avoids
+    Chapter 3.  The Farkas lemma 6.45 and the whole of 6.46 follow the same
+    way: the cone of nonnegative combinations is finitely generated, hence
+    closed by Chapter 3's Minkowski--Weyl development, and the bipolar
+    theorem does the rest.  The route avoids
     the book's own: 6.28(b) rests on 6.27(b), which consumes only the
     *proximal* case of 6.27(a), and that case needs neither 6.18(a) nor the
     diagonalization of 6.18(b) -- one application of 4.19 and one of the
