@@ -64,7 +64,8 @@ correct statement in context.
     results: tangent, derivable, regular-tangent, regular-normal, limiting-normal,
     proximal-normal, and polar cones; convex-set and scalar-interval formulas;
     tangent and regular-normal change of coordinates; first-order optimality;
-    convex projections and supporting-halfspace envelopes; pointedness and
+    convex projections and supporting-halfspace envelopes; the normal-cone
+    characterization of boundary and interior points; pointedness and
     polarity; binary Euclidean-product formulas; and corrected generic
     continuity of normal-cone mappings.
 - Current frontier:
@@ -106,9 +107,9 @@ correct statement in context.
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
-  - the Chapter 6 ledger classifies all 49 numbered results: 17 exact, one
-    adapted, four partial, and 27 missing.  Exact coverage now comprises
-    6.1--6.6, 6.9, 6.12, 6.16--6.17, and 6.20--6.26.  The new exact block adds
+  - the Chapter 6 ledger classifies all 49 numbered results: 18 exact, one
+    adapted, four partial, and 26 missing.  Exact coverage now comprises
+    6.1--6.6, 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
     correspondence, pointedness/interior criteria, orthogonal-subspace and

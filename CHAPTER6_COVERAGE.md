@@ -10,7 +10,7 @@ clauses named.  `Missing` means that no result-specific API has yet been
 integrated.
 
 Formalization covers Sections A and B, results 6.1 through 6.6, and exact
-results 6.9, 6.12, 6.16--6.17, and 6.20--6.26.  It also supplies sound partial
+results 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  It also supplies sound partial
 APIs for 6.7, 6.10, 6.11, and 6.41, and a corrected version of 6.49.  The
 supporting modules include canonical locality and elementary-cone formulas,
 continuous linear right inverses, local sections of submersions, scalar `C¹`
@@ -66,10 +66,10 @@ replaced by the full one, and what makes the closed-set graph formula
 
 | Status | Count |
 | --- | ---: |
-| Exact | 17 |
+| Exact | 18 |
 | Adapted | 1 |
 | Partial | 4 |
-| Missing | 27 |
+| Missing | 26 |
 | **Total** | **49** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -92,7 +92,7 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.16 Proximal normals | **Exact** | [`ProximalNormals.lean`](RockafellarWets/Chapter6/ProximalNormals.lean) defines `proximalNormalCone C x̄` by a positive projection step and proves the equivalent quadratic-support inequality.  `sub_mem_regularNormalCone_of_mem_projMapping` sends the displacement from a nearest point to a regular normal, and `nonneg_smul_sub_mem_regularNormalCone_of_mem_projMapping` covers every nonnegative multiple.  `projMapping_add_smul_eq_singleton_of_lt` proves the printed uniqueness assertion after moving any strictly smaller positive distance along the proximal-normal direction. |
 | 6.17 Proximality of normals to convex sets | **Exact** | [`ProximalNormals.lean`](RockafellarWets/Chapter6/ProximalNormals.lean) proves `proximalNormalCone_eq_normalCone_of_convex` at every feasible point of a convex set.  `mem_normalCone_iff_mem_projMapping_add_of_convex` is the unit-step projection characterization, `projMapping_eq_svInv_add_normalCone_of_convex` is the set-valued identity `P_C = (I + N_C)⁻¹`, and `normalCone_eq_image_sub_svInv_projMapping_of_convex` records the equivalent identity `N_C = P_C⁻¹ - I`. |
 | 6.18 Approximation of normals | Missing | |
-| 6.19 Characterization of boundary points | Missing | |
+| 6.19 Characterization of boundary points | **Exact** | [`BoundaryPoints.lean`](RockafellarWets/Chapter6/BoundaryPoints.lean) proves all three clauses.  The interior half was already free from the locality of the cones -- `normalCone_eq_singleton_of_mem_interior` -- so the work is the boundary half, and it is the book's guide: a point of a closed `C` that is not interior is approached by points `zν ∉ C`, each `zν` is projected to some `yν ∈ P_C(zν)`, and `zν - yν` is by construction a *proximal* normal at `yν`, which after rescaling to unit length gives `vν ∈ N̂_C(yν)` with `|vν| = 1`.  The projections converge to `x̄` because `|yν - zν| ≤ |x̄ - zν|`, so `|yν - x̄| ≤ 2|zν - x̄|`; a cluster point of the `vν` on the compact unit ball is then normal at `x̄` **by Definition 6.3 itself**, so 6.6 is not invoked at all.  The hypothesis is `[ProperSpace E]`, not `[FiniteDimensional ℝ E]`: nearest points have to exist and the unit ball has to be compact, and nothing else about the dimension is used.  The clause for nonclosed sets, `N_C(x̄) ⊆ N_{cl C}(x̄)`, is **not** monotonicity -- a larger set has a *smaller* regular normal cone, so monotonicity runs the wrong way.  It comes instead from `regularNormalCone_closure`, the observation that the regular normal cones of `C` and of `cl C` agree at every point of `C`: the `ε` inequality of 6(5) cuts out a closed set of test points, and `ball ∩ cl C ⊆ cl(ball ∩ C)` for an open ball, so an inequality holding on `C` throughout a ball holds on `cl C` throughout that ball.  That lemma needs no topological hypothesis at all, and neither does the resulting inclusion. |
 | 6.20 Envelope representation of convex sets | **Exact** | [`SupportingHalfspaces.lean`](RockafellarWets/Chapter6/SupportingHalfspaces.lean) defines supporting halfspaces and, in finite dimensions, separates every exterior point of a nonempty closed convex set and proves `eq_sInter_supportingHalfspaces`.  The converse closedness and convexity of arbitrary intersections, their indexed and empty-family forms, and the homogeneous through-the-origin envelope for closed convex cones are all present.  `isClarkeRegularAt_of_closed_convex` proves the concluding regularity clause. |
 | 6.21 Polarity correspondence | **Exact** | [`Polarity.lean`](RockafellarWets/Chapter6/Polarity.lean) defines the book's nonpositive `polarCone`, proves that it is a closed convex cone and reverses inclusions, and shows that closure and convex-conic hull do not change it.  `polarCone_bipolar` identifies the bipolar with `closure (conicHull K)`; consequently closed convex cones are fixed by bipolarization and polarity is involutive and injective on them.  The singleton, whole-space, ray, and homogeneous-halfspace formulas are also supplied. |
 | 6.22 Pointedness and polarity | **Exact** | [`Polarity.lean`](RockafellarWets/Chapter6/Polarity.lean) proves in finite dimensions that a convex cone has nonempty interior exactly when its polar is pointed, and that `w` is interior exactly when every nonzero polar vector pairs strictly negatively with it.  The printed replacement clause is also proved for a closed cone `K₀`: strict testing may use the nonzero vectors of `K₀` itself, and `interior (polarCone K₀)` is nonempty exactly when `K₀` is pointed.  No convexity hypothesis is added to that replacement clause. |
