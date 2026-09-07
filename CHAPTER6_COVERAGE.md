@@ -11,8 +11,7 @@ integrated.
 
 Formalization covers Sections A and B, results 6.1 through 6.6, and exact
 results 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  It also supplies sound partial
-APIs for 6.7, 6.10, 6.11, 6.14, 6.28, 6.29, 6.31, 6.41, 6.42, 6.43, and
-6.44, and a corrected version
+APIs for 6.7, 6.10, 6.11, 6.14, 6.28--6.31, and 6.41--6.44, and a corrected version
 of 6.49.  The
 supporting modules include canonical locality and elementary-cone formulas,
 continuous linear right inverses, local sections of submersions, scalar `C¹`
@@ -70,8 +69,8 @@ replaced by the full one, and what makes the closed-set graph formula
 | --- | ---: |
 | Exact | 18 |
 | Adapted | 1 |
-| Partial | 11 |
-| Missing | 19 |
+| Partial | 12 |
+| Missing | 18 |
 | **Total** | **49** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -105,7 +104,7 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.27 Normals to tangent cones | Missing | |
 | 6.28 Tangent-normal polarity | **Partial** | [`ClarkeRegularityCharacterizations.lean`](RockafellarWets/Chapter6/ClarkeRegularityCharacterizations.lean) proves clause **(a)**, `N̂_C(x̄) = T_C(x̄)*`, which the book itself says merely restates 6(6); it is `mem_regularNormalCone_iff_inner_nonpos` read through `mem_polarCone`, and so inherits that result's `[FiniteDimensional ℝ E]`, the ambient assumption of the printed statement.  **Outstanding**: clause **(b)**, `T̂_C(x̄) = N_C(x̄)*` at a locally closed point.  Its printed proof needs the tangent-normal estimate 6.27(b), hence 6.27(a), hence the graphical-limsup inclusion `N_T ⊆ g-lim sup N_{Tν}` of 6.18(b); none of those is in the repository yet. |
 | 6.29 Characterizations of Clarke regularity | **Partial** | [`ClarkeRegularityCharacterizations.lean`](RockafellarWets/Chapter6/ClarkeRegularityCharacterizations.lean) proves the two groups of conditions that 6.28(b) is not needed for.  The **normal group** is (a) ⟺ (c) ⟺ (e) ⟺ (f): (c) is (a) rewritten by 6.28(a); (e) is (a) because `N̂_C = T_C*` sits inside `N_C`, so nonpositivity of every pairing is exactly `N_C ⊆ N̂_C`; and (f), outer semicontinuity of `N̂_C` at `x̄` relative to `C`, is (a) by the limit formula 6(7), `N_C = lim sup N̂_C` -- an equivalence that needs neither local closedness nor finite dimension, only `x̄ ∈ C`.  The **tangent group** is (b) ⟺ (g), inner semicontinuity of `T_C` relative to `C`, by the limit formula 6(16) of 6.26, which is where local closedness enters.  Each is also recorded against `IsClarkeRegularAt` itself, so that at a locally closed point Clarke regularity may be used in whichever of the forms (c), (e), (f) is convenient.  **Outstanding**: the link joining the two groups, and with it condition (d).  Both are exactly 6.28(b). |
-| 6.30 Consequences of Clarke regularity | Missing | |
+| 6.30 Consequences of Clarke regularity | **Partial** | [`ClarkeRegularityCharacterizations.lean`](RockafellarWets/Chapter6/ClarkeRegularityCharacterizations.lean) proves the **normal half**: at a point of Clarke regularity `N_C(x̄) = T_C(x̄)*`, and therefore `N_C(x̄)` is convex, polar cones being convex.  Both come from 6.29's normal group and 6.28(a) alone.  **Outstanding**: convexity of `T_C(x̄)`, the reverse polarity `T_C(x̄) = N_C(x̄)*`, and geometric derivability.  All three run through 6.29(b), `T_C = T̂_C` -- the regular tangent cone is already known convex and already known to consist of derivable vectors, so the whole of the remaining half is exactly the missing link between 6.29's two groups, which is 6.28(b). |
 | 6.31 Tangent cones to sets with constraint structure | **Partial** | [`ConstraintStructure.lean`](RockafellarWets/Chapter6/ConstraintStructure.lean) proves the **first display**, `T_C(x̄) ⊆ {w ∈ T_X(x̄) | ∇F(x̄)w ∈ T_D(F(x̄))}`, which the book calls elementary and which is exactly that: monotonicity of the tangent cone in the set gives the `T_X` half, and `image_tangentCone_subset` -- the push-forward of tangent vectors through any differentiable map -- gives the other, since `F` carries `C` into `D`.  Only differentiability at `x̄` is used; no closedness, no `C¹`, no constraint qualification.  **Outstanding**: the reverse inclusion under the constraint qualification of 6.14, which the book derives from 6.14's limiting-normal inclusion by the polarity 6.28(b), and the regular case, which it reads off 6.29.  Both of those prerequisites are themselves outstanding. |
 | 6.32 Regular tangents under a change of coordinates | Missing | |
 | 6.33 Recession vectors | Missing | |

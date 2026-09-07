@@ -108,7 +108,7 @@ correct statement in context.
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
   - the Chapter 6 ledger classifies all 49 numbered results: 18 exact, one
-    adapted, eleven partial, and 19 missing.  Exact coverage now comprises
+    adapted, twelve partial, and 18 missing.  Exact coverage now comprises
     6.1--6.6, 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
@@ -125,7 +125,8 @@ correct statement in context.
     constraint qualification, wait on 6.11 and on the polarity 6.28(b).
     Of that polarity, clause (a) is proved, and with it the two groups of
     Clarke-regularity characterizations in 6.29 that do not need clause (b):
-    the normal group (a), (c), (e), (f) and the tangent group (b), (g).
+    the normal group (a), (c), (e), (f) and the tangent group (b), (g), and
+    with them the normal half of 6.30.
     Results 6.10, 6.11, and
     6.41 are also partial: the repository has the scalar interval formulas,
     the differentiable regular-normal characterization plus scalar `C¹`

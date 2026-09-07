@@ -132,6 +132,20 @@ theorem isClarkeRegularAt_iff_svOscWithinAt {C : Set E} {x : E} (hx : x ∈ C)
   rw [IsClarkeRegularAt, normalCone_eq_regularNormalCone_iff_svOscWithinAt hx]
   exact ⟨fun h ↦ h.2, fun h ↦ ⟨hlc, h⟩⟩
 
+/-- **Corollary 6.30**, the normal half: at a point of Clarke regularity the
+normal cone is the polar of the tangent cone, hence convex. -/
+theorem IsClarkeRegularAt.normalCone_eq_polarCone {C : Set E} {x : E} (hx : x ∈ C)
+    (h : IsClarkeRegularAt C x) : normalCone C x = polarCone (tangentCone C x) := by
+  rw [h.2]
+  exact regularNormalCone_eq_polarCone_tangentCone hx
+
+/-- **Corollary 6.30**, the normal half: the normal cone at a point of Clarke
+regularity is convex. -/
+theorem IsClarkeRegularAt.convex_normalCone {C : Set E} {x : E} (hx : x ∈ C)
+    (h : IsClarkeRegularAt C x) : Convex ℝ (normalCone C x) := by
+  rw [h.normalCone_eq_polarCone hx]
+  exact convex_polarCone _
+
 end Polarity
 
 end RW
