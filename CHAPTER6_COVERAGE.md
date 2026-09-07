@@ -10,8 +10,8 @@ clauses named.  `Missing` means that no result-specific API has yet been
 integrated.
 
 Formalization covers Sections A and B, results 6.1 through 6.6, and exact
-results 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  It also supplies sound partial
-APIs for 6.7, 6.10, 6.11, 6.14, 6.28--6.31, and 6.41--6.44, and a corrected version
+results 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, and 6.47.  It also supplies sound partial
+APIs for 6.7, 6.10, 6.11, 6.14, 6.28--6.31, 6.41--6.44, and 6.46, and a corrected version
 of 6.49.  The
 supporting modules include canonical locality and elementary-cone formulas,
 continuous linear right inverses, local sections of submersions, scalar `C¹`
@@ -67,10 +67,10 @@ replaced by the full one, and what makes the closed-set graph formula
 
 | Status | Count |
 | --- | ---: |
-| Exact | 18 |
+| Exact | 19 |
 | Adapted | 1 |
-| Partial | 12 |
-| Missing | 18 |
+| Partial | 13 |
+| Missing | 16 |
 | **Total** | **49** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -120,7 +120,7 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.43 Tangents and normals to image sets | **Partial** | [`ImageAndSumSets.lean`](RockafellarWets/Chapter6/ImageAndSumSets.lean) proves the **first display**, both halves, for `D = F(C)` and any `ū`: the tangent inclusion `T_D(ū) ⊇ ⋃ ∇F(x̄)(T_C(x̄))` over the preimages `x̄ ∈ F⁻¹(ū) ∩ C` is the push-forward `image_tangentCone_subset` read at `F(x̄) = ū`, and the regular-normal inclusion `N̂_D(ū) ⊆ ⋂ {y | ∇F(x̄)*y ∈ N̂_C(x̄)}` is the adjoint pull-back applied to the set `F(C)` followed by `regularNormalCone_antitone` along `C ⊆ F⁻¹(F(C))`.  That last step is what turns a statement about preimages into one about images.  `F` is asked only to be differentiable at each preimage; `C` need not be closed and `F` need not be `C¹`.  **Outstanding**: the reverse inclusions under the properness hypothesis that `F⁻¹(U) ∩ C` be bounded for some `U ∈ N(ū)`, which the book derives from 6.14 and 6.31. |
 | 6.44 Tangents and normals under set addition | **Partial** | [`ImageAndSumSets.lean`](RockafellarWets/Chapter6/ImageAndSumSets.lean) proves the **regular-normal half of the first display**, `N̂_{C₁+⋯+Cₘ}(x̄) ⊆ N̂_{C₁}(x̄₁) ∩ ⋯ ∩ N̂_{Cₘ}(x̄ₘ)` for every splitting `x̄ = x̄₁ + ⋯ + x̄ₘ` with `x̄ᵢ ∈ Cᵢ`, in both the binary form and the `Finset` form.  It needs nothing analytic: translating one summand by fixed points of the others embeds a ball around `x̄ᵢ` in `Cᵢ` into the sum, and the difference vectors are literally the same, so the `ε` inequality transfers verbatim.  Closedness of the `Cᵢ` is not used.  **Outstanding**: the regular-tangent half of the first display, and the two displays for the limiting cones under the boundedness hypothesis, and the convex case.  The book obtains all of them from 6.43 applied to `F(x₁,…,xₘ) = x₁ + ⋯ + xₘ` on `C₁ × ⋯ × Cₘ`, so they wait on 6.43's reverse inclusions and on the product formulas of 6.41. |
 | 6.45 Polars of polyhedral cones; Farkas | Missing | |
-| 6.46 Tangents and normals to polyhedral sets | Missing | |
-| 6.47 Exactness of tangent approximations | Missing | |
+| 6.46 Tangents and normals to polyhedral sets | **Partial** | [`PolyhedralTangents.lean`](RockafellarWets/Chapter6/PolyhedralTangents.lean) proves the **tangent cone formula** `T_C(x̄) = {w | ⟨aᵢ, w⟩ ≤ 0 for i ∈ I(x̄)}` relative to any description of `C` by finitely many continuous-linear inequalities, and the clause that `T_C(x̄)` is polyhedral, as `IsHPolyhedralCone`: the inactive functionals are replaced by `0`, whose homogeneous inequality is vacuous, so the active cone is an `H`-polyhedral cone on the same index type `Fin m`.  Both are also stated for a finitely generated polyhedron, through `isHPolyhedral_iff_isPolyhedral`, which is where finite-dimensionality enters; the `H`-description statements themselves need none, nor an inner product.  **Outstanding**: the normal cone formula `N_C(x̄) = {y₁a₁ + ⋯ + yₘaₘ | yᵢ ≥ 0 on I(x̄), yᵢ = 0 off it}` and the polyhedrality of `N_C(x̄)`.  The book gets them by polarizing the tangent formula with 6.24 and then applying 6.45, the Farkas description of the polar of a finitely generated cone, which is not yet in the repository. |
+| 6.47 Exactness of tangent approximations | **Exact** | [`PolyhedralTangents.lean`](RockafellarWets/Chapter6/PolyhedralTangents.lean) produces the neighborhood `V` explicitly: it is the open set `{y | ⟨aᵢ, y⟩ < αᵢ for every i inactive at x̄}`, on which `C` coincides with the polyhedron `activeConstraintSet` obtained by discarding the inactive constraints, and that polyhedron is exactly `x̄ + T_C(x̄)`.  **The proof reverses the book's order.**  The guide derives 6.47 from the tangent cone formula of 6.46; here the local identity `C ∩ V = (x̄ + K) ∩ V` is elementary inequality bookkeeping and is proved first, after which 6.46's tangent formula is read off it by `tangentCone_inter_nhds`.  The gain is real: the direct route has to produce `λ > 0` with `x̄ + λw ∈ C`, which needs a minimum over the inactive constraints, whereas on the active polyhedron the entire ray `x̄ + λw`, `λ > 0`, lies in the set, so `mem_tangentCone_of_forall` applies with no smallness condition.  Stated for the `H`-description with no dimensional or inner-product hypothesis, and for a finitely generated polyhedron through Minkowski--Weyl in finite dimensions. |
 | 6.48 Separation of convex cones | Missing | |
 | 6.49 Generic continuity of normal-cone mappings | **Adapted** | [`GenericNormalContinuity.lean`](RockafellarWets/Chapter6/GenericNormalContinuity.lean) explains why the printed arbitrary-set frontier statement is false under convention 6(8).  For `C = ℚ ⊂ ℝ`, `frontier C = ℝ`; normal cones are empty at irrational points but contain zero at arbitrarily close rational points, so outer semicontinuity fails off `C`, while inner semicontinuity fails on `C`, making every point exceptional.  The hypothesis-free corrected theorem works relative to `C ∩ frontier C` and proves meagerness of the discontinuity set there in finite dimensions.  When `C` is closed, `frontier C ⊆ C`, so the module recovers the full printed conclusion on `frontier C`: outer semicontinuity, meagerness of discontinuities, and density of continuity points. |
