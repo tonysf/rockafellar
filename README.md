@@ -108,8 +108,9 @@ correct statement in context.
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
   - the Chapter 6 ledger classifies all 49 numbered results: 18 exact, one
-    adapted, fourteen partial, and 15 missing.  Exact coverage now comprises
-    6.1--6.6, 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, and 6.47.  The new exact block adds
+    adapted, twelve partial, and 14 missing.  Exact coverage now comprises
+    6.1--6.6, 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, 6.28--6.30, and
+    6.47.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
     correspondence, pointedness/interior criteria, orthogonal-subspace and
@@ -131,8 +132,15 @@ correct statement in context.
     approximation is locally exact, proved from the `H`-description of
     Chapter 3G* by discarding the inactive constraints, which reverses the
     book's order and avoids its minimum over inactive constraints.  The
-    easy inclusion of 6.28(b) is proved as well, and with it the implication
-    (b) ⟹ (a) of 6.29 and the polarity pair of 6.38(b).
+    tangent-normal polarity of 6.28 is complete, and with it the seven
+    equivalent characterizations of Clarke regularity in 6.29, all of the
+    consequences in 6.30, and both polarity pairs of 6.38.  The route avoids
+    the book's own: 6.28(b) rests on 6.27(b), which consumes only the
+    *proximal* case of 6.27(a), and that case needs neither 6.18(a) nor the
+    diagonalization of 6.18(b) -- one application of 4.19 and one of the
+    inner half of 5.35 suffice, because only the single point carrying the
+    proximal normal has to be captured by a sequence of scales, not the whole
+    tangent cone.
     Results 6.10, 6.11, and
     6.41 are also partial: the repository has the scalar interval formulas,
     the differentiable regular-normal characterization plus scalar `C¹`
