@@ -20,6 +20,7 @@ import RockafellarWets.Chapter6.SmoothMajorant
 import RockafellarWets.Chapter6.Optimality
 import RockafellarWets.Chapter6.ProximalNormals
 import RockafellarWets.Chapter6.BoundaryPoints
+import RockafellarWets.Chapter6.ConstraintStructure
 import RockafellarWets.Chapter6.SupportingHalfspaces
 import RockafellarWets.Chapter6.Polarity
 import RockafellarWets.Chapter6.RegularTangents

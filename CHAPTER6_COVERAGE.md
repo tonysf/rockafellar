@@ -11,7 +11,8 @@ integrated.
 
 Formalization covers Sections A and B, results 6.1 through 6.6, and exact
 results 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  It also supplies sound partial
-APIs for 6.7, 6.10, 6.11, and 6.41, and a corrected version of 6.49.  The
+APIs for 6.7, 6.10, 6.11, 6.14, 6.31, 6.41, and 6.42, and a corrected version
+of 6.49.  The
 supporting modules include canonical locality and elementary-cone formulas,
 continuous linear right inverses, local sections of submersions, scalar `C¹`
 strict-majorant infrastructure, and binary Euclidean-product cone formulas.
@@ -68,8 +69,8 @@ replaced by the full one, and what makes the closed-set graph formula
 | --- | ---: |
 | Exact | 18 |
 | Adapted | 1 |
-| Partial | 4 |
-| Missing | 26 |
+| Partial | 7 |
+| Missing | 23 |
 | **Total** | **49** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -87,7 +88,7 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.11 Gradient characterization of regular normals | **Partial** | [`GradientNormals.lean`](RockafellarWets/Chapter6/GradientNormals.lean) proves the pointwise differentiable characterization: gradients at feasible relative local maxima are regular normals, and every regular normal is realized at the base point by a function having a unique global maximum relative to the set.  [`SmoothMajorant.lean`](RockafellarWets/Chapter6/SmoothMajorant.lean) proves `exists_contDiff_one_strict_majorant`, converting a nondecreasing scalar modulus with first-order decay into an everywhere `C¹` strict majorant.  **The printed smooth-witness clause remains outstanding**: the scalar construction has not yet been combined with the regular-normal modulus to produce an everywhere-`C¹` function on the ambient space with the prescribed gradient and unique relative maximum. |
 | 6.12 Basic first-order conditions for optimality | **Exact** | [`Optimality.lean`](RockafellarWets/Chapter6/Optimality.lean) proves every clause.  A differentiable local minimizer has nonnegative gradient pairing with every tangent direction; this is equivalent to membership of the negative gradient in the regular normal cone and implies membership in the limiting normal cone.  For convex `C`, `firstOrder_optimality_conditions_iff_of_convex` gives the tangent, regular-normal, limiting-normal, and global variational-inequality equivalences.  When the objective is also convex on `C`, `isMinOn_of_convexOn_of_firstOrder` proves the stated sufficiency for global optimality. |
 | 6.13 Variational inequalities and complementarity | Missing | |
-| 6.14 Normal cones to sets with constraint structure | Missing | |
+| 6.14 Normal cones to sets with constraint structure | **Partial** | [`ConstraintStructure.lean`](RockafellarWets/Chapter6/ConstraintStructure.lean) proves the **first display**, the regular-normal inclusion `N̂_C(x̄) ⊇ {∇F(x̄)*y + z | y ∈ N̂_D(F(x̄)), z ∈ N̂_X(x̄)}` for `C = {x ∈ X | F(x) ∈ D}`, written `constrainedPreimage X F D`.  The book's `Σ yᵢ ∇fᵢ(x̄)` is `∇F(x̄)* y` by formula 6(9), so the adjoint form is the printed one.  The proof is the printed one, split in two: `adjoint_image_regularNormalCone_subset_preimage` from the regular-normal change of coordinates supplies `∇F(x̄)*y ∈ N̂_{F⁻¹(D)}(x̄)` -- that is the one-way chain rule, needing only ordinary Frechet differentiability -- and `add_mem_regularNormalCone_inter` adds the `X` part, regular normals adding across an intersection because the `ε` inequality of 6(5) splits as `ε/2 + ε/2`.  Neither closedness of `X` and `D` nor the `C¹` hypothesis is used for this display; differentiability at `x̄` alone suffices, and the ambient spaces are real Hilbert spaces.  **Outstanding**: the limiting-normal inclusion under the constraint qualification, and the regularity clause.  Both rest on 6.11, whose smooth-majorant witness `argmax_C h = {x̄}` with `∇h(x̄) = v` is itself still partial, and on the compactness reduction and penalty argument `ϕν(x,u) = -h(x) + |F(x) - u|²/2τν` of the printed proof. |
 | 6.15 Lagrange multipliers | Missing | |
 | 6.16 Proximal normals | **Exact** | [`ProximalNormals.lean`](RockafellarWets/Chapter6/ProximalNormals.lean) defines `proximalNormalCone C x̄` by a positive projection step and proves the equivalent quadratic-support inequality.  `sub_mem_regularNormalCone_of_mem_projMapping` sends the displacement from a nearest point to a regular normal, and `nonneg_smul_sub_mem_regularNormalCone_of_mem_projMapping` covers every nonnegative multiple.  `projMapping_add_smul_eq_singleton_of_lt` proves the printed uniqueness assertion after moving any strictly smaller positive distance along the proximal-normal direction. |
 | 6.17 Proximality of normals to convex sets | **Exact** | [`ProximalNormals.lean`](RockafellarWets/Chapter6/ProximalNormals.lean) proves `proximalNormalCone_eq_normalCone_of_convex` at every feasible point of a convex set.  `mem_normalCone_iff_mem_projMapping_add_of_convex` is the unit-step projection characterization, `projMapping_eq_svInv_add_normalCone_of_convex` is the set-valued identity `P_C = (I + N_C)⁻¹`, and `normalCone_eq_image_sub_svInv_projMapping_of_convex` records the equivalent identity `N_C = P_C⁻¹ - I`. |
@@ -104,7 +105,7 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.28 Tangent-normal polarity | Missing | |
 | 6.29 Characterizations of Clarke regularity | Missing | |
 | 6.30 Consequences of Clarke regularity | Missing | |
-| 6.31 Tangent cones to sets with constraint structure | Missing | |
+| 6.31 Tangent cones to sets with constraint structure | **Partial** | [`ConstraintStructure.lean`](RockafellarWets/Chapter6/ConstraintStructure.lean) proves the **first display**, `T_C(x̄) ⊆ {w ∈ T_X(x̄) | ∇F(x̄)w ∈ T_D(F(x̄))}`, which the book calls elementary and which is exactly that: monotonicity of the tangent cone in the set gives the `T_X` half, and `image_tangentCone_subset` -- the push-forward of tangent vectors through any differentiable map -- gives the other, since `F` carries `C` into `D`.  Only differentiability at `x̄` is used; no closedness, no `C¹`, no constraint qualification.  **Outstanding**: the reverse inclusion under the constraint qualification of 6.14, which the book derives from 6.14's limiting-normal inclusion by the polarity 6.28(b), and the regular case, which it reads off 6.29.  Both of those prerequisites are themselves outstanding. |
 | 6.32 Regular tangents under a change of coordinates | Missing | |
 | 6.33 Recession vectors | Missing | |
 | 6.34 Recession cones and convexity | Missing | |
@@ -115,7 +116,7 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.39 Constraint qualification in tangent cone form | Missing | |
 | 6.40 Mangasarian-Fromovitz constraint qualification | Missing | |
 | 6.41 Tangents and normals to product sets | **Partial** | [`ProductCones.lean`](RockafellarWets/Chapter6/ProductCones.lean) gives canonical binary `WithLp 2` infrastructure.  It proves the ordinary tangent inclusion, equality of derivable cones, ordinary tangent equality when both factors are geometrically derivable, exact regular- and limiting-normal product formulas, and the closed-set equivalence between Clarke regularity of the product and of its two factors.  **The printed result is not yet complete**: it is stated for arbitrary finite products, includes the canonical regular-tangent product equality, and derives ordinary tangent equality merely from Clarke regularity.  Those regular-tangent and finite-product clauses are not yet connected to this binary module. |
-| 6.42 Tangents and normals to intersections | Missing | |
+| 6.42 Tangents and normals to intersections | **Partial** | [`ConstraintStructure.lean`](RockafellarWets/Chapter6/ConstraintStructure.lean) proves the **first display** in both halves and for an arbitrary finite index set: `T_{⋂Cᵢ}(x̄) ⊆ ⋂ T_{Cᵢ}(x̄)` by monotonicity, and `N̂_{⋂Cᵢ}(x̄) ⊇ Σ N̂_{Cᵢ}(x̄)` by induction on the index `Finset` from the binary `add_mem_regularNormalCone_inter`.  The induction needs no membership hypothesis on `x̄`: the empty intersection is the whole space, where the regular normal cone is the zero cone and the empty sum is `0`.  Closedness of the `Cᵢ` is not used.  **Outstanding**: the two reverse inclusions under the constraint qualification that `v₁ + ⋯ + vₘ = 0` with `vᵢ ∈ N_{Cᵢ}(x̄)` forces every `vᵢ = 0`, and the regular case.  The book gets them by applying 6.14 and 6.31 to `D := C₁ × ⋯ × Cₘ` and the diagonal map, computing tangents and normals to `D` by 6.41, so this row waits on those three. |
 | 6.43 Tangents and normals to image sets | Missing | |
 | 6.44 Tangents and normals under set addition | Missing | |
 | 6.45 Polars of polyhedral cones; Farkas | Missing | |
