@@ -434,4 +434,151 @@ theorem IsClarkeRegularAt.isGeometricallyDerivable {C : Set E} {x : E} (hx : x �
 
 end TangentNormalPolarity
 
+section MagnifiedNormals
+
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+
+/-- Regular normals correspond under magnification: the affine map
+`z ↦ x̄ + τz` scales the two sides of the `ε` inequality of 6(5) by the same
+factor `τ`, so the inequality transfers with the same `ε`. -/
+theorem regularNormalCone_blowUp {C : Set E} {x : E} {τ : ℝ} (hτ : 0 < τ) (w : E) :
+    regularNormalCone (blowUp C x τ) w = regularNormalCone C (x + τ • w) := by
+  have hzsub : ∀ y : E, τ⁻¹ • (y - x) - w = τ⁻¹ • (y - (x + τ • w)) := by
+    intro y
+    match_scalars <;> field_simp
+  have hnorm : ∀ y : E, ‖τ⁻¹ • (y - x) - w‖ = τ⁻¹ * ‖y - (x + τ • w)‖ := by
+    intro y
+    rw [hzsub, norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.2 hτ)]
+  have hinner : ∀ (v y : E),
+      ⟪v, τ⁻¹ • (y - x) - w⟫_ℝ = τ⁻¹ * ⟪v, y - (x + τ • w)⟫_ℝ := by
+    intro v y
+    rw [hzsub, real_inner_smul_right]
+  have hdist : ∀ (y : E) (δ : ℝ),
+      ‖τ⁻¹ • (y - x) - w‖ < δ ↔ ‖y - (x + τ • w)‖ < τ * δ := by
+    intro y δ
+    rw [hnorm]
+    constructor
+    · intro h
+      have h2 := mul_lt_mul_of_pos_left h hτ
+      rwa [← mul_assoc, mul_inv_cancel₀ hτ.ne', one_mul] at h2
+    · intro h
+      have h2 := mul_lt_mul_of_pos_left h (inv_pos.2 hτ)
+      rwa [← mul_assoc, inv_mul_cancel₀ hτ.ne', one_mul] at h2
+  have hineq : ∀ (v y : E) (ε : ℝ),
+      (⟪v, τ⁻¹ • (y - x) - w⟫_ℝ ≤ ε * ‖τ⁻¹ • (y - x) - w‖)
+        ↔ (⟪v, y - (x + τ • w)⟫_ℝ ≤ ε * ‖y - (x + τ • w)‖) := by
+    intro v y ε
+    rw [hinner, hnorm,
+      show ε * (τ⁻¹ * ‖y - (x + τ • w)‖) = τ⁻¹ * (ε * ‖y - (x + τ • w)‖) by ring]
+    constructor
+    · intro h
+      have h2 := mul_le_mul_of_nonneg_left h hτ.le
+      rwa [← mul_assoc, mul_inv_cancel₀ hτ.ne', one_mul, ← mul_assoc,
+        mul_inv_cancel₀ hτ.ne', one_mul] at h2
+    · intro h
+      exact mul_le_mul_of_nonneg_left h (inv_pos.2 hτ).le
+  ext v
+  rw [mem_regularNormalCone_iff, mem_regularNormalCone_iff]
+  constructor
+  · rintro ⟨hw, h⟩
+    refine ⟨add_smul_mem_of_mem_blowUp hτ.ne' hw, fun ε hε ↦ ?_⟩
+    obtain ⟨δ, hδ, hb⟩ := h ε hε
+    refine ⟨τ * δ, by positivity, fun y hy hyd ↦ ?_⟩
+    have hz : τ⁻¹ • (y - x) ∈ blowUp C x τ := ⟨y, hy, rfl⟩
+    exact (hineq v y ε).1 (hb _ hz ((hdist y δ).2 hyd))
+  · rintro ⟨hw, h⟩
+    have hwb : w ∈ blowUp C x τ := by
+      rw [blowUp_eq_preimage hτ.ne']
+      exact hw
+    refine ⟨hwb, fun ε hε ↦ ?_⟩
+    obtain ⟨δ, hδ, hb⟩ := h ε hε
+    refine ⟨δ / τ, by positivity, fun z hz hzd ↦ ?_⟩
+    have hyC : x + τ • z ∈ C := add_smul_mem_of_mem_blowUp hτ.ne' hz
+    have hrecover : τ⁻¹ • ((x + τ • z) - x) = z := by
+      rw [add_sub_cancel_left, smul_smul, inv_mul_cancel₀ hτ.ne', one_smul]
+    have hd2 : ‖(x + τ • z) - (x + τ • w)‖ < δ := by
+      have h1 := hdist (x + τ • z) (δ / τ)
+      rw [hrecover] at h1
+      have h2 := h1.1 hzd
+      have hcancel : τ * (δ / τ) = δ := by field_simp
+      rwa [hcancel] at h2
+    have h3 := hineq v (x + τ • z) ε
+    rw [hrecover] at h3
+    exact h3.2 (hb _ hyC hd2)
+
+/-- Normal vectors correspond under magnification. -/
+theorem normalCone_blowUp {C : Set E} {x : E} {τ : ℝ} (hτ : 0 < τ) (w : E) :
+    normalCone (blowUp C x τ) w = normalCone C (x + τ • w) := by
+  ext v
+  constructor
+  · rintro ⟨hw, zs, vs, hzC, hzto, hvs, hvto⟩
+    refine mem_normalCone_of_forall (add_smul_mem_of_mem_blowUp hτ.ne' hw)
+      (xs := fun n ↦ x + τ • zs n) ?_ (fun n ↦ ?_) hvto
+    · have hc : Continuous fun z : E ↦ x + τ • z :=
+        continuous_const.add (continuous_const_smul τ)
+      exact (hc.tendsto w).comp hzto
+    · rw [← regularNormalCone_blowUp hτ]
+      exact hvs n
+  · rintro ⟨hw, ys, vs, hyC, hyto, hvs, hvto⟩
+    have hwb : w ∈ blowUp C x τ := by
+      rw [blowUp_eq_preimage hτ.ne']
+      exact hw
+    refine mem_normalCone_of_forall hwb (xs := fun n ↦ τ⁻¹ • (ys n - x)) ?_
+      (fun n ↦ ?_) hvto
+    · have hc : Continuous fun y : E ↦ τ⁻¹ • (y - x) :=
+        (continuous_id.sub continuous_const).const_smul _
+      have h := (hc.tendsto (x + τ • w)).comp hyto
+      have heq : τ⁻¹ • ((x + τ • w) - x) = w := by
+        rw [add_sub_cancel_left, smul_smul, inv_mul_cancel₀ hτ.ne', one_smul]
+      rwa [heq] at h
+    · rw [regularNormalCone_blowUp hτ]
+      have heq : x + τ • (τ⁻¹ • (ys n - x)) = ys n := by
+        rw [smul_smul, mul_inv_cancel₀ hτ.ne', one_smul]
+        abel
+      rw [heq]
+      exact hvs n
+
+/-- A cone is unchanged by magnification about the origin. -/
+theorem blowUp_zero_of_isCone {K : Set E} (hK : IsCone K) {τ : ℝ} (hτ : 0 < τ) :
+    blowUp K 0 τ = K := by
+  ext z
+  rw [blowUp_eq_preimage hτ.ne']
+  simp only [mem_preimage, zero_add]
+  constructor
+  · intro h
+    have hs := hK.smul_mem h (inv_pos.2 hτ).le
+    rwa [smul_smul, inv_mul_cancel₀ hτ.ne', one_smul] at hs
+  · intro h
+    exact hK.2 h hτ
+
+/-- **Proposition 6.27(a)**: on a cone the normal cone is invariant along
+rays. -/
+theorem normalCone_smul_of_isCone {K : Set E} (hK : IsCone K) {τ : ℝ} (hτ : 0 < τ)
+    (w : E) : normalCone K (τ • w) = normalCone K w := by
+  have h := normalCone_blowUp (C := K) (x := 0) hτ w
+  rw [blowUp_zero_of_isCone hK hτ, zero_add] at h
+  exact h.symm
+
+/-- **Proposition 6.27(a)**, the union equation: on a cone every normal cone is
+contained in the one at the origin, so the union over the cone collapses. -/
+theorem normalCone_zero_eq_iUnion_of_isCone {K : Set E} (hK : IsCone K) :
+    normalCone K 0 = ⋃ w ∈ K, normalCone K w := by
+  refine Subset.antisymm (fun v hv ↦ mem_iUnion₂.2 ⟨0, hK.1, hv⟩) ?_
+  refine iUnion₂_subset fun w hw v hv ↦ ?_
+  refine mem_normalCone_of_tendsto hK.1 (xs := fun n ↦ (1 / ((n : ℝ) + 1)) • w)
+    (fun n ↦ hK.smul_mem hw (by positivity)) ?_ (fun n ↦ ?_) tendsto_const_nhds
+  · have hc : Continuous fun c : ℝ ↦ c • w := continuous_id.smul continuous_const
+    have h := (hc.tendsto 0).comp tendsto_one_div_add_atTop_nhds_zero_nat
+    simpa using h
+  · rw [normalCone_smul_of_isCone hK (by positivity)]
+    exact hv
+
+/-- **Proposition 6.27(a)**, the union equation for the tangent cone. -/
+theorem normalCone_tangentCone_zero_eq_iUnion {C : Set E} {x : E} (hx : x ∈ C) :
+    normalCone (tangentCone C x) 0
+      = ⋃ w ∈ tangentCone C x, normalCone (tangentCone C x) w :=
+  normalCone_zero_eq_iUnion_of_isCone (isCone_tangentCone hx)
+
+end MagnifiedNormals
+
 end RW
