@@ -11,7 +11,7 @@ integrated.
 
 Formalization covers Sections A and B, results 6.1 through 6.6, and exact
 results 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  It also supplies sound partial
-APIs for 6.7, 6.10, 6.11, 6.14, 6.31, 6.41, and 6.42, and a corrected version
+APIs for 6.7, 6.10, 6.11, 6.14, 6.31, 6.41, 6.42, 6.43, and 6.44, and a corrected version
 of 6.49.  The
 supporting modules include canonical locality and elementary-cone formulas,
 continuous linear right inverses, local sections of submersions, scalar `C¹`
@@ -69,8 +69,8 @@ replaced by the full one, and what makes the closed-set graph formula
 | --- | ---: |
 | Exact | 18 |
 | Adapted | 1 |
-| Partial | 7 |
-| Missing | 23 |
+| Partial | 9 |
+| Missing | 21 |
 | **Total** | **49** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -117,8 +117,8 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.40 Mangasarian-Fromovitz constraint qualification | Missing | |
 | 6.41 Tangents and normals to product sets | **Partial** | [`ProductCones.lean`](RockafellarWets/Chapter6/ProductCones.lean) gives canonical binary `WithLp 2` infrastructure.  It proves the ordinary tangent inclusion, equality of derivable cones, ordinary tangent equality when both factors are geometrically derivable, exact regular- and limiting-normal product formulas, and the closed-set equivalence between Clarke regularity of the product and of its two factors.  **The printed result is not yet complete**: it is stated for arbitrary finite products, includes the canonical regular-tangent product equality, and derives ordinary tangent equality merely from Clarke regularity.  Those regular-tangent and finite-product clauses are not yet connected to this binary module. |
 | 6.42 Tangents and normals to intersections | **Partial** | [`ConstraintStructure.lean`](RockafellarWets/Chapter6/ConstraintStructure.lean) proves the **first display** in both halves and for an arbitrary finite index set: `T_{⋂Cᵢ}(x̄) ⊆ ⋂ T_{Cᵢ}(x̄)` by monotonicity, and `N̂_{⋂Cᵢ}(x̄) ⊇ Σ N̂_{Cᵢ}(x̄)` by induction on the index `Finset` from the binary `add_mem_regularNormalCone_inter`.  The induction needs no membership hypothesis on `x̄`: the empty intersection is the whole space, where the regular normal cone is the zero cone and the empty sum is `0`.  Closedness of the `Cᵢ` is not used.  **Outstanding**: the two reverse inclusions under the constraint qualification that `v₁ + ⋯ + vₘ = 0` with `vᵢ ∈ N_{Cᵢ}(x̄)` forces every `vᵢ = 0`, and the regular case.  The book gets them by applying 6.14 and 6.31 to `D := C₁ × ⋯ × Cₘ` and the diagonal map, computing tangents and normals to `D` by 6.41, so this row waits on those three. |
-| 6.43 Tangents and normals to image sets | Missing | |
-| 6.44 Tangents and normals under set addition | Missing | |
+| 6.43 Tangents and normals to image sets | **Partial** | [`ImageAndSumSets.lean`](RockafellarWets/Chapter6/ImageAndSumSets.lean) proves the **first display**, both halves, for `D = F(C)` and any `ū`: the tangent inclusion `T_D(ū) ⊇ ⋃ ∇F(x̄)(T_C(x̄))` over the preimages `x̄ ∈ F⁻¹(ū) ∩ C` is the push-forward `image_tangentCone_subset` read at `F(x̄) = ū`, and the regular-normal inclusion `N̂_D(ū) ⊆ ⋂ {y | ∇F(x̄)*y ∈ N̂_C(x̄)}` is the adjoint pull-back applied to the set `F(C)` followed by `regularNormalCone_antitone` along `C ⊆ F⁻¹(F(C))`.  That last step is what turns a statement about preimages into one about images.  `F` is asked only to be differentiable at each preimage; `C` need not be closed and `F` need not be `C¹`.  **Outstanding**: the reverse inclusions under the properness hypothesis that `F⁻¹(U) ∩ C` be bounded for some `U ∈ N(ū)`, which the book derives from 6.14 and 6.31. |
+| 6.44 Tangents and normals under set addition | **Partial** | [`ImageAndSumSets.lean`](RockafellarWets/Chapter6/ImageAndSumSets.lean) proves the **regular-normal half of the first display**, `N̂_{C₁+⋯+Cₘ}(x̄) ⊆ N̂_{C₁}(x̄₁) ∩ ⋯ ∩ N̂_{Cₘ}(x̄ₘ)` for every splitting `x̄ = x̄₁ + ⋯ + x̄ₘ` with `x̄ᵢ ∈ Cᵢ`, in both the binary form and the `Finset` form.  It needs nothing analytic: translating one summand by fixed points of the others embeds a ball around `x̄ᵢ` in `Cᵢ` into the sum, and the difference vectors are literally the same, so the `ε` inequality transfers verbatim.  Closedness of the `Cᵢ` is not used.  **Outstanding**: the regular-tangent half of the first display, and the two displays for the limiting cones under the boundedness hypothesis, and the convex case.  The book obtains all of them from 6.43 applied to `F(x₁,…,xₘ) = x₁ + ⋯ + xₘ` on `C₁ × ⋯ × Cₘ`, so they wait on 6.43's reverse inclusions and on the product formulas of 6.41. |
 | 6.45 Polars of polyhedral cones; Farkas | Missing | |
 | 6.46 Tangents and normals to polyhedral sets | Missing | |
 | 6.47 Exactness of tangent approximations | Missing | |

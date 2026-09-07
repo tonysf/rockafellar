@@ -108,7 +108,7 @@ correct statement in context.
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
   - the Chapter 6 ledger classifies all 49 numbered results: 18 exact, one
-    adapted, seven partial, and 23 missing.  Exact coverage now comprises
+    adapted, nine partial, and 21 missing.  Exact coverage now comprises
     6.1--6.6, 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
@@ -118,8 +118,8 @@ correct statement in context.
     partial: its tangent and regular-normal formulas are proved using the
     orthogonal-kernel augmentation on an `L²` product, while the limiting-normal
     formula still needs the nearby-witness argument.  Results 6.10, 6.11, and
-    6.14, 6.31, and 6.42 are partial in a uniform way: every clause the book
-    calls elementary is proved -- regular normals add across an intersection
+    6.14, 6.31, 6.42, 6.43, and 6.44 are partial in a uniform way: every
+    clause the book calls elementary is proved -- regular normals add across an intersection
     and pull back through the adjoint derivative, and tangent vectors restrict
     and push forward -- while the reverse inclusions, which need the
     constraint qualification, wait on 6.11 and on the polarity 6.28(b).
