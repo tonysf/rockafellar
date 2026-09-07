@@ -31,6 +31,7 @@ import RockafellarWets.Chapter6.RegularTangents
 import RockafellarWets.Chapter6.RegularTangentChangeOfCoordinates
 import RockafellarWets.Chapter6.ClarkeRegularityCharacterizations
 import RockafellarWets.Chapter6.NormalsToTangentCones
+import RockafellarWets.Chapter6.ConstraintTangents
 import RockafellarWets.Chapter6.PolyhedralTangents
 import RockafellarWets.Chapter6.PolyhedralPolars
 import RockafellarWets.Chapter6.ConvexifiedCones
