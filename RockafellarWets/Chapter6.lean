@@ -17,6 +17,7 @@ import RockafellarWets.Chapter6.IntervalCones
 import RockafellarWets.Chapter6.ProductCones
 import RockafellarWets.Chapter6.GradientNormals
 import RockafellarWets.Chapter6.SmoothMajorant
+import RockafellarWets.Chapter6.SmoothGradientWitness
 import RockafellarWets.Chapter6.Optimality
 import RockafellarWets.Chapter6.ProximalNormals
 import RockafellarWets.Chapter6.BoundaryPoints
