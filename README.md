@@ -108,10 +108,10 @@ correct statement in context.
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
-  - the Chapter 6 ledger classifies all 49 numbered results: 28 exact, one
-    adapted, nine partial, and 11 missing.  Exact coverage now comprises
-    6.1--6.6, 6.9, 6.11, 6.12, 6.16--6.17, 6.19, 6.20--6.26, 6.28--6.30,
-    6.32, 6.38, and 6.45--6.48.  The new exact block adds
+  - the Chapter 6 ledger classifies all 49 numbered results: 29 exact, one
+    adapted, eight partial, and 11 missing.  Exact coverage now comprises
+    6.1--6.6, 6.9, 6.11, 6.12, 6.14, 6.16--6.17, 6.19, 6.20--6.26,
+    6.28--6.30, 6.32, 6.38, and 6.45--6.48.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
     correspondence, pointedness/interior criteria, orthogonal-subspace and
@@ -119,13 +119,12 @@ correct statement in context.
     locally closed finite-dimensional inner-limit formula.  Result 6.7 remains
     partial: its tangent and regular-normal formulas are proved using the
     orthogonal-kernel augmentation on an `L²` product, while the limiting-normal
-    formula still needs the nearby-witness argument.  Results 6.14, 6.31,
+    formula still needs the nearby-witness argument.  Results 6.31,
     6.42, 6.43, and 6.44 are partial in a uniform way: every
     clause the book calls elementary is proved -- regular normals add across an intersection
     and pull back through the adjoint derivative, and tangent vectors restrict
-    and push forward -- while the reverse inclusions, which need the
-    constraint qualification, wait on the compactness reduction and the
-    penalty argument of the proof of 6.14.
+    and push forward -- while the reverse inclusions wait on the tangent-cone
+    analogues of the constraint qualification.
     Of that polarity, clause (a) is proved, and with it the two groups of
     Clarke-regularity characterizations in 6.29 that do not need clause (b):
     the normal group (a), (c), (e), (f) and the tangent group (b), (g), and
@@ -157,7 +156,16 @@ correct statement in context.
     inner half of 5.35 suffice, because only the single point carrying the
     proximal normal has to be captured by a sequence of scales, not the whole
     tangent cone.
-    Theorem 6.11 is now exact: the scalar `C¹` strict majorant is combined
+    Theorem 6.14 is now exact in all three displays.  The book's proof argues
+    three times by a dichotomy -- either the multipliers converge or they are
+    rescaled by `λ ↘ 0` -- and one lemma replaces all three uses: rescaling
+    the triple `(1, y, z)` by `(1 + ‖y‖ + ‖z‖)⁻¹` puts it in the unit ball, so
+    a single subsequence extraction suffices, and the degenerate case is
+    exactly a vanishing first coordinate, which the constraint qualification
+    excludes.  No boundedness of multipliers is ever proved, the compactness
+    the printed proof assumes is recovered from locality of normal cones, and
+    only a convergent subsequence of the penalized minimizers is needed, not
+    their full convergence.  Theorem 6.11 is likewise exact: the scalar `C¹` strict majorant is combined
     with the modulus `sup{⟪v, y - x̄⟫ | y ∈ C, ‖y - x̄‖ ≤ r}` into an
     everywhere-`C¹` ambient witness `⟪v, · - x̄⟫ - θ‖· - x̄‖` whose maximum
     relative to `C` is attained at `x̄` alone.  The one point the book passes

@@ -22,6 +22,7 @@ import RockafellarWets.Chapter6.Optimality
 import RockafellarWets.Chapter6.ProximalNormals
 import RockafellarWets.Chapter6.BoundaryPoints
 import RockafellarWets.Chapter6.ConstraintStructure
+import RockafellarWets.Chapter6.ConstraintQualification
 import RockafellarWets.Chapter6.ImageAndSumSets
 import RockafellarWets.Chapter6.SupportingHalfspaces
 import RockafellarWets.Chapter6.Polarity
