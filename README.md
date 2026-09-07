@@ -108,7 +108,7 @@ correct statement in context.
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
   - the Chapter 6 ledger classifies all 49 numbered results: 18 exact, one
-    adapted, thirteen partial, and 16 missing.  Exact coverage now comprises
+    adapted, fourteen partial, and 15 missing.  Exact coverage now comprises
     6.1--6.6, 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, and 6.47.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
@@ -130,7 +130,9 @@ correct statement in context.
     the tangent cone formula of 6.46: for a polyhedral set the tangent
     approximation is locally exact, proved from the `H`-description of
     Chapter 3G* by discarding the inactive constraints, which reverses the
-    book's order and avoids its minimum over inactive constraints.
+    book's order and avoids its minimum over inactive constraints.  The
+    easy inclusion of 6.28(b) is proved as well, and with it the implication
+    (b) ⟹ (a) of 6.29 and the polarity pair of 6.38(b).
     Results 6.10, 6.11, and
     6.41 are also partial: the repository has the scalar interval formulas,
     the differentiable regular-normal characterization plus scalar `C¹`

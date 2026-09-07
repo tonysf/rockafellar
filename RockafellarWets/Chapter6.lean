@@ -27,4 +27,5 @@ import RockafellarWets.Chapter6.Polarity
 import RockafellarWets.Chapter6.RegularTangents
 import RockafellarWets.Chapter6.ClarkeRegularityCharacterizations
 import RockafellarWets.Chapter6.PolyhedralTangents
+import RockafellarWets.Chapter6.ConvexifiedCones
 import RockafellarWets.Chapter6.GenericNormalContinuity

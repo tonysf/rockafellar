@@ -146,6 +146,44 @@ theorem IsClarkeRegularAt.convex_normalCone {C : Set E} {x : E} (hx : x ∈ C)
   rw [h.normalCone_eq_polarCone hx]
   exact convex_polarCone _
 
+/-- **Theorem 6.28(b)**, the inclusion `⊆`: a regular tangent vector pairs
+nonpositively with every normal vector.  This half needs only the limit
+formula 6(16) of 6.26 and the polarity 6.28(a) at the *nearby* points: a
+normal vector at `x̄` is a limit of regular normals `vν` at points `xν`, and
+6(16) supplies tangent vectors `wν ∈ T_C(xν)` converging to `w`, so each
+pairing `⟪vν, wν⟫` is nonpositive and the limit is too. -/
+theorem regularTangentCone_subset_polarCone_normalCone {C : Set E} {x : E}
+    (hx : x ∈ C) (hlc : IsLocallyClosedAt C x) :
+    regularTangentCone C x ⊆ polarCone (normalCone C x) := by
+  intro w hw v hv
+  obtain ⟨-, xs, vs, hxC, hxto, hvs, hvto⟩ := hv
+  obtain ⟨ws, hws, hwsto⟩ :=
+    (mem_regularTangentCone_iff_forall_tangent_sequences hx hlc).1 hw xs hxC hxto
+  have hle : ∀ n, ⟪ws n, vs n⟫_ℝ ≤ 0 := by
+    intro n
+    have h := inner_nonpos_of_mem_regularNormalCone (hvs n) (hws n)
+    rwa [real_inner_comm] at h
+  exact le_of_tendsto (hwsto.inner hvto) (Eventually.of_forall hle)
+
+/-- **Corollary 6.29**, the implication (b) ⟹ (a): if every tangent vector at
+`x̄` is regular then every normal vector there is regular.  This is the one
+direction between 6.29's two groups that the easy half of 6.28(b) supplies. -/
+theorem normalCone_eq_regularNormalCone_of_tangentCone_eq {C : Set E} {x : E}
+    (hx : x ∈ C) (hlc : IsLocallyClosedAt C x)
+    (h : tangentCone C x = regularTangentCone C x) :
+    normalCone C x = regularNormalCone C x := by
+  rw [normalCone_eq_regularNormalCone_iff_inner_nonpos hx]
+  intro v hv w hw
+  rw [h] at hw
+  have hpair := regularTangentCone_subset_polarCone_normalCone hx hlc hw v hv
+  rwa [real_inner_comm] at hpair
+
+/-- **Corollary 6.29**, the implication (b) ⟹ Clarke regularity. -/
+theorem isClarkeRegularAt_of_tangentCone_eq {C : Set E} {x : E} (hx : x ∈ C)
+    (hlc : IsLocallyClosedAt C x) (h : tangentCone C x = regularTangentCone C x) :
+    IsClarkeRegularAt C x :=
+  ⟨hlc, normalCone_eq_regularNormalCone_of_tangentCone_eq hx hlc h⟩
+
 end Polarity
 
 end RW
