@@ -108,9 +108,9 @@ correct statement in context.
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
   - the Chapter 6 ledger classifies all 49 numbered results: 18 exact, one
-    adapted, ten partial, and 12 missing.  Exact coverage now comprises
+    adapted, ten partial, and 11 missing.  Exact coverage now comprises
     6.1--6.6, 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, 6.28--6.30, 6.32,
-    6.38, and 6.45--6.47.  The new exact block adds
+    6.38, and 6.45--6.48.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
     correspondence, pointedness/interior criteria, orthogonal-subspace and
@@ -144,7 +144,11 @@ correct statement in context.
     6.25 moves the base point as well as the scale -- and a *uniform* local
     solvability for the submersion, which is added to the local-section API
     as the map `σ(u, q) = Ψ(u, P q)` keeping the starting point's kernel
-    coordinate.  The route avoids
+    coordinate.  Exercise 6.48 on the separation of convex cones is exact,
+    including the separation vocabulary of Chapter 2G*, which the repository
+    did not have; for cones no separation theorem is needed, since the
+    separating hyperplane may be taken through the origin and separability
+    is then literally the existence of a nonzero vector in `K₁* ∩ [-K₂*]`.  The route avoids
     the book's own: 6.28(b) rests on 6.27(b), which consumes only the
     *proximal* case of 6.27(a), and that case needs neither 6.18(a) nor the
     diagonalization of 6.18(b) -- one application of 4.19 and one of the

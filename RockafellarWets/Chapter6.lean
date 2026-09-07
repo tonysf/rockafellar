@@ -24,6 +24,7 @@ import RockafellarWets.Chapter6.ConstraintStructure
 import RockafellarWets.Chapter6.ImageAndSumSets
 import RockafellarWets.Chapter6.SupportingHalfspaces
 import RockafellarWets.Chapter6.Polarity
+import RockafellarWets.Chapter6.ConeSeparation
 import RockafellarWets.Chapter6.RegularTangents
 import RockafellarWets.Chapter6.RegularTangentChangeOfCoordinates
 import RockafellarWets.Chapter6.ClarkeRegularityCharacterizations
