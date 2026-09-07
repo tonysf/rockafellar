@@ -142,19 +142,19 @@ recession vectors share one neighborhood of `x̄` and one step size along which
 *every* convex combination of them may be added.  The neighborhood is shrunk
 so that every partial sum of the displacement stays inside the neighborhood
 belonging to the next vector, which is what makes the estimate uniform. -/
-theorem exists_uniform_localRecession {r : ℕ} (ws : Fin r → E)
+theorem exists_uniform_localRecession {ι : Type*} [Fintype ι] (ws : ι → E)
     (hws : ∀ k, ws k ∈ localRecessionCone C x) :
     ∃ V ∈ nhds x, ∃ ε > 0, ∀ y ∈ C ∩ V, ∀ τ ∈ Icc (0 : ℝ) ε,
-      ∀ a : Fin r → ℝ, (∀ k, 0 ≤ a k) → ∑ k, a k = 1 →
+      ∀ a : ι → ℝ, (∀ k, 0 ≤ a k) → ∑ k, a k = 1 →
         y + τ • (∑ k, a k • ws k) ∈ C := by
   classical
-  rcases isEmpty_or_nonempty (Fin r) with hemp | hne
+  rcases isEmpty_or_nonempty ι with hemp | hne
   · refine ⟨univ, univ_mem, 1, one_pos, fun y hy τ _ a _ hsum ↦ ?_⟩
     rw [Finset.univ_eq_empty, Finset.sum_empty] at hsum
     exact absurd hsum.symm one_ne_zero
   choose V hV ep hep hprop using hws
   obtain ⟨e, hepos, hele⟩ : ∃ e > 0, ∀ k, e ≤ ep k := by
-    obtain ⟨k₀, -, hk₀⟩ := Finset.exists_min_image (Finset.univ : Finset (Fin r)) ep
+    obtain ⟨k₀, -, hk₀⟩ := Finset.exists_min_image (Finset.univ : Finset ι) ep
       Finset.univ_nonempty
     exact ⟨ep k₀, hep k₀, fun k ↦ hk₀ k (Finset.mem_univ k)⟩
   have hVall : (⋂ k, V k) ∈ nhds x := Filter.iInter_mem.2 hV
@@ -164,8 +164,8 @@ theorem exists_uniform_localRecession {r : ℕ} (ws : Fin r → E)
   set ε : ℝ := min e (δ / (2 * (M + 1))) with hεdef
   have hεpos : 0 < ε := lt_min hepos (by positivity)
   -- the displacement of any partial convex sum is small
-  have hbound : ∀ (F : Finset (Fin r)) (y : E), y ∈ ball x (δ / 2) → ∀ τ ∈ Icc (0 : ℝ) ε,
-      ∀ a : Fin r → ℝ, (∀ k, 0 ≤ a k) → (∀ k, a k ≤ 1) →
+  have hbound : ∀ (F : Finset ι) (y : E), y ∈ ball x (δ / 2) → ∀ τ ∈ Icc (0 : ℝ) ε,
+      ∀ a : ι → ℝ, (∀ k, 0 ≤ a k) → (∀ k, a k ≤ 1) →
         y + τ • (∑ k ∈ F, a k • ws k) ∈ ball x δ := by
     intro F y hy τ hτ a ha ha1
     have hnorm : ‖∑ k ∈ F, a k • ws k‖ ≤ M := by
@@ -204,8 +204,8 @@ theorem exists_uniform_localRecession {r : ℕ} (ws : Fin r → E)
       _ < δ / 2 + δ / 2 := by linarith
       _ = δ := by ring
   -- the partial sums stay in `C`
-  have key : ∀ F : Finset (Fin r), ∀ y ∈ C, y ∈ ball x (δ / 2) → ∀ τ ∈ Icc (0 : ℝ) ε,
-      ∀ a : Fin r → ℝ, (∀ k, 0 ≤ a k) → (∀ k, a k ≤ 1) →
+  have key : ∀ F : Finset ι, ∀ y ∈ C, ∀ _ : y ∈ ball x (δ / 2), ∀ τ ∈ Icc (0 : ℝ) ε,
+      ∀ a : ι → ℝ, (∀ k, 0 ≤ a k) → (∀ k, a k ≤ 1) →
         y + τ • (∑ k ∈ F, a k • ws k) ∈ C := by
     intro F
     induction F using Finset.induction_on with

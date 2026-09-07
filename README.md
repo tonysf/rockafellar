@@ -108,10 +108,10 @@ correct statement in context.
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
-  - the Chapter 6 ledger classifies all 49 numbered results: 33 exact, two
-    adapted, six partial, and eight missing.  Exact coverage now comprises
+  - the Chapter 6 ledger classifies all 49 numbered results: 35 exact, two
+    adapted, six partial, and six missing.  Exact coverage now comprises
     6.1--6.6, 6.9, 6.11, 6.12, 6.14, 6.16--6.17, 6.19, 6.20--6.26,
-    6.28--6.33, 6.35, 6.38, 6.42, and 6.45--6.48.  The new exact block adds
+    6.28--6.33, 6.35--6.38, 6.42, and 6.45--6.48.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
     correspondence, pointedness/interior criteria, orthogonal-subspace and
@@ -187,7 +187,14 @@ correct statement in context.
     replaced by the scalar `‖u - x̃‖² - ⟪w, u - x̃⟫²`, so that the decisive
     `⟪∇h, w⟫ = 1` is a cancellation rather than an appeal to `A*A = A`;
     again only a convergent subsequence of the penalized maximizers is
-    needed.  Theorem 6.11 is likewise exact: the scalar `C¹` strict majorant is combined
+    needed.  Theorem 6.36 and Corollary 6.37 follow: all five of 6.36's
+    conditions and both of its closing statements are proved, the pivot being
+    that the interiors of the regular tangent cone and of the local recession
+    cone coincide, and the only place the book's simplex neighborhoods are
+    needed is the passage from one interior direction to a neighborhood of
+    them.  In 6.37 no minimum over a finite cover is taken: the union of the
+    covering polytopes' vertex sets is a single finite set whose convex hull
+    already contains the compact set.  Theorem 6.11 is likewise exact: the scalar `C¹` strict majorant is combined
     with the modulus `sup{⟪v, y - x̄⟫ | y ∈ C, ‖y - x̄‖ ≤ r}` into an
     everywhere-`C¹` ambient witness `⟪v, · - x̄⟫ - θ‖· - x̄‖` whose maximum
     relative to `C` is attained at `x̄` alone.  The one point the book passes

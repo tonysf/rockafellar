@@ -37,5 +37,6 @@ import RockafellarWets.Chapter6.PolyhedralTangents
 import RockafellarWets.Chapter6.PolyhedralPolars
 import RockafellarWets.Chapter6.RecessionCones
 import RockafellarWets.Chapter6.RecessionCharacterization
+import RockafellarWets.Chapter6.InteriorTangents
 import RockafellarWets.Chapter6.ConvexifiedCones
 import RockafellarWets.Chapter6.GenericNormalContinuity
