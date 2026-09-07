@@ -108,10 +108,10 @@ correct statement in context.
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
-  - the Chapter 6 ledger classifies all 49 numbered results: 31 exact, one
-    adapted, six partial, and 11 missing.  Exact coverage now comprises
+  - the Chapter 6 ledger classifies all 49 numbered results: 32 exact, two
+    adapted, six partial, and nine missing.  Exact coverage now comprises
     6.1--6.6, 6.9, 6.11, 6.12, 6.14, 6.16--6.17, 6.19, 6.20--6.26,
-    6.28--6.32, 6.38, 6.42, and 6.45--6.48.  The new exact block adds
+    6.28--6.33, 6.38, 6.42, and 6.45--6.48.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
     correspondence, pointedness/interior criteria, orthogonal-subspace and
@@ -172,7 +172,15 @@ correct statement in context.
     follows without the product space the book uses: the constraint set of
     6.14 with `G = id` already *is* an intersection, so the binary case is
     6.14 and 6.31 instantiated at the identity, and induction on the index
-    set gives the printed `m`-set statement without any appeal to 6.41.  Theorem 6.11 is likewise exact: the scalar `C¹` strict majorant is combined
+    set gives the printed `m`-set statement without any appeal to 6.41.
+    Definition 6.33 and Exercise 6.34 on recession vectors are formalized,
+    6.34 as adapted: clause (c) is printed for `⋂_{x ∈ C} R_C(x)`, using an
+    identification with the global recession cone that the exercise's own
+    clause (b) supplies only for closed `C`.  Read literally it fails for the
+    open unit ball, where every vector recedes locally at every point while
+    the horizon cone is `{0}`; that counterexample is formalized, and the
+    formalized clause is about the global recession cone itself, which needs
+    no convexity for the inclusion and only 3.6 for the equation.  Theorem 6.11 is likewise exact: the scalar `C¹` strict majorant is combined
     with the modulus `sup{⟪v, y - x̄⟫ | y ∈ C, ‖y - x̄‖ ≤ r}` into an
     everywhere-`C¹` ambient witness `⟪v, · - x̄⟫ - θ‖· - x̄‖` whose maximum
     relative to `C` is attained at `x̄` alone.  The one point the book passes
