@@ -176,6 +176,131 @@ theorem HasStrictFDerivAt.exists_local_lift_of_surjective
     RW.HasStrictFDerivAt.lift_through_local_rightInverse hs hsx hright hys
   exact ⟨R, s, hR, hs, hsx, htendsto, himage⟩
 
+/-- **Uniform local solvability.**  A map with a surjective strict derivative
+solves `G y = u` from any nearby starting point `q`, with an error controlled
+linearly by the residual `u - G q` and a constant independent of `q`.
+
+This is stronger than the section through the base point, which only solves
+from `x` itself, and it is what a *moving* base point needs.  The solving map
+is `σ(u, q) = Ψ(u, P q)`, where `Φ = (G, P)` is the augmented map of the
+submersion theorem and `Ψ` its local inverse: the second coordinate keeps the
+starting point's kernel component, so `σ(G q, q) = q`, and the estimate is the
+local Lipschitz bound of `Ψ` read against the sup norm of the product. -/
+theorem HasStrictFDerivAt.exists_uniform_local_solve_of_surjective
+    {G : E → F} {G' : E →L[ℝ] F} {x : E}
+    (hG : HasStrictFDerivAt G G' x) (hsurj : Function.Surjective G') :
+    ∃ (κ : ℝ) (σ : F × E → E), 0 < κ ∧
+      ∀ᶠ r in nhds ((G x, x) : F × E),
+        G (σ r) = r.1 ∧ ‖σ r - r.2‖ ≤ κ * ‖r.1 - G r.2‖ := by
+  have hkerclosed :
+      IsClosed ((LinearMap.ker (G' : E →ₗ[ℝ] F) : Submodule ℝ E) : Set E) :=
+    ContinuousLinearMap.isClosed_ker G'
+  haveI : CompleteSpace ((LinearMap.ker (G' : E →ₗ[ℝ] F) : Submodule ℝ E)) :=
+    hkerclosed.completeSpace_coe
+  set N : Submodule ℝ E := LinearMap.ker (G' : E →ₗ[ℝ] F) with hN
+  set P : E →L[ℝ] N := N.orthogonalProjection with hP
+  have hPself : ∀ (z : E) (hz : z ∈ N), (P z : E) = z := by
+    intro z hz
+    have hself := Submodule.orthogonalProjection_mem_subspace_eq_self (K := N) ⟨z, hz⟩
+    rw [hP, hself]
+  have hPker : ∀ z : E, (P z : E) ∈ N := fun z ↦ (P z).2
+  set Q : E →L[ℝ] F × N := G'.prod P with hQ
+  have hkerQ : LinearMap.ker (Q : E →ₗ[ℝ] F × N) = ⊥ := by
+    rw [Submodule.eq_bot_iff]
+    intro v hv
+    have hv1 : G' v = 0 := congrArg Prod.fst hv
+    have hv2 : P v = 0 := congrArg Prod.snd hv
+    have hvN : v ∈ N := hv1
+    have hself : (P v : E) = v := hPself v hvN
+    rw [hv2] at hself
+    simpa using hself.symm
+  have hrangeQ : LinearMap.range (Q : E →ₗ[ℝ] F × N) = ⊤ := by
+    rw [Submodule.eq_top_iff']
+    rintro ⟨u, n⟩
+    obtain ⟨w₀, hw₀⟩ := hsurj u
+    refine ⟨w₀ - (P w₀ : E) + (n : E), ?_⟩
+    have h1 : G' (w₀ - (P w₀ : E) + (n : E)) = u := by
+      have hA : G' ((P w₀ : E)) = 0 := hPker w₀
+      have hB : G' ((n : E)) = 0 := n.2
+      rw [map_add, map_sub, hA, hB, hw₀, sub_zero, add_zero]
+    have h2 : P (w₀ - (P w₀ : E) + (n : E)) = n := by
+      have hA : P ((P w₀ : E)) = P w₀ := Subtype.ext (hPself ((P w₀ : E)) (hPker w₀))
+      have hB : P ((n : E)) = n := Subtype.ext (hPself (n : E) n.2)
+      rw [map_add, map_sub, hA, hB, sub_self, zero_add]
+    exact Prod.ext h1 h2
+  set Ψ : E ≃L[ℝ] F × N := ContinuousLinearEquiv.ofBijective Q hkerQ hrangeQ with hΨ
+  have hcoe : (Ψ : E →L[ℝ] F × N) = Q := ContinuousLinearEquiv.coe_ofBijective _ _ _
+  set Φ : E → F × N := fun z ↦ (G z, P z) with hΦdef
+  have hΦ : HasStrictFDerivAt Φ (Ψ : E →L[ℝ] F × N) x := by
+    rw [hcoe, hQ]
+    exact hG.prodMk P.hasStrictFDerivAt
+  set L : F × N → E := hΦ.localInverse Φ Ψ x with hL
+  have hLderiv : HasStrictFDerivAt L (Ψ.symm : F × N →L[ℝ] E) (Φ x) :=
+    hΦ.to_localInverse
+  -- a local Lipschitz bound for the local inverse
+  have hlip : ∀ᶠ p in nhds ((Φ x, Φ x) : (F × N) × (F × N)),
+      ‖L p.1 - L p.2 - (Ψ.symm : F × N →L[ℝ] E) (p.1 - p.2)‖ ≤ 1 * ‖p.1 - p.2‖ :=
+    hLderiv.isLittleO.def one_pos
+  rw [nhds_prod_eq] at hlip
+  obtain ⟨W₁, hW₁, W₂, hW₂, hWsub⟩ := Filter.mem_prod_iff.1 hlip
+  set W : Set (F × N) := W₁ ∩ W₂ with hWdef
+  have hW : W ∈ nhds (Φ x) := Filter.inter_mem hW₁ hW₂
+  have hWlip : ∀ p ∈ W, ∀ p' ∈ W,
+      ‖L p - L p'‖ ≤ (‖(Ψ.symm : F × N →L[ℝ] E)‖ + 1) * ‖p - p'‖ := by
+    intro p hp p' hp'
+    have hmem : (p, p') ∈ W₁ ×ˢ W₂ := ⟨hp.1, hp'.2⟩
+    have hbound := hWsub hmem
+    have hop : ‖(Ψ.symm : F × N →L[ℝ] E) (p - p')‖
+        ≤ ‖(Ψ.symm : F × N →L[ℝ] E)‖ * ‖p - p'‖ :=
+      (Ψ.symm : F × N →L[ℝ] E).le_opNorm _
+    have htri : ‖L p - L p'‖
+        ≤ ‖(Ψ.symm : F × N →L[ℝ] E) (p - p')‖
+          + ‖L p - L p' - (Ψ.symm : F × N →L[ℝ] E) (p - p')‖ := by
+      have h := norm_add_le ((Ψ.symm : F × N →L[ℝ] E) (p - p'))
+        (L p - L p' - (Ψ.symm : F × N →L[ℝ] E) (p - p'))
+      have heq : (Ψ.symm : F × N →L[ℝ] E) (p - p')
+          + (L p - L p' - (Ψ.symm : F × N →L[ℝ] E) (p - p')) = L p - L p' := by abel
+      rwa [heq] at h
+    simp only [Set.mem_setOf_eq] at hbound
+    linarith
+  refine ⟨‖(Ψ.symm : F × N →L[ℝ] E)‖ + 1, fun r ↦ L (r.1, P r.2), by positivity, ?_⟩
+  -- the two neighborhoods that make the construction work
+  have hcontΦ : ContinuousAt Φ x := hΦ.continuousAt
+  have hAmem : (fun r : F × E ↦ ((r.1, P r.2) : F × N)) ⁻¹' W ∈ nhds ((G x, x) : F × E) := by
+    have hcont : Continuous fun r : F × E ↦ ((r.1, P r.2) : F × N) :=
+      continuous_fst.prodMk (P.continuous.comp continuous_snd)
+    exact hcont.continuousAt.preimage_mem_nhds hW
+  have hBmem : (fun r : F × E ↦ r.2) ⁻¹' {z | L (Φ z) = z} ∈ nhds ((G x, x) : F × E) :=
+    continuousAt_snd.preimage_mem_nhds hΦ.eventually_left_inverse
+  have hCmem : (fun r : F × E ↦ (Φ r.2)) ⁻¹' W ∈ nhds ((G x, x) : F × E) := by
+    have hcont : ContinuousAt (fun r : F × E ↦ Φ r.2) ((G x, x) : F × E) := by
+      have h : ContinuousAt (Φ ∘ (Prod.snd : F × E → E)) ((G x, x) : F × E) :=
+        hcontΦ.comp continuousAt_snd
+      exact h
+    exact hcont.preimage_mem_nhds hW
+  have hDmem : (fun r : F × E ↦ ((r.1, P r.2) : F × N)) ⁻¹' {p | Φ (L p) = p}
+      ∈ nhds ((G x, x) : F × E) := by
+    have hcont : Continuous fun r : F × E ↦ ((r.1, P r.2) : F × N) :=
+      continuous_fst.prodMk (P.continuous.comp continuous_snd)
+    exact hcont.continuousAt.preimage_mem_nhds hΦ.eventually_right_inverse
+  filter_upwards [hAmem, hBmem, hCmem, hDmem] with r hA hB hC hD
+  have hΦr : Φ r.2 = (G r.2, P r.2) := rfl
+  constructor
+  · have h := hD
+    simp only [mem_preimage, mem_setOf_eq] at h
+    exact congrArg Prod.fst h
+  · have hq : L (Φ r.2) = r.2 := hB
+    have hkey : ‖L (r.1, P r.2) - L (Φ r.2)‖
+        ≤ (‖(Ψ.symm : F × N →L[ℝ] E)‖ + 1) * ‖((r.1, P r.2) : F × N) - Φ r.2‖ :=
+      hWlip _ hA _ hC
+    rw [hq] at hkey
+    have hsub : ((r.1, P r.2) : F × N) - Φ r.2 = (r.1 - G r.2, 0) := by
+      rw [hΦr]
+      simp
+    rw [hsub] at hkey
+    simpa using hkey
+
+
 end LocalSubmersion
 
 end RW

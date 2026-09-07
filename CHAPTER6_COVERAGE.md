@@ -10,8 +10,8 @@ clauses named.  `Missing` means that no result-specific API has yet been
 integrated.
 
 Formalization covers Sections A and B, results 6.1 through 6.6, and exact
-results 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, 6.28--6.30, 6.38, and
-6.45--6.47.  It also supplies sound partial
+results 6.9, 6.12, 6.16--6.17, 6.19, 6.20--6.26, 6.28--6.30, 6.32, 6.38,
+and 6.45--6.47.  It also supplies sound partial
 APIs for 6.7, 6.10, 6.11, 6.14, 6.27, 6.31, and 6.41--6.44, and a corrected version
 of 6.49.  The
 supporting modules include canonical locality and elementary-cone formulas,
@@ -68,10 +68,10 @@ replaced by the full one, and what makes the closed-set graph formula
 
 | Status | Count |
 | --- | ---: |
-| Exact | 25 |
+| Exact | 26 |
 | Adapted | 1 |
 | Partial | 10 |
-| Missing | 13 |
+| Missing | 12 |
 | **Total** | **49** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -107,7 +107,7 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.29 Characterizations of Clarke regularity | **Exact** | [`ClarkeRegularityCharacterizations.lean`](RockafellarWets/Chapter6/ClarkeRegularityCharacterizations.lean) proves the two groups of conditions that 6.28(b) is not needed for.  The **normal group** is (a) ⟺ (c) ⟺ (e) ⟺ (f): (c) is (a) rewritten by 6.28(a); (e) is (a) because `N̂_C = T_C*` sits inside `N_C`, so nonpositivity of every pairing is exactly `N_C ⊆ N̂_C`; and (f), outer semicontinuity of `N̂_C` at `x̄` relative to `C`, is (a) by the limit formula 6(7), `N_C = lim sup N̂_C` -- an equivalence that needs neither local closedness nor finite dimension, only `x̄ ∈ C`.  The **tangent group** is (b) ⟺ (g), inner semicontinuity of `T_C` relative to `C`, by the limit formula 6(16) of 6.26, which is where local closedness enters.  Each is also recorded against `IsClarkeRegularAt` itself, so that at a locally closed point Clarke regularity may be used in whichever of the forms (c), (e), (f) is convenient.  The two groups are joined once 6.28(b) is available: **(b) ⟹ (a)** from the inclusion `T̂_C(x̄) ⊆ N_C(x̄)*`, and **(a) ⟹ (b)** because `T̂_C(x̄) = N_C(x̄)* = N̂_C(x̄)* = T_C(x̄)**` contains `T_C(x̄)` by the elementary half of the bipolar inclusion.  Condition **(d)** then follows, being (b) rewritten by 6.28(b).  All seven conditions are recorded as `iff`s against `IsClarkeRegularAt` itself, so regularity may be used in whichever form is convenient. |
 | 6.30 Consequences of Clarke regularity | **Exact** | [`ClarkeRegularityCharacterizations.lean`](RockafellarWets/Chapter6/ClarkeRegularityCharacterizations.lean) proves the **normal half**: at a point of Clarke regularity `N_C(x̄) = T_C(x̄)*`, and therefore `N_C(x̄)` is convex, polar cones being convex.  Both come from 6.29's normal group and 6.28(a) alone.  The tangent half is completed in [`NormalsToTangentCones.lean`](RockafellarWets/Chapter6/NormalsToTangentCones.lean): `T_C(x̄) = N_C(x̄)*` by 6.29(d), hence convex as a polar cone, and geometric derivability because 6.29(b) identifies `T_C(x̄)` with `T̂_C(x̄)`, whose members are already known to be derivable by 6.26.  Local closedness is not an extra hypothesis on these -- it is already the first conjunct of `IsClarkeRegularAt`, and the statements take it from there. |
 | 6.31 Tangent cones to sets with constraint structure | **Partial** | [`ConstraintStructure.lean`](RockafellarWets/Chapter6/ConstraintStructure.lean) proves the **first display**, `T_C(x̄) ⊆ {w ∈ T_X(x̄) | ∇F(x̄)w ∈ T_D(F(x̄))}`, which the book calls elementary and which is exactly that: monotonicity of the tangent cone in the set gives the `T_X` half, and `image_tangentCone_subset` -- the push-forward of tangent vectors through any differentiable map -- gives the other, since `F` carries `C` into `D`.  Only differentiability at `x̄` is used; no closedness, no `C¹`, no constraint qualification.  **Outstanding**: the reverse inclusion under the constraint qualification of 6.14, which the book derives from 6.14's limiting-normal inclusion by the polarity 6.28(b), and the regular case, which it reads off 6.29.  Both of those prerequisites are themselves outstanding. |
-| 6.32 Regular tangents under a change of coordinates | Missing | |
+| 6.32 Regular tangents under a change of coordinates | **Exact** | [`RegularTangentChangeOfCoordinates.lean`](RockafellarWets/Chapter6/RegularTangentChangeOfCoordinates.lean) proves `T̂_C(x̄) = {w | ∇F(x̄)w ∈ T̂_D(ū)}` for `C = F⁻¹(D)` with `∇F(x̄)` of full rank.  **The difference from 6.7 is that Definition 6.25 lets the base point move as well as the scale**, and that changes what is needed twice over.  First, ordinary Frechet differentiability no longer suffices: the quotients compared are `[F(p) - F(q)]/τ` with *both* `p` and `q` tending to `x̄`, which is exactly what strict differentiability controls, isolated once as `tendsto_smul_sub_of_hasStrictFDerivAt`.  Second, the local section through `x̄` alone carries only the inclusion `⊆`, where base sequences in `D` are lifted to `C`; the inclusion `⊇` has to solve `F(y) = z` starting from a *moving* base point `q`, with a constant independent of `q`.  That uniform solvability is added to [`LocalSubmersion.lean`](RockafellarWets/Chapter6/LocalSubmersion.lean) as `exists_uniform_local_solve_of_surjective`: the solving map is `σ(u, q) = Ψ(u, P q)` for the augmented homeomorphism `Φ = (F, P)` and its local inverse `Ψ`, so that keeping the starting point's kernel coordinate gives `σ(F(q), q) = q`, and the estimate `‖σ(u,q) - q‖ ≤ κ‖u - F(q)‖` is the local Lipschitz bound of `Ψ` -- itself read off strict differentiability -- against the sup norm of the product.  Everything is proved for real Hilbert spaces; finite-dimensionality is never used. |
 | 6.33 Recession vectors | Missing | |
 | 6.34 Recession cones and convexity | Missing | |
 | 6.35 Recession vectors from tangents and normals | Missing | |
