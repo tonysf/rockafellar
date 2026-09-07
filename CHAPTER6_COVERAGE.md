@@ -11,7 +11,8 @@ integrated.
 
 Formalization covers Sections A and B, results 6.1 through 6.6, and exact
 results 6.9, 6.12, 6.16--6.17, 6.19, and 6.20--6.26.  It also supplies sound partial
-APIs for 6.7, 6.10, 6.11, 6.14, 6.31, 6.41, 6.42, 6.43, and 6.44, and a corrected version
+APIs for 6.7, 6.10, 6.11, 6.14, 6.28, 6.29, 6.31, 6.41, 6.42, 6.43, and
+6.44, and a corrected version
 of 6.49.  The
 supporting modules include canonical locality and elementary-cone formulas,
 continuous linear right inverses, local sections of submersions, scalar `C¹`
@@ -69,8 +70,8 @@ replaced by the full one, and what makes the closed-set graph formula
 | --- | ---: |
 | Exact | 18 |
 | Adapted | 1 |
-| Partial | 9 |
-| Missing | 21 |
+| Partial | 11 |
+| Missing | 19 |
 | **Total** | **49** |
 
 | Result | Status | Lean coverage / remaining work |
@@ -102,8 +103,8 @@ replaced by the full one, and what makes the closed-set graph formula
 | 6.25 Regular tangent vectors | **Exact** | [`RegularTangents.lean`](RockafellarWets/Chapter6/RegularTangents.lean) defines `regularTangentCone C x̄` by formula 6(15), the joint inner limit of `blowUp C x τ` as the base approaches through `C` and the positive scale tends to zero.  `mem_regularTangentCone_iff_forall_sequences` proves the exact printed sequential form: for every positive `τν → 0` and every `x̄ν →_C x̄`, points `xν ∈ C` can be chosen with `xν → x̄` and the required difference quotients tending to `w`. |
 | 6.26 Regular tangent cone properties | **Exact** | [`RegularTangents.lean`](RockafellarWets/Chapter6/RegularTangents.lean) proves that the regular tangent cone is closed and, at a point of `C`, is a convex cone contained in the derivable and ordinary tangent cones.  The sequence/ball failure forms 6(17)--6(18) are formalized.  Under the book's finite-dimensional and pointwise local-closedness hypotheses, `regularTangentCone_eq_svInnerLimitWithin_tangentCone` proves formula 6(16), and `mem_regularTangentCone_iff_forall_tangent_sequences` gives its exact sequential reading. |
 | 6.27 Normals to tangent cones | Missing | |
-| 6.28 Tangent-normal polarity | Missing | |
-| 6.29 Characterizations of Clarke regularity | Missing | |
+| 6.28 Tangent-normal polarity | **Partial** | [`ClarkeRegularityCharacterizations.lean`](RockafellarWets/Chapter6/ClarkeRegularityCharacterizations.lean) proves clause **(a)**, `N̂_C(x̄) = T_C(x̄)*`, which the book itself says merely restates 6(6); it is `mem_regularNormalCone_iff_inner_nonpos` read through `mem_polarCone`, and so inherits that result's `[FiniteDimensional ℝ E]`, the ambient assumption of the printed statement.  **Outstanding**: clause **(b)**, `T̂_C(x̄) = N_C(x̄)*` at a locally closed point.  Its printed proof needs the tangent-normal estimate 6.27(b), hence 6.27(a), hence the graphical-limsup inclusion `N_T ⊆ g-lim sup N_{Tν}` of 6.18(b); none of those is in the repository yet. |
+| 6.29 Characterizations of Clarke regularity | **Partial** | [`ClarkeRegularityCharacterizations.lean`](RockafellarWets/Chapter6/ClarkeRegularityCharacterizations.lean) proves the two groups of conditions that 6.28(b) is not needed for.  The **normal group** is (a) ⟺ (c) ⟺ (e) ⟺ (f): (c) is (a) rewritten by 6.28(a); (e) is (a) because `N̂_C = T_C*` sits inside `N_C`, so nonpositivity of every pairing is exactly `N_C ⊆ N̂_C`; and (f), outer semicontinuity of `N̂_C` at `x̄` relative to `C`, is (a) by the limit formula 6(7), `N_C = lim sup N̂_C` -- an equivalence that needs neither local closedness nor finite dimension, only `x̄ ∈ C`.  The **tangent group** is (b) ⟺ (g), inner semicontinuity of `T_C` relative to `C`, by the limit formula 6(16) of 6.26, which is where local closedness enters.  Each is also recorded against `IsClarkeRegularAt` itself, so that at a locally closed point Clarke regularity may be used in whichever of the forms (c), (e), (f) is convenient.  **Outstanding**: the link joining the two groups, and with it condition (d).  Both are exactly 6.28(b). |
 | 6.30 Consequences of Clarke regularity | Missing | |
 | 6.31 Tangent cones to sets with constraint structure | **Partial** | [`ConstraintStructure.lean`](RockafellarWets/Chapter6/ConstraintStructure.lean) proves the **first display**, `T_C(x̄) ⊆ {w ∈ T_X(x̄) | ∇F(x̄)w ∈ T_D(F(x̄))}`, which the book calls elementary and which is exactly that: monotonicity of the tangent cone in the set gives the `T_X` half, and `image_tangentCone_subset` -- the push-forward of tangent vectors through any differentiable map -- gives the other, since `F` carries `C` into `D`.  Only differentiability at `x̄` is used; no closedness, no `C¹`, no constraint qualification.  **Outstanding**: the reverse inclusion under the constraint qualification of 6.14, which the book derives from 6.14's limiting-normal inclusion by the polarity 6.28(b), and the regular case, which it reads off 6.29.  Both of those prerequisites are themselves outstanding. |
 | 6.32 Regular tangents under a change of coordinates | Missing | |

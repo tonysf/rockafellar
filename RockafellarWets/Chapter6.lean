@@ -25,4 +25,5 @@ import RockafellarWets.Chapter6.ImageAndSumSets
 import RockafellarWets.Chapter6.SupportingHalfspaces
 import RockafellarWets.Chapter6.Polarity
 import RockafellarWets.Chapter6.RegularTangents
+import RockafellarWets.Chapter6.ClarkeRegularityCharacterizations
 import RockafellarWets.Chapter6.GenericNormalContinuity
