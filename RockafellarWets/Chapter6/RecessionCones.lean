@@ -288,6 +288,52 @@ theorem isClosed_globalRecessionCone (hC : IsClosed C) :
   refine isClosed_biInter fun y _ ↦ isClosed_biInter fun τ _ ↦ ?_
   exact hC.preimage (continuous_const.add (continuous_id.const_smul τ))
 
+/-- The local recession cone is local.  Shrinking `C` to a neighborhood of `x̄`
+does not change it: a short step from a point near `x̄` stays in the
+neighborhood. -/
+theorem localRecessionCone_inter_nhds {U : Set E} (hU : U ∈ nhds x) :
+    localRecessionCone (C ∩ U) x = localRecessionCone C x := by
+  refine Subset.antisymm ?_ ?_
+  · rintro w ⟨V, hV, ε, hε, hprop⟩
+    refine ⟨V ∩ U, inter_mem hV hU, ε, hε, fun y hy τ hτ ↦ ?_⟩
+    exact (hprop y ⟨⟨hy.1, hy.2.2⟩, hy.2.1⟩ τ hτ).1
+  · rintro w ⟨V, hV, ε, hε, hprop⟩
+    obtain ⟨ρ, hρ, hball⟩ := Metric.mem_nhds_iff.1 hU
+    refine ⟨V ∩ ball x (ρ / 2), inter_mem hV (ball_mem_nhds x (by linarith)),
+      min ε (ρ / (2 * (‖w‖ + 1))), lt_min hε (by positivity), fun y hy τ hτ ↦ ?_⟩
+    have hyC : y ∈ C := hy.1.1
+    have hτ0 : 0 ≤ τ := hτ.1
+    have hτε : τ ≤ ε := hτ.2.trans (min_le_left _ _)
+    refine ⟨hprop y ⟨hyC, hy.2.1⟩ τ ⟨hτ0, hτε⟩, ?_⟩
+    apply hball
+    rw [mem_ball, dist_eq_norm]
+    have hy' : ‖y - x‖ < ρ / 2 := by
+      rw [← dist_eq_norm]
+      exact mem_ball.1 hy.2.2
+    have hstep : ‖τ • w‖ < ρ / 2 := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hτ0]
+      have hle : τ * ‖w‖ ≤ ρ / (2 * (‖w‖ + 1)) * ‖w‖ :=
+        mul_le_mul_of_nonneg_right (hτ.2.trans (min_le_right _ _)) (norm_nonneg _)
+      have hlt : ρ / (2 * (‖w‖ + 1)) * ‖w‖ < ρ / 2 := by
+        rw [div_mul_eq_mul_div, div_lt_div_iff₀ (by positivity) (by norm_num)]
+        nlinarith [norm_nonneg w]
+      linarith
+    have hsum : y + τ • w - x = (y - x) + τ • w := by abel
+    rw [hsum]
+    calc ‖(y - x) + τ • w‖ ≤ ‖y - x‖ + ‖τ • w‖ := norm_add_le _ _
+      _ < ρ / 2 + ρ / 2 := by linarith
+      _ = ρ := by ring
+
+/-- A local recession vector at `x̄` recedes locally at every nearby point of
+`C`, when the witnessing neighborhood is taken open. -/
+theorem exists_isOpen_forall_mem_localRecessionCone {w : E}
+    (hw : w ∈ localRecessionCone C x) :
+    ∃ V : Set E, IsOpen V ∧ x ∈ V ∧ ∀ y ∈ C ∩ V, w ∈ localRecessionCone C y := by
+  obtain ⟨V, hV, ε, hε, hprop⟩ := hw
+  refine ⟨interior V, isOpen_interior, mem_interior_iff_mem_nhds.2 hV, fun y hy ↦ ?_⟩
+  exact ⟨interior V, (isOpen_interior).mem_nhds hy.2, ε, hε,
+    fun z hz τ hτ ↦ hprop z ⟨hz.1, interior_subset hz.2⟩ τ hτ⟩
+
 end ConeStructure
 
 section GlobalFromLocal

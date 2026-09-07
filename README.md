@@ -108,10 +108,10 @@ correct statement in context.
     the later sections supply, and the proximal half of 5.23 is 5.22 applied
     to the proximal integrand, for which the extended-real proximal mapping
     missing from Chapter 1 is supplied here.  Chapter 5 is complete;
-  - the Chapter 6 ledger classifies all 49 numbered results: 32 exact, two
-    adapted, six partial, and nine missing.  Exact coverage now comprises
+  - the Chapter 6 ledger classifies all 49 numbered results: 33 exact, two
+    adapted, six partial, and eight missing.  Exact coverage now comprises
     6.1--6.6, 6.9, 6.11, 6.12, 6.14, 6.16--6.17, 6.19, 6.20--6.26,
-    6.28--6.33, 6.38, 6.42, and 6.45--6.48.  The new exact block adds
+    6.28--6.33, 6.35, 6.38, 6.42, and 6.45--6.48.  The new exact block adds
     first-order optimality, proximal normals and convex projection identities,
     supporting-halfspace envelopes, the nonpositive polar and bipolar
     correspondence, pointedness/interior criteria, orthogonal-subspace and
@@ -180,7 +180,14 @@ correct statement in context.
     open unit ball, where every vector recedes locally at every point while
     the horizon cone is `{0}`; that counterexample is formalized, and the
     formalized clause is about the global recession cone itself, which needs
-    no convexity for the inclusion and only 3.6 for the equation.  Theorem 6.11 is likewise exact: the scalar `C¹` strict majorant is combined
+    no convexity for the inclusion and only 3.6 for the equation.
+    Proposition 6.35 is exact: the forward direction reads Definition 6.25
+    directly rather than routing through 6.26, and the failure direction is
+    the printed penalty argument with the projection matrix onto `wᗮ`
+    replaced by the scalar `‖u - x̃‖² - ⟪w, u - x̃⟫²`, so that the decisive
+    `⟪∇h, w⟫ = 1` is a cancellation rather than an appeal to `A*A = A`;
+    again only a convergent subsequence of the penalized maximizers is
+    needed.  Theorem 6.11 is likewise exact: the scalar `C¹` strict majorant is combined
     with the modulus `sup{⟪v, y - x̄⟫ | y ∈ C, ‖y - x̄‖ ≤ r}` into an
     everywhere-`C¹` ambient witness `⟪v, · - x̄⟫ - θ‖· - x̄‖` whose maximum
     relative to `C` is attained at `x̄` alone.  The one point the book passes
