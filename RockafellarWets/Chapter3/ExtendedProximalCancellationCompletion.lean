@@ -11,6 +11,7 @@ level-coercive.  Consequently its minimizer set is nonempty, its Moreau
 envelope is finite, and every proximal point belongs to the effective domain.
 -/
 
+import RockafellarWets.Chapter1.Proximal
 import RockafellarWets.Chapter3.ERealInfimum
 import RockafellarWets.Chapter3.ExtendedCancellationCompletion
 
@@ -21,23 +22,6 @@ noncomputable section
 namespace RW
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-
-/-- The extended-real objective minimized in the Moreau envelope. -/
-def proximalObjectiveEReal (f : E → EReal) (lam : ℝ) (x w : E) : EReal :=
-  f w + (((1 / (2 * lam)) * ‖w - x‖ ^ 2 : ℝ) : EReal)
-
-/-- The proximal mapping of an extended-real-valued function. -/
-def proximalMappingEReal (f : E → EReal) (lam : ℝ) (x : E) : Set E :=
-  argmin (proximalObjectiveEReal f lam x)
-
-omit [InnerProductSpace ℝ E] in
-@[simp]
-theorem mem_proximalMappingEReal_iff
-    {f : E → EReal} {lam : ℝ} {x w : E} :
-    w ∈ proximalMappingEReal f lam x ↔
-      proximalObjectiveEReal f lam x w = moreauEnvelopeEReal f lam x ∧
-        moreauEnvelopeEReal f lam x < ⊤ := by
-  rfl
 
 omit [InnerProductSpace ℝ E] in
 /-- Adding the finite quadratic proximal kernel to a proper function preserves

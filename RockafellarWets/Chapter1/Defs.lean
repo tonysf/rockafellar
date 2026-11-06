@@ -90,15 +90,45 @@ def IsInfCompact [TopologicalSpace E] (f : E → EReal) : Prop :=
   ∀ α : ℝ, IsCompact (levelSet f α)
 
 /-- **Prox-boundedness** (Definition 1.23): `f` is prox-bounded if there
-exists `r ∈ ℝ` such that `f(x) ≥ -(r/2)‖x‖²` for all `x`.
-Equivalently, `f` majorizes a quadratic function. -/
+is a positive parameter for which its Moreau envelope is above `-∞` at
+some point. This allows finite additive constants in quadratic lower bounds. -/
 def IsProxBounded [SeminormedAddCommGroup E] (f : E → EReal) : Prop :=
-  ∃ r : ℝ, ∀ x : E, f x ≥ (-(r / 2) * ‖x‖ ^ 2 : ℝ)
+  ∃ lam : ℝ, lam > 0 ∧ ∃ x : E,
+    (⨅ w : E, f w + ((1 / (2 * lam)) * ‖w - x‖ ^ 2 : ℝ)) > ⊥
 
 /-- The **threshold of prox-boundedness** `λ_f`. -/
 def proxThreshold [SeminormedAddCommGroup E] (f : E → EReal) : EReal :=
   ⨆ (lam : ℝ) (_ : lam > 0 ∧ ∃ x : E,
     (⨅ w : E, f w + ((1 / (2 * lam)) * ‖w - x‖ ^ 2 : ℝ)) > ⊥), (lam : EReal)
+
+theorem isProxBounded_iff_pos_proxThreshold [SeminormedAddCommGroup E]
+    (f : E → EReal) : IsProxBounded f ↔ 0 < proxThreshold f := by
+  constructor
+  · rintro ⟨lam, hlam, x, hx⟩
+    have hpos : (0 : EReal) < (lam : EReal) := by exact_mod_cast hlam
+    exact hpos.trans_le (le_iSup_of_le lam (le_iSup_of_le ⟨hlam, x, hx⟩ le_rfl))
+  · intro h
+    obtain ⟨lam, hlam⟩ := lt_iSup_iff.1 h
+    obtain ⟨⟨hlampos, x, hx⟩, _⟩ := lt_iSup_iff.1 hlam
+    exact ⟨lam, hlampos, x, hx⟩
+
+/-- Every function with a finite global lower bound is prox-bounded. -/
+theorem isProxBounded_of_bddBelow [SeminormedAddCommGroup E]
+    {f : E → EReal} (hf : ∃ c : ℝ, ∀ x, (c : EReal) ≤ f x) :
+    IsProxBounded f := by
+  rcases hf with ⟨c, hc⟩
+  refine ⟨1, one_pos, 0, (EReal.bot_lt_coe c).trans_le (le_iInf fun w ↦ ?_)⟩
+  calc
+    (c : EReal) = (c : EReal) + 0 := (add_zero _).symm
+    _ ≤ f w + (((1 / (2 * (1 : ℝ))) * ‖w - 0‖ ^ 2 : ℝ) : EReal) :=
+      add_le_add (hc w) (by
+        exact_mod_cast (show 0 ≤ (1 / (2 * (1 : ℝ))) * ‖w - 0‖ ^ 2 by positivity))
+
+/-- Finite constant functions are prox-bounded, including negative constants. -/
+@[simp]
+theorem isProxBounded_const [SeminormedAddCommGroup E] (c : ℝ) :
+    IsProxBounded (fun _ : E ↦ (c : EReal)) :=
+  isProxBounded_of_bddBelow ⟨c, fun _ ↦ le_rfl⟩
 
 /-! ## Basic properties of effective domain and properness -/
 

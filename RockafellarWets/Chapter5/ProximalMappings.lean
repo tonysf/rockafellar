@@ -10,16 +10,17 @@ Definition 1.22 is everywhere outer semicontinuous and locally bounded.  The
 book's Detail specializes 5.22 to it, "cf. 1.25", and that is the route taken
 here.
 
-What was missing was the mapping itself.  Chapter 1 carries `IsProxBounded`
-and the threshold `proxThreshold`, and Chapter 3 carries the extended-real
-envelope `moreauEnvelopeEReal`, but `Pλf` had no extended-real form.  It is
-supplied here as `paramArgmin` of the *proximal integrand*
+Chapter 1 supplies the extended-real envelope `moreauEnvelopeEReal` and
+mapping `proximalMappingEReal`, together with `IsProxBounded` and the
+threshold `proxThreshold`.  Here the same objective is read as the
+*proximal integrand* of a parametric minimization problem:
 
     proxIntegrand f λ (w, x) = f(w) + (1/2λ)|w - x|²,
 
-which makes `eλf = valueFunction (proxIntegrand f λ)` and
-`Pλf = paramArgmin (proxIntegrand f λ)` true by definition, so that 5.22
-applies to `Pλf` with nothing to translate.
+The compatibility name `proxMappingEReal` uses that same proximal mapping.
+Both `eλf = valueFunction (proxIntegrand f λ)` and
+`Pλf = paramArgmin (proxIntegrand f λ)` hold by definition, so that 5.22
+applies with nothing to translate.
 
 Three facts about that integrand are what 5.22 consumes, and they are the
 content of the file:
@@ -54,6 +55,7 @@ combined statement is recorded with the book's own hypotheses.
 -/
 
 import RockafellarWets.Chapter5.OptimalSetMappings
+import RockafellarWets.Chapter1.Proximal
 import RockafellarWets.Chapter3.ExtendedCancellationCompletion
 
 open Bornology Filter Metric Set Topology
@@ -143,7 +145,12 @@ variable {E : Type*} [NormedAddCommGroup E]
 /-- The integrand of **Definition 1.22** read as a parametric minimization
 problem: the decision variable is `w`, the parameter is `x`. -/
 noncomputable def proxIntegrand (f : E → EReal) (lam : ℝ) : E × E → EReal :=
-  fun p ↦ f p.1 + (((1 / (2 * lam)) * ‖p.1 - p.2‖ ^ 2 : ℝ) : EReal)
+  fun p ↦ proximalObjectiveEReal f lam p.2 p.1
+
+/-- The proximal integrand is the canonical objective with its parameter and
+decision variable paired. -/
+theorem proxIntegrand_apply (f : E → EReal) (lam : ℝ) (w x : E) :
+    proxIntegrand f lam (w, x) = proximalObjectiveEReal f lam x w := rfl
 
 /-- The Moreau envelope is the value function of the proximal integrand. -/
 theorem moreauEnvelopeEReal_eq_valueFunction (f : E → EReal) (lam : ℝ) :
@@ -153,13 +160,21 @@ theorem moreauEnvelopeEReal_eq_valueFunction (f : E → EReal) (lam : ℝ) :
 the argmin of the proximal integrand, under Chapter 1's `argmin` convention
 that an identically-`+∞` slice has no minimizers. -/
 noncomputable def proxMappingEReal (f : E → EReal) (lam : ℝ) : E → Set E :=
-  paramArgmin (proxIntegrand f lam)
+  proximalMappingEReal f lam
+
+/-- The Chapter 5 compatibility name is the canonical proximal mapping. -/
+theorem proxMappingEReal_eq_proximalMappingEReal (f : E → EReal) (lam : ℝ) :
+    proxMappingEReal f lam = proximalMappingEReal f lam := rfl
+
+/-- The proximal mapping is the argmin of the proximal integrand. -/
+theorem proxMappingEReal_eq_paramArgmin (f : E → EReal) (lam : ℝ) :
+    proxMappingEReal f lam = paramArgmin (proxIntegrand f lam) := rfl
 
 theorem mem_proxMappingEReal {f : E → EReal} {lam : ℝ} {x w : E} :
     w ∈ proxMappingEReal f lam x ↔
       proxIntegrand f lam (w, x) = moreauEnvelopeEReal f lam x ∧
         moreauEnvelopeEReal f lam x < ⊤ :=
-  mem_paramArgmin_iff _ _ _
+  Iff.rfl
 
 theorem lowerSemicontinuous_proxIntegrand {f : E → EReal}
     (hf : LowerSemicontinuous f) (lam : ℝ) :
@@ -320,6 +335,7 @@ Lower semicontinuity of `f` is not used. -/
 theorem svLocallyBounded_proxMappingEReal {f : E → EReal} (hf : IsProper f)
     {lam : ℝ} (hlam : 0 < lam) (hthr : (lam : EReal) < proxThreshold f) :
     SvLocallyBounded (proxMappingEReal f lam) := by
+  rw [proxMappingEReal_eq_paramArgmin]
   intro x
   obtain ⟨α, hα⟩ := exists_eventually_valueFunction_proxIntegrand_le hf hlam x
   exact svLocallyBoundedAt_of_within_univ

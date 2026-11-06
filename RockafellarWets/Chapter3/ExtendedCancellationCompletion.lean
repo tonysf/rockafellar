@@ -9,6 +9,7 @@ earlier real-valued cancellation wrapper, it neither assumes that the
 functions have full domain nor that either function is coercive.
 -/
 
+import RockafellarWets.Chapter1.Proximal
 import RockafellarWets.Chapter3.CoercivityCompletion
 import Mathlib.Analysis.InnerProductSpace.Dual
 
@@ -19,10 +20,6 @@ noncomputable section
 namespace RW
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-
-/-- The Moreau envelope with its natural extended-real codomain. -/
-def moreauEnvelopeEReal (f : E → EReal) (lam : ℝ) (x : E) : EReal :=
-  ⨅ w : E, f w + (((1 / (2 * lam)) * ‖w - x‖ ^ 2 : ℝ) : EReal)
 
 /-- A finite point strictly below a proper closed convex extended-real
 function can be strictly separated by a continuous affine minorant. -/
