@@ -4,3 +4,8 @@ import RockafellarWets.Chapter3
 import RockafellarWets.Chapter4
 import RockafellarWets.Chapter5
 import RockafellarWets.Chapter6
+import RockafellarWets.Chapter7
+import RockafellarWets.Chapter8
+import RockafellarWets.Chapter9
+import RockafellarWets.Chapter10
+import RockafellarWets.Chapter11

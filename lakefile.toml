@@ -10,6 +10,11 @@ weak.linter.mathlibStandardSet = true
 maxSynthPendingDepth = 3
 
 [[require]]
+name = "fixed-point-theorems"
+git = "https://github.com/harfe/fixed-point-theorems-lean4.git"
+rev = "2bbc5dcf5e17fe8dc2afeea6465a8270b60ce8a3"
+
+[[require]]
 name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.28.0"

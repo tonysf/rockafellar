@@ -29,12 +29,17 @@ LEDGERS = {
     4: ROOT / "CHAPTER4_COVERAGE.md",
     5: ROOT / "CHAPTER5_COVERAGE.md",
     6: ROOT / "CHAPTER6_COVERAGE.md",
+    7: ROOT / "CHAPTER7_COVERAGE.md",
+    8: ROOT / "CHAPTER8_COVERAGE.md",
+    9: ROOT / "CHAPTER9_COVERAGE.md",
+    10: ROOT / "CHAPTER10_COVERAGE.md",
+    11: ROOT / "CHAPTER11_COVERAGE.md",
 }
 
 # Reviewed book inventories, deliberately independent of the ledger contents.
 # Enroll a new chapter here and in LEDGERS, including rows marked Missing for
 # results whose formalization is still pending.
-EXPECTED_ENDPOINTS = {3: 55, 4: 48, 5: 59, 6: 49}
+EXPECTED_ENDPOINTS = {3: 55, 4: 48, 5: 59, 6: 49, 7: 69, 8: 54, 9: 69, 10: 59, 11: 67}
 ALLOWED_STATUSES = frozenset({"Exact", "Adapted", "Partial", "Missing"})
 
 # `| Exact | 43 |` in the summary table.

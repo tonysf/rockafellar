@@ -1,0 +1,86 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+
+# Chapter 7: Epigraphical Limits
+-/
+
+import RockafellarWets.Chapter7.EpiLimits
+import RockafellarWets.Chapter7.EpiLimitCharacterization
+import RockafellarWets.Chapter7.EpiLimitFormulas
+import RockafellarWets.Chapter7.EpiLimitProperties
+import RockafellarWets.Chapter7.EpiCompactness
+import RockafellarWets.Chapter7.LevelSetConvergence
+import RockafellarWets.Chapter7.EpiOperations
+import RockafellarWets.Chapter7.EquiSemicontinuityProfiles
+import RockafellarWets.Chapter7.EquiSemicontinuityCounterexample
+import RockafellarWets.Chapter7.EpiPointwiseConvergence
+import RockafellarWets.Chapter7.FiniteGraphConvergence
+import RockafellarWets.Chapter7.ProfileConvergence
+import RockafellarWets.Chapter7.ExtendedUniformConvergence
+import RockafellarWets.Chapter7.EpiFromUniform
+import RockafellarWets.Chapter7.ExtendedArzelaAscoli
+import RockafellarWets.Chapter7.ConvexEpiConvergence
+import RockafellarWets.Chapter7.FiniteConvexConvergence
+import RockafellarWets.Chapter7.MollifiedAverages
+import RockafellarWets.Chapter7.MinimizationCriteria
+import RockafellarWets.Chapter7.ApproximateMinimizers
+import RockafellarWets.Chapter7.InfimaAndMinimizers
+import RockafellarWets.Chapter7.EventualLevelBoundedness
+import RockafellarWets.Chapter7.ConvergenceInMinimization
+import RockafellarWets.Chapter7.ConvexFunctionBounds
+import RockafellarWets.Chapter7.EventualProxBoundedness
+import RockafellarWets.Chapter7.MoreauEnvelopeLimits
+import RockafellarWets.Chapter7.ProximalMappingLimits
+import RockafellarWets.Chapter7.ParameterEpiContinuity
+import RockafellarWets.Chapter7.EpigraphAddition
+import RockafellarWets.Chapter7.InfAdditionLimits
+import RockafellarWets.Chapter7.ConvexSums
+import RockafellarWets.Chapter7.ConvexMaxima
+import RockafellarWets.Chapter7.AuxEpiDistance
+import RockafellarWets.Chapter7.AuxEpiComparison
+import RockafellarWets.Chapter7.ConvexLevelDistances
+import RockafellarWets.Chapter7.ApproximateSolutionEstimates
+import RockafellarWets.Chapter7.ArctanUniformConvergence
+import RockafellarWets.Chapter7.AuxEpiLowerBound
+import RockafellarWets.Chapter7.ConditioningCounterexamples
+import RockafellarWets.Chapter7.ConditioningFunctions
+import RockafellarWets.Chapter7.ConstrainedSolutionMappings
+import RockafellarWets.Chapter7.ConvexMoreauCharacterization
+import RockafellarWets.Chapter7.ConvexSumCounterexample
+import RockafellarWets.Chapter7.CosmicEpiDistance
+import RockafellarWets.Chapter7.EpiDerivativeCounterexample
+import RockafellarWets.Chapter7.EpiDerivativeSequences
+import RockafellarWets.Chapter7.EpiDerivatives
+import RockafellarWets.Chapter7.EpiDistanceEstimates
+import RockafellarWets.Chapter7.EpiDistances
+import RockafellarWets.Chapter7.EpiLatticeOperations
+import RockafellarWets.Chapter7.EpiSumCounterexample
+import RockafellarWets.Chapter7.EuclideanChangeOfVariables
+import RockafellarWets.Chapter7.FiniteEpiSums
+import RockafellarWets.Chapter7.FiniteGraphCounterexample
+import RockafellarWets.Chapter7.GrowthConditionEstimates
+import RockafellarWets.Chapter7.HorizonEpiLimitFormulas
+import RockafellarWets.Chapter7.HorizonEpiLimits
+import RockafellarWets.Chapter7.HorizonEpiProperties
+import RockafellarWets.Chapter7.HorizonLevelBoundedness
+import RockafellarWets.Chapter7.HorizonScaleSelections
+import RockafellarWets.Chapter7.InfProjectionCounterexample
+import RockafellarWets.Chapter7.LipschitzEpiDistance
+import RockafellarWets.Chapter7.LocalMinimization
+import RockafellarWets.Chapter7.MaxFunctionRegularity
+import RockafellarWets.Chapter7.MoreauEpiCharacterization
+import RockafellarWets.Chapter7.OptimalSetContinuity
+import RockafellarWets.Chapter7.ProjectionEstimates
+import RockafellarWets.Chapter7.ProjectionProximalContinuity
+import RockafellarWets.Chapter7.ProximalEstimates
+import RockafellarWets.Chapter7.SemiderivativeGraphs
+import RockafellarWets.Chapter7.Semiderivatives
+import RockafellarWets.Chapter7.SemidifferentiabilityCharacterizations
+import RockafellarWets.Chapter7.SharpAuxEpiDistance
+import RockafellarWets.Chapter7.SolutionStability
+import RockafellarWets.Chapter7.SubdifferentialRegularity
+import RockafellarWets.Chapter7.TotalEpiConvergence
+import RockafellarWets.Chapter7.TotalEpiProjection
+import RockafellarWets.Chapter7.TotalEpiSums
+import RockafellarWets.Chapter7.TotalMinimizationContinuity
