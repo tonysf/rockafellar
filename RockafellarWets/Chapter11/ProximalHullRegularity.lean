@@ -39,7 +39,7 @@ theorem isCoercive_add_moreauQuadratic {f : E → EReal} {t : ℝ}
     rw [sub_le_iff_le_add, ← sub_le_iff_le_add', le_div_iff₀ h4d]
     nlinarith [sq_nonneg (2*d*‖x‖ - k)]
   have hinner : -(‖x‖*‖b‖) ≤ ⟪x,b⟫_ℝ := neg_le_of_abs_le (abs_real_inner_le_norm x b)
-  have hlin := mul_le_mul_of_nonneg_left hinner (by positivity : (0:ℝ) ≤ 2*c)
+  have hlin := mul_le_mul_of_nonneg_left hinner (by positivity : (0 : ℝ) ≤ 2*c)
   have hreal : γ*‖x‖ + (β - c*‖b‖^2 - k^2/(4*d)) ≤
       (β - c*‖x-b‖^2) + 1 / (2*t)*‖x‖^2 := by
     have ht' : 1 / (2*t) = d + c := by rw [hd_def]; ring
@@ -74,7 +74,7 @@ formula is the convex hull `con (f + t⁻¹ j)`, so that
 its domain is exactly `con (dom f)`, and its (finite) restriction to the
 interior of this convex set is lower-`C²`. -/
 theorem proximalHull_regular_below_threshold {f : E → EReal} (hp : IsProper f)
-    (hl : LowerSemicontinuous f) {t : ℝ} (ht : 0 < t) (hthr : (t:EReal) < proxThreshold f) :
+    (hl : LowerSemicontinuous f) {t : ℝ} (ht : 0 < t) (hthr : (t : EReal) < proxThreshold f) :
     let g := fun x ↦ f x + (moreauQuadratic t x : EReal)
     fenchelConjugate (fenchelConjugate g) = convexHullFunction g ∧
     (∀ x, proximalHull f t x = convexHullFunction g x - (moreauQuadratic t x : EReal)) ∧
@@ -102,7 +102,8 @@ theorem proximalHull_regular_below_threshold {f : E → EReal} (hp : IsProper f)
     cases h : f x <;> simp [← EReal.coe_add]
   have hdom := effectiveDomain_convexHullFunction hgl hgp hc
   rw [hdg] at hdom
-  have he (x : E) : proximalHull f t x = convexHullFunction g x - (moreauQuadratic t x : EReal) := by
+  have he (x : E) :
+      proximalHull f t x = convexHullFunction g x - (moreauQuadratic t x : EReal) := by
     rw [proximalHull_eq_biconjugate_sub f ht]
     change fenchelConjugate (fenchelConjugate g) x - _ = _
     rw [hbi]

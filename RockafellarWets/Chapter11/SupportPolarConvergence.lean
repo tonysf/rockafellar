@@ -66,7 +66,8 @@ theorem pkConverges_iff_tendsto_supportFunction {C : ℕ → Set E} {D : Set E}
     (hn : ∀ n, (C n).Nonempty) (hl : ∀ n, IsClosed (C n))
     (hc : ∀ n, Convex ℝ (C n)) (hD : D.Nonempty) (hDl : IsClosed D)
     (hDc : Convex ℝ D) (hDb : IsBounded D) :
-    PKConverges C D ↔ ∀ v, Tendsto (fun n ↦ supportFunction (C n) v) atTop (𝓝 (supportFunction D v)) := by
+    PKConverges C D ↔
+      ∀ v, Tendsto (fun n ↦ supportFunction (C n) v) atTop (𝓝 (supportFunction D v)) := by
   have hd : effectiveDomain (supportFunction D) = univ := by
     ext v
     simp only [mem_effectiveDomain_iff,mem_univ,iff_true]
@@ -121,20 +122,20 @@ theorem supportFunction_epiLimit_inclusions {C : ℕ → Set E} {D : Set E}
     (hn : ∀ n, (C n).Nonempty) (hl : ∀ n, IsClosed (C n))
     (hc : ∀ n, Convex ℝ (C n)) (hD : D.Nonempty) (hDl : IsClosed D)
     (hDc : Convex ℝ D)
-    (hd : limsup (fun n ↦ (infDist (0:E) (C n) : EReal)) atTop < ⊤) :
+    (hd : limsup (fun n ↦ (infDist (0 : E) (C n) : EReal)) atTop < ⊤) :
     (outerSetLimit C ⊆ D ↔
       epiUpperLimit (fun n ↦ supportFunction (C n)) ≤ supportFunction D) ∧
     (D ⊆ innerSetLimit C ↔
       supportFunction D ≤ epiLowerLimit (fun n ↦ supportFunction (C n))) := by
   obtain ⟨R,hR,_⟩ := EReal.exists_between_coe_real hd
-  have hev : ∀ᶠ n in atTop, (infDist (0:E) (C n) : EReal) < R :=
+  have hev : ∀ᶠ n in atTop, (infDist (0 : E) (C n) : EReal) < R :=
     eventually_lt_of_limsup_lt hR (by isBoundedDefault)
-  have hB : IsBounded (closedBall (0:E) R) := isBounded_closedBall
-  have hi : limsup (fun n ↦ infimumOn (indicatorVA (C n)) (closedBall (0:E) R)) atTop < ⊤ := by
-    have hle : ∀ᶠ n in atTop, infimumOn (indicatorVA (C n)) (closedBall (0:E) R) ≤ 0 := by
+  have hB : IsBounded (closedBall (0 : E) R) := isBounded_closedBall
+  have hi : limsup (fun n ↦ infimumOn (indicatorVA (C n)) (closedBall (0 : E) R)) atTop < ⊤ := by
+    have hle : ∀ᶠ n in atTop, infimumOn (indicatorVA (C n)) (closedBall (0 : E) R) ≤ 0 := by
       filter_upwards [hev] with n hn'
       obtain ⟨c,hcC,hcd⟩ := (infDist_lt_iff (hn n)).mp (EReal.coe_lt_coe_iff.mp hn')
-      have hcB : c ∈ closedBall (0:E) R := by
+      have hcB : c ∈ closedBall (0 : E) R := by
         rw [mem_closedBall, dist_comm]; exact hcd.le
       exact (iInf₂_le c hcB).trans (by simp [indicatorVA, hcC])
     exact (limsup_le_of_le (by isBoundedDefault) hle).trans_lt EReal.zero_lt_top
@@ -158,8 +159,8 @@ theorem polarCone_setLimit_inclusions {K : ℕ → Set E} {L : Set E}
     (hLc : Convex ℝ L) :
     (outerSetLimit K ⊆ L ↔ polarCone L ⊆ innerSetLimit (fun n ↦ polarCone (K n))) ∧
     (L ⊆ innerSetLimit K ↔ outerSetLimit (fun n ↦ polarCone (K n)) ⊆ polarCone L) := by
-  have hd : limsup (fun n ↦ (infDist (0:E) (K n) : EReal)) atTop < ⊤ := by
-    have hz : (fun n ↦ (infDist (0:E) (K n) : EReal)) = fun _ ↦ 0 :=
+  have hd : limsup (fun n ↦ (infDist (0 : E) (K n) : EReal)) atTop < ⊤ := by
+    have hz : (fun n ↦ (infDist (0 : E) (K n) : EReal)) = fun _ ↦ 0 :=
       funext fun n ↦ by rw [infDist_zero_of_mem (hk n).1, EReal.coe_zero]
     rw [hz, limsup_const]
     exact EReal.zero_lt_top

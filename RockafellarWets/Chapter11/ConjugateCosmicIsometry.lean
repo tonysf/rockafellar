@@ -16,31 +16,33 @@ noncomputable section
 
 section IsometryInvariance
 
-variable {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F] [FiniteDimensional ℝ F]
+variable {F G : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] [FiniteDimensional ℝ F]
+  [NormedAddCommGroup G] [NormedSpace ℝ G] [FiniteDimensional ℝ G]
 
-omit [InnerProductSpace ℝ F] [FiniteDimensional ℝ F] in
+omit [NormedSpace ℝ F] [FiniteDimensional ℝ F] [NormedSpace ℝ G] [FiniteDimensional ℝ G] in
 theorem infDist_preimage_linearIsometryEquiv {𝕜 : Type*} [NormedField 𝕜] [NormedSpace 𝕜 F]
-    (T : F ≃ₗᵢ[𝕜] F) (x : F) (C : Set F) :
+    [NormedSpace 𝕜 G] (T : F ≃ₗᵢ[𝕜] G) (x : F) (C : Set G) :
     infDist x (T ⁻¹' C) = infDist (T x) C := by
   calc infDist x (T ⁻¹' C) = infDist (T x) (T '' (T ⁻¹' C)) := (infDist_image T.isometry).symm
     _ = infDist (T x) C := by rw [T.surjective.image_preimage]
 
+theorem rhoDistance_preimage_le (S : F ≃ₗᵢ[ℝ] G) (ρ : ℝ≥0) (A B : Set G) :
+    rhoDistance ρ (S ⁻¹' A) (S ⁻¹' B) ≤ rhoDistance ρ A B := by
+  apply (rhoDistance_le_iff (rhoDistance_nonneg ρ A B) ρ _ _).mpr
+  intro x hx
+  rw [infDist_preimage_linearIsometryEquiv, infDist_preimage_linearIsometryEquiv]
+  apply abs_infDist_sub_infDist_le_rhoDistance
+  simpa only [mem_closedBall, dist_zero_right, S.norm_map] using hx
+
 /-- Localized set distances are invariant under linear isometries. -/
-theorem rhoDistance_preimage_linearIsometryEquiv (T : F ≃ₗᵢ[ℝ] F) (ρ : ℝ≥0) (C D : Set F) :
+theorem rhoDistance_preimage_linearIsometryEquiv (T : F ≃ₗᵢ[ℝ] G) (ρ : ℝ≥0) (C D : Set G) :
     rhoDistance ρ (T ⁻¹' C) (T ⁻¹' D) = rhoDistance ρ C D := by
-  have key (S : F ≃ₗᵢ[ℝ] F) (A B : Set F) :
-      rhoDistance ρ (S ⁻¹' A) (S ⁻¹' B) ≤ rhoDistance ρ A B := by
-    apply (rhoDistance_le_iff (rhoDistance_nonneg ρ A B) ρ _ _).mpr
-    intro x hx
-    rw [infDist_preimage_linearIsometryEquiv, infDist_preimage_linearIsometryEquiv]
-    apply abs_infDist_sub_infDist_le_rhoDistance
-    simpa only [mem_closedBall, dist_zero_right, S.norm_map] using hx
-  apply le_antisymm (key T C D)
-  have h := key T.symm (T ⁻¹' C) (T ⁻¹' D)
+  apply le_antisymm (rhoDistance_preimage_le T ρ C D)
+  have h := rhoDistance_preimage_le T.symm ρ (T ⁻¹' C) (T ⁻¹' D)
   simpa only [preimage_preimage, LinearIsometryEquiv.apply_symm_apply, preimage_id'] using h
 
 /-- The integrated set distance 4(12) is invariant under linear isometries. -/
-theorem integratedSetDistance_preimage_linearIsometryEquiv (T : F ≃ₗᵢ[ℝ] F) (C D : Set F) :
+theorem integratedSetDistance_preimage_linearIsometryEquiv (T : F ≃ₗᵢ[ℝ] G) (C D : Set G) :
     integratedSetDistance (T ⁻¹' C) (T ⁻¹' D) = integratedSetDistance C D := by
   simp only [integratedSetDistance, rhoDistanceReal, rhoDistance_preimage_linearIsometryEquiv]
 
@@ -157,7 +159,8 @@ semicontinuous, conjugation preserves the cosmic epi-distance of 7(28). -/
 theorem cosmicEpiConeDistance_fenchelConjugate {f g : E → EReal}
     (hf : IsProper f) (hfc : Convex ℝ (epigraph f))
     (hg : IsProper g) (hgc : Convex ℝ (epigraph g)) :
-    cosmicEpiConeDistance (fenchelConjugate f) (fenchelConjugate g) = cosmicEpiConeDistance f g := by
+    cosmicEpiConeDistance (fenchelConjugate f) (fenchelConjugate g) =
+      cosmicEpiConeDistance f g := by
   have hfs := isProper_fenchelConjugate_of_convex hf hfc
   have hgs := isProper_fenchelConjugate_of_convex hg hgc
   rw [← integratedSetDistance_conjugacyPrimalCone (fenchelConjugate f),

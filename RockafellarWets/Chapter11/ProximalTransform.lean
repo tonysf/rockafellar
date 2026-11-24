@@ -68,8 +68,8 @@ theorem pairingConjugate_proximalCoupling (t : ℝ) (f : E → EReal) :
 
 /-- **Example 11.64**, `f^{ΦΦ} = h_λ f`. -/
 theorem pairingBiconjugate_proximalCoupling (t : ℝ) (f : E → EReal) :
-    pairingConjugate (Function.swap (proximalCoupling t)) (pairingConjugate (proximalCoupling t) f) =
-      proximalHull f t := by
+    pairingConjugate (Function.swap (proximalCoupling t))
+        (pairingConjugate (proximalCoupling t) f) = proximalHull f t := by
   rw [proximalCoupling_swap, pairingConjugate_proximalCoupling t f]
   funext x
   rw [proximalHull_eq_iSup_envelope]
@@ -82,7 +82,8 @@ theorem pairingBiconjugate_proximalCoupling (t : ℝ) (f : E → EReal) :
 /-- **Example 11.64**, the double-envelope form `h_λ f = -e_λ[-e_λ f]`. -/
 theorem proximalHull_eq_neg_moreauEnvelope_neg (t : ℝ) (f : E → EReal) :
     proximalHull f t = fun x ↦ -moreauEnvelopeEReal (fun y ↦ -moreauEnvelopeEReal f t y) t x := by
-  rw [← pairingBiconjugate_proximalCoupling, proximalCoupling_swap, ← pairingConjugate_proximalCoupling]
+  rw [← pairingBiconjugate_proximalCoupling, proximalCoupling_swap,
+    ← pairingConjugate_proximalCoupling]
   rw [← pairingConjugate_proximalCoupling]
 
 /-- **Example 11.64**, the envelope functions of the proximal coupling are

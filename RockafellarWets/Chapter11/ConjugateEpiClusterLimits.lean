@@ -35,7 +35,8 @@ theorem le_epiLowerLimit_iff_epiClusterLimits {f : ℕ → E → EReal} {g : E �
   · intro hh h hm
     apply epigraph_subset_epigraph_iff.mp
     obtain ⟨φ,hφ,hm⟩ := hm
-    exact (subset_sUnion_of_mem (show epigraph h ∈ pkClusterLimits (fun n ↦ epigraph (f n)) from ⟨φ,hφ,hm⟩)).trans hh
+    exact (subset_sUnion_of_mem (show epigraph h ∈ pkClusterLimits (fun n ↦ epigraph (f n)) from
+      ⟨φ,hφ,hm⟩)).trans hh
   · intro hh p hp
     obtain ⟨D,hD,hp⟩ := hp
     obtain ⟨h,hm,he⟩ := epigraph_cluster f hD
@@ -121,7 +122,8 @@ theorem epiClusterLimits_fenchelConjugate {f : ℕ → E → EReal}
   apply Subset.antisymm
   · rintro g ⟨φ,hφ,hg⟩
     obtain ⟨ψ,h,hψ,hht,he⟩ := exists_epiConvergent_subsequence_of_not_escape (hne φ hφ)
-    have hh : h ∈ epiClusterLimits f := ⟨φ ∘ ψ,hφ.comp hψ,by simpa only [Function.comp_assoc] using he⟩
+    have hh : h ∈ epiClusterLimits f :=
+      ⟨φ ∘ ψ,hφ.comp hψ,by simpa only [Function.comp_assoc] using he⟩
     obtain ⟨hph,hlh,hch⟩ := epiClusterLimits_proper hc hbot hne hh
     have hdual := he.fenchelConjugate (fun n ↦ hp (φ (ψ n)))
       (fun n ↦ hl (φ (ψ n))) (fun n ↦ hc (φ (ψ n))) hph hlh hch
@@ -153,8 +155,10 @@ theorem conjugate_epiLimit_inequalities {f : ℕ → E → EReal} {g : E → ERe
     (hbot : ∀ x, ⊥ < epiLowerLimit f x) {B : Set E} (hB : IsBounded B)
     (hi : limsup (fun n ↦ infimumOn (f n) B) atTop < ⊤) :
     (g ≤ epiLowerLimit f ↔ epiUpperLimit (fun n ↦ fenchelConjugate (f n)) ≤ fenchelConjugate g) ∧
-    (epiUpperLimit f ≤ g ↔ fenchelConjugate g ≤ epiLowerLimit (fun n ↦ fenchelConjugate (f n))) := by
-  have hne := fun (φ : ℕ → ℕ) (hφ : StrictMono φ) ↦ not_epiConverges_top_subsequence_of_bounded_infima hB hi hφ
+    (epiUpperLimit f ≤ g ↔
+      fenchelConjugate g ≤ epiLowerLimit (fun n ↦ fenchelConjugate (f n))) := by
+  have hne := fun (φ : ℕ → ℕ) (hφ : StrictMono φ) ↦
+    not_epiConverges_top_subsequence_of_bounded_infima hB hi hφ
   have he := epiClusterLimits_fenchelConjugate hp hl hc hbot hne
   rw [le_epiLowerLimit_iff_epiClusterLimits,epiUpperLimit_le_iff_epiClusterLimits,
     epiUpperLimit_le_iff_epiClusterLimits,le_epiLowerLimit_iff_epiClusterLimits,he]

@@ -25,6 +25,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 LEDGERS = {
+    1: ROOT / "CHAPTER1_COVERAGE.md",
+    2: ROOT / "CHAPTER2_COVERAGE.md",
     3: ROOT / "CHAPTER3_COVERAGE.md",
     4: ROOT / "CHAPTER4_COVERAGE.md",
     5: ROOT / "CHAPTER5_COVERAGE.md",
@@ -34,12 +36,15 @@ LEDGERS = {
     9: ROOT / "CHAPTER9_COVERAGE.md",
     10: ROOT / "CHAPTER10_COVERAGE.md",
     11: ROOT / "CHAPTER11_COVERAGE.md",
+    12: ROOT / "CHAPTER12_COVERAGE.md",
+    13: ROOT / "CHAPTER13_COVERAGE.md",
+    14: ROOT / "CHAPTER14_COVERAGE.md",
 }
 
 # Reviewed book inventories, deliberately independent of the ledger contents.
 # Enroll a new chapter here and in LEDGERS, including rows marked Missing for
 # results whose formalization is still pending.
-EXPECTED_ENDPOINTS = {3: 55, 4: 48, 5: 59, 6: 49, 7: 69, 8: 54, 9: 69, 10: 59, 11: 67}
+EXPECTED_ENDPOINTS = {1: 46, 2: 57, 3: 55, 4: 48, 5: 59, 6: 49, 7: 69, 8: 54, 9: 69, 10: 59, 11: 67, 12: 68, 13: 68, 14: 62}
 ALLOWED_STATUSES = frozenset({"Exact", "Adapted", "Partial", "Missing"})
 
 # `| Exact | 43 |` in the summary table.

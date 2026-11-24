@@ -1,6 +1,6 @@
 # RockafellarWets
 
-Lean 4 formalization of parts of Rockafellar and Wets, *Variational Analysis*.
+Lean 4 formalization of Rockafellar and Wets, *Variational Analysis*.
 
 ## Scope
 
@@ -17,15 +17,18 @@ correct statement in context.
 
 ## Current Status
 
+The coverage ledgers account for all 830 numbered results across Chapters 1–14.
+They record 736 exact formalizations and 94 documented adaptations.
+
 - `lake build` passes.
 - `RockafellarWets/` is currently `sorry`-free.
 - `scripts/check_ledgers.py` passes: the coverage ledgers agree with their
   own result rows, and every ledger link and module import resolves.
 - The project currently covers:
-  - Chapter 1, *Max and Min*: project definitions, semicontinuity, and Moreau
-    envelope material.
-  - Chapter 2, *Convexity*: convex sets and functions, level sets, operations
-    preserving convexity, convex hulls, separation, and relative interior.
+  - Chapter 1, *Max and Min*, covers all 46 results, including semicontinuity,
+    minimization, and proximal mappings and envelopes.
+  - Chapter 2, *Convexity*, covers all 57 results, including convexity tests,
+    convex hulls, separation, relative interiors, and piecewise linearity.
   - Chapter 3, *Cones and Cosmic Closure*, through Proposition 3.55:
     cosmic compactification, horizon cones and functions, cone and set
     calculus, coercivity, parametric minimization, epi-addition, cancellation,
@@ -103,8 +106,15 @@ correct statement in context.
     coderivatives, variational principles, and Lagrange multipliers are covered in
     48 exact results and 11 adaptations. Counterexamples and corrected hypotheses
     are recorded in the [Chapter 10 ledger](CHAPTER10_COVERAGE.md).
-  - Chapter 11, *Dualization*, begins with the Legendre–Fenchel conjugate and its order-reversing property.
-- Current frontier:
+  - Chapter 11, *Dualization*, covers all 67 results, including conjugacy,
+    dual optimization, and Lagrangian constructions.
+  - Chapter 12, *Monotone Mappings*, covers all 68 results, including maximal
+    monotonicity, Minty parameterization, and variational inequalities.
+  - Chapter 13, *Second-Order Theory*, covers all 68 results, including
+    second subderivatives, second-order optimality, and prox-regularity.
+  - Chapter 14, *Measurability*, covers all 62 results, including measurable
+    selections, normal integrands, and integral functionals.
+- Coverage notes for the earlier chapters:
   - the Chapter 3 ledger classifies all 55 numbered results: 52 exact and three
     explicitly justified adaptations forced by the project's infinity
     conventions;
@@ -210,58 +220,27 @@ correct statement in context.
     recovers the full meagerness and density conclusion on `frontier C` when
     `C` is closed.
 
-See the [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md),
-[Chapter 5](CHAPTER5_COVERAGE.md), [Chapter 6](CHAPTER6_COVERAGE.md),
-[Chapter 7](CHAPTER7_COVERAGE.md), [Chapter 8](CHAPTER8_COVERAGE.md),
-[Chapter 9](CHAPTER9_COVERAGE.md), [Chapter 10](CHAPTER10_COVERAGE.md), and
-[Chapter 11](CHAPTER11_COVERAGE.md)
-coverage ledgers for conservative, result-by-result accounts of exact,
-adapted, and missing coverage.
+## Coverage ledgers
+
+Each ledger records the Lean declarations and any changes to the book’s hypotheses.
+
+- [Chapter 1](CHAPTER1_COVERAGE.md), [Chapter 2](CHAPTER2_COVERAGE.md), [Chapter 3](CHAPTER3_COVERAGE.md), [Chapter 4](CHAPTER4_COVERAGE.md)
+- [Chapter 5](CHAPTER5_COVERAGE.md), [Chapter 6](CHAPTER6_COVERAGE.md), [Chapter 7](CHAPTER7_COVERAGE.md), [Chapter 8](CHAPTER8_COVERAGE.md)
+- [Chapter 9](CHAPTER9_COVERAGE.md), [Chapter 10](CHAPTER10_COVERAGE.md), [Chapter 11](CHAPTER11_COVERAGE.md), [Chapter 12](CHAPTER12_COVERAGE.md)
+- [Chapter 13](CHAPTER13_COVERAGE.md), [Chapter 14](CHAPTER14_COVERAGE.md)
 
 ## Roadmap
 
-From here, we plan to continue chapter-by-chapter in book order. The goal is a
-comprehensive sweep of the remainder of the book: main results, examples, and
-exercises will all be formalized, with dependency-critical exercises prioritized
-first whenever they unlock later sections.
-
-1. Chapter 6, *Variational Geometry*: tangent cones, normal cones, Clarke
-   regularity, multipliers, proximal normals, and tangent-normal relations.
-   Every numbered result is now covered; the remaining work is the four
-   adapted statements, should sharper formulations become available.
-2. Chapter 7, *Epigraphical Limits*: every numbered result has a proof or
-   a documented correction with its verified scope in the ledger.
-3. Chapter 8, *Subderivatives and Subgradients*: every numbered result has a
-   proof or a documented correction, including all proximal recovery and
-   Clarke subgradient clauses.
-4. Chapter 9, *Lipschitzian Properties*: every numbered result has a proof
-   or a documented correction, including mollifier recovery and extremal
-   principles.
-5. Chapter 10, *Subdifferential Calculus*, covers every numbered entry,
-   including the eigenvalue example and the two marginal subsmoothness theorems.
-6. Chapter 11, *Dualization*: cover Legendre-Fenchel duality, conjugacy, polar
-   sets and gauges, dual operations, dual optimization, and Lagrangian
-   constructions.
-7. Chapter 12, *Monotone Mappings*: formalize monotonicity and maximality,
-   Minty parameterization, links with convex functions, graphical convergence,
-   and variational inequalities.
-8. Chapter 13, *Second-Order Theory*: develop second-order differentiability,
-   second subderivatives, calculus rules, second-order optimality, and
-   prox-regularity.
-9. Chapter 14, *Measurability*: cover measurable mappings and selections,
-   normal integrands, operations on integrands, and integral functionals.
-
-Priorities may occasionally shift to match Mathlib support and dependency order,
-but the intended reading and formalization order remains the book order.
+Review the documented adaptations, formalize supporting counterexamples, and
+sharpen hypotheses where the checked results permit it.
 
 ## Repository Layout
 
 - `RockafellarWets.lean`: top-level import for the current formalization.
-- `RockafellarWets/Chapter1` through `RockafellarWets/Chapter11`:
+- `RockafellarWets/Chapter1` through `RockafellarWets/Chapter14` contain the
   chapter-level Lean sources.
-- `CHAPTER3_COVERAGE.md`, `CHAPTER4_COVERAGE.md`, `CHAPTER5_COVERAGE.md`,
-  `CHAPTER6_COVERAGE.md`, `CHAPTER7_COVERAGE.md`, `CHAPTER8_COVERAGE.md`,
-  `CHAPTER9_COVERAGE.md`, `CHAPTER10_COVERAGE.md`, and `CHAPTER11_COVERAGE.md`: result-by-result coverage ledgers.
+- `CHAPTER1_COVERAGE.md` through `CHAPTER14_COVERAGE.md` record result-by-result
+  coverage.
 - `scripts/`: repository checks run in CI alongside `lake build`.
 - `rockafellar_wets.pdf`: local reference copy of the text used during the
   formalization.

@@ -23,8 +23,16 @@ def IsPairingEnvelope (Φ : X → Y → ℝ) (f : X → EReal) : Prop :=
 
 private theorem pairing_sub_le_iff (r : ℝ) (a b : EReal) :
     (r : EReal) - a ≤ b ↔ (r : EReal) - b ≤ a := by
-  cases a <;> cases b <;> simp [← EReal.coe_sub]
-  constructor <;> intro <;> linarith
+  cases a with
+  | bot => cases b <;> simp [← EReal.coe_sub]
+  | top => cases b <;> simp [← EReal.coe_sub]
+  | coe a =>
+    cases b with
+    | bot => simp [← EReal.coe_sub]
+    | top => simp [← EReal.coe_sub]
+    | coe b =>
+      rw [← EReal.coe_sub, ← EReal.coe_sub, EReal.coe_le_coe_iff, EReal.coe_le_coe_iff]
+      constructor <;> intro <;> linarith
 
 /-- The two generalized conjugate operators form an antitone Galois connection. -/
 theorem pairingConjugate_le_iff (Φ : X → Y → ℝ) (f : X → EReal) (g : Y → EReal) :
@@ -119,7 +127,8 @@ theorem pairingBiconjugate_isGreatest_swap (Φ : X → Y → ℝ) (g : Y → ERe
 noncomputable def pairingEnvelopeEquiv (Φ : X → Y → ℝ) :
     {f // IsPairingEnvelope Φ f} ≃ {g // IsPairingEnvelope (Function.swap Φ) g} where
   toFun f := ⟨pairingConjugate Φ f.val,isPairingEnvelope_conjugate Φ _⟩
-  invFun g := ⟨pairingConjugate (Function.swap Φ) g.val,isPairingEnvelope_conjugate (Function.swap Φ) _⟩
+  invFun g := ⟨pairingConjugate (Function.swap Φ) g.val,
+    isPairingEnvelope_conjugate (Function.swap Φ) _⟩
   left_inv f := Subtype.ext ((isPairingEnvelope_iff_biconjugate Φ _).mp f.property)
   right_inv g := Subtype.ext ((isPairingEnvelope_iff_biconjugate (Function.swap Φ) _).mp g.property)
 

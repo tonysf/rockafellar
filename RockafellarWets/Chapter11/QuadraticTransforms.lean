@@ -113,7 +113,8 @@ theorem pairingConjugate_quadraticCoupling_of_top (f : E → EReal) (hf : ∀ x,
 omit [InnerProductSpace ℝ E] in
 theorem isProxBounded_of_quadratic_minorant {f : E → EReal} {μ β : ℝ} (hμ : 0 < μ) (b : E)
     (h : ∀ w, ((β - 1 / (2 * μ) * ‖w - b‖ ^ 2 : ℝ) : EReal) ≤ f w) : IsProxBounded f :=
-  ⟨μ, hμ, b, (EReal.bot_lt_coe β).trans_le ((le_moreauEnvelopeEReal_iff_quadratic_minorant μ β b).mpr h)⟩
+  ⟨μ, hμ, b, (EReal.bot_lt_coe β).trans_le
+    ((le_moreauEnvelopeEReal_iff_quadratic_minorant μ β b).mpr h)⟩
 
 omit [InnerProductSpace ℝ E] in
 theorem exists_quadratic_minorant_of_isProxBounded {f : E → EReal} (h : IsProxBounded f) :
@@ -179,7 +180,8 @@ theorem pairingBiconjugate_le_epiClosure (hcont : ∀ y, Continuous (q y)) (f : 
     (pairingConjugate (quadraticCoupling v q) f)
   have hle := pairingBiconjugate_le (quadraticCoupling v q) f
   rw [← epigraph_subset_epigraph_iff, epigraph_epiClosure]
-  exact closure_minimal (epigraph_subset_epigraph_iff.mpr hle) (isClosed_epigraph_of_lsc_ereal _ hlsc)
+  exact closure_minimal (epigraph_subset_epigraph_iff.mpr hle)
+    (isClosed_epigraph_of_lsc_ereal _ hlsc)
 
 omit [InnerProductSpace ℝ E] in
 /-- A prox-bounded function lying above a level near a point has a quadratic
@@ -209,7 +211,7 @@ theorem exists_quadratic_minorant_near {f : E → EReal} {μ γ : ℝ} {b : E} (
       rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
       nlinarith
     have h1 : 1 / (2 * μ) * ‖z - b‖ ^ 2 ≤ 1 / μ * ‖z - x‖ ^ 2 + ‖x - b‖ ^ 2 / μ := by
-      have h := mul_le_mul_of_nonneg_left hzb (by positivity : (0:ℝ) ≤ 1 / (2 * μ))
+      have h := mul_le_mul_of_nonneg_left hzb (by positivity : (0 : ℝ) ≤ 1 / (2 * μ))
       have he : 1 / (2 * μ) * (2 * ‖z - x‖ ^ 2 + 2 * ‖x - b‖ ^ 2) =
           1 / μ * ‖z - x‖ ^ 2 + ‖x - b‖ ^ 2 / μ := by
         field_simp
@@ -245,13 +247,15 @@ theorem epiClosure_le_pairingBiconjugate
     exact (lt_of_not_ge hne).le
   obtain ⟨r, hr, hq⟩ := exists_quadratic_minorant_near hμ hmin hδ hnear
   obtain ⟨y, hvy, hqy⟩ := hscal r hr (r • x)
-  have hconj : pairingConjugate (quadraticCoupling v q) f y ≤ ((r / 2 * ‖x‖ ^ 2 - β : ℝ) : EReal) := by
+  have hconj :
+      pairingConjugate (quadraticCoupling v q) f y ≤ ((r / 2 * ‖x‖ ^ 2 - β : ℝ) : EReal) := by
     apply iSup_le
     intro z
     rw [coe_sub_le_coe_iff]
     refine le_trans (le_of_eq ?_) (hq z)
     congr 1
-    simp only [quadraticCoupling, hvy, hqy, real_inner_smul_left, norm_sub_sq_real, real_inner_comm x z]
+    simp only [quadraticCoupling, hvy, hqy, real_inner_smul_left, norm_sub_sq_real,
+      real_inner_comm x z]
     ring
   have hbi : (β : EReal) ≤ pairingConjugate (Function.swap (quadraticCoupling v q))
       (pairingConjugate (quadraticCoupling v q) f) x := by
@@ -272,7 +276,8 @@ theorem pairingBiconjugate_eq_epiClosure (hcont : ∀ y, Continuous (q y))
     {f : E → EReal} (hf : IsProxBounded f) :
     pairingConjugate (Function.swap (quadraticCoupling v q))
       (pairingConjugate (quadraticCoupling v q) f) = epiClosure f :=
-  le_antisymm (pairingBiconjugate_le_epiClosure v q hcont f) (epiClosure_le_pairingBiconjugate v q hscal hf)
+  le_antisymm (pairingBiconjugate_le_epiClosure v q hcont f)
+    (epiClosure_le_pairingBiconjugate v q hscal hf)
 
 /-- Away from the two extreme cases the conjugate is proper. -/
 theorem isProper_pairingConjugate_quadraticCoupling
@@ -289,7 +294,8 @@ theorem isProper_pairingConjugate_quadraticCoupling
     rw [coe_sub_le_coe_iff]
     refine le_trans (le_of_eq ?_) (hmin z)
     congr 1
-    simp only [quadraticCoupling, hvy, hqy, real_inner_smul_left, norm_sub_sq_real, real_inner_comm b z]
+    simp only [quadraticCoupling, hvy, hqy, real_inner_smul_left, norm_sub_sq_real,
+      real_inner_comm b z]
     field_simp
     ring
   · have h := le_iSup (fun x ↦ ((quadraticCoupling v q x y : ℝ) : EReal) - f x) x₀
@@ -311,7 +317,8 @@ noncomputable def quadraticTransformEquiv (hcont : ∀ y, Continuous (q y))
     (hgrowth : ∀ y, ∃ a : ℝ, ∀ x, q y x ≤ a * ‖x‖ ^ 2)
     (hscal : ∀ r : ℝ, 0 < r → ∀ w : E, ∃ y, v y = w ∧ ∀ x, q y x = r / 2 * ‖x‖ ^ 2) :
     {f : E → EReal // IsProper f ∧ LowerSemicontinuous f ∧ IsProxBounded f} ≃
-      {g : Y → EReal // IsProper g ∧ IsPairingEnvelope (Function.swap (quadraticCoupling v q)) g} where
+      {g : Y → EReal //
+        IsProper g ∧ IsPairingEnvelope (Function.swap (quadraticCoupling v q)) g} where
   toFun f := ⟨pairingConjugate (quadraticCoupling v q) f.val,
     isProper_pairingConjugate_quadraticCoupling v q hscal f.property.2.2 f.property.1.1,
     isPairingEnvelope_conjugate _ _⟩
@@ -319,7 +326,8 @@ noncomputable def quadraticTransformEquiv (hcont : ∀ y, Continuous (q y))
     refine ⟨pairingConjugate (Function.swap (quadraticCoupling v q)) g.val, ?_⟩
     have hg : pairingConjugate (quadraticCoupling v q)
         (pairingConjugate (Function.swap (quadraticCoupling v q)) g.val) = g.val :=
-      (isPairingEnvelope_iff_biconjugate (Function.swap (quadraticCoupling v q)) g.val).mp g.property.2
+      (isPairingEnvelope_iff_biconjugate (Function.swap (quadraticCoupling v q)) g.val).mp
+        g.property.2
     have hpb : IsProxBounded (pairingConjugate (Function.swap (quadraticCoupling v q)) g.val) := by
       by_contra hn
       obtain ⟨y, hy⟩ := g.property.1.1
@@ -344,15 +352,18 @@ noncomputable def quadraticTransformEquiv (hcont : ∀ y, Continuous (q y))
     rw [pairingBiconjugate_eq_epiClosure v q hcont hscal f.property.2.2,
       epiClosure_eq_of_lowerSemicontinuous f.property.2.1]
   right_inv g := Subtype.ext
-    ((isPairingEnvelope_iff_biconjugate (Function.swap (quadraticCoupling v q)) g.val).mp g.property.2)
+    ((isPairingEnvelope_iff_biconjugate (Function.swap (quadraticCoupling v q)) g.val).mp
+      g.property.2)
 
 /-- Envelope functions on the parameter space are conjugates, hence lower
 semicontinuous with convex epigraphs whenever the coupling is continuous and
 affine in the parameter. -/
-theorem isPairingEnvelope_quadraticCoupling_regular [TopologicalSpace Y] [AddCommGroup Y] [Module ℝ Y]
+theorem isPairingEnvelope_quadraticCoupling_regular [TopologicalSpace Y] [AddCommGroup Y]
+    [Module ℝ Y]
     (hc : ∀ x, Continuous (fun y ↦ quadraticCoupling v q x y))
     (ha : ∀ x (y₁ y₂ : Y) (a b : ℝ), a + b = 1 →
-      quadraticCoupling v q x (a • y₁ + b • y₂) = a * quadraticCoupling v q x y₁ + b * quadraticCoupling v q x y₂)
+      quadraticCoupling v q x (a • y₁ + b • y₂) =
+        a * quadraticCoupling v q x y₁ + b * quadraticCoupling v q x y₂)
     {g : Y → EReal} (hg : IsPairingEnvelope (Function.swap (quadraticCoupling v q)) g) :
     LowerSemicontinuous g ∧ Convex ℝ (epigraph g) := by
   have he := (isPairingEnvelope_iff_biconjugate (Function.swap (quadraticCoupling v q)) g).mp hg
@@ -495,7 +506,8 @@ private theorem full_continuous (x : E) :
   unfold fullQuadraticCoupling quadraticCoupling
   have h : Continuous (fun y : E × symmetricOperators (E := E) ↦ (y.2 : E →L[ℝ] E) x) :=
     (continuous_subtype_val.comp continuous_snd).clm_apply continuous_const
-  exact (continuous_fst.inner continuous_const).sub (continuous_const.mul (continuous_const.inner h))
+  exact (continuous_fst.inner continuous_const).sub
+    (continuous_const.mul (continuous_const.inner h))
 
 private theorem full_affine (x : E) (y₁ y₂ : E × symmetricOperators (E := E)) (a b : ℝ)
     (_ : a + b = 1) :
@@ -556,7 +568,8 @@ theorem fullQuadraticTransformEquiv_regular
 
 /-- **Example 11.66** as a restriction of 11.65: the basic coupling is the full
 coupling at the scalar matrices `Q = rI`. -/
-theorem basicQuadraticCoupling_eq_full (x v : E) (r : ℝ) (hr : r • (1 : E →L[ℝ] E) ∈ symmetricOperators (E := E)) :
+theorem basicQuadraticCoupling_eq_full (x v : E) (r : ℝ)
+    (hr : r • (1 : E →L[ℝ] E) ∈ symmetricOperators (E := E)) :
     basicQuadraticCoupling x (v, r) = fullQuadraticCoupling x (v, ⟨r • (1 : E →L[ℝ] E), hr⟩) := by
   change ⟪v, x⟫_ℝ - r * (1 / 2 * ‖x‖ ^ 2) = ⟪v, x⟫_ℝ - 1 / 2 * ⟪x, r • x⟫_ℝ
   rw [real_inner_smul_right, real_inner_self_eq_norm_sq]
