@@ -5,11 +5,8 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read # Read access to repository contents
-  pages: write # Write access to GitHub Pages
-  id-token: write # Write access to ID tokens
+  contents: read
 
 jobs:
   ledgers:
@@ -24,8 +21,84 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_artifact_id: ${{ steps.upload_pages.outputs.artifact_id }}
 
     steps:
       - uses: actions/checkout@v5
-      - uses: leanprover/lean-action@v1
-      - uses: leanprover-community/docgen-action@v1
+      - name: Build Lean
+        uses: leanprover/lean-action@v1
+
+      # Reuse the docgen-action build and cache steps without its inline deploy.
+      - name: Check out the documentation generator
+        if: github.ref == 'refs/heads/main'
+        uses: actions/checkout@v5
+        with:
+          repository: leanprover-community/docgen-action
+          ref: 56dff2bb89f3e9b8c1b6d5c8410362c19de2d904 # v1
+          path: docgen-action
+          persist-credentials: false
+      - name: Read documentation build metadata
+        if: github.ref == 'refs/heads/main'
+        id: docgen
+        run: node docgen-action/dist/index.js
+      - name: Cache dependency documentation
+        if: steps.docgen.outputs.cached_docbuild_dependencies != ''
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.docgen.outputs.cached_docbuild_dependencies }}
+          key: Docs-${{ hashFiles('lake-manifest.json') }}
+      - name: Build API documentation
+        if: github.ref == 'refs/heads/main'
+        env:
+          NAME: ${{ steps.docgen.outputs.name }}
+          DOCS_FACETS: ${{ steps.docgen.outputs.docs_facets }}
+          HOMEPAGE: docs
+        run: bash docgen-action/scripts/build_docs.sh
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main'
+        id: upload_pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          name: github-pages-${{ github.run_attempt }}
+          path: docs/
+
+  deploy:
+    name: Deploy documentation
+    if: github.ref == 'refs/heads/main'
+    needs: [build, ledgers]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Wait for the uploaded artifact to become visible
+        id: pages_artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ needs.build.outputs.pages_artifact_id }}
+        run: |
+          if [[ ! "$ARTIFACT_ID" =~ ^[0-9]+$ ]]; then
+            echo "::error::The documentation build did not report a Pages artifact ID."
+            exit 1
+          fi
+          endpoint="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts"
+          for attempt in {1..12}; do
+            if name=$(gh api --paginate "$endpoint" --jq \
+                ".artifacts[] | select(.id == $ARTIFACT_ID and (.expired | not)) | .name") && [[ -n "$name" ]]; then
+              printf 'name=%s\n' "$name" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Uploaded Pages artifact $ARTIFACT_ID did not become visible."
+          exit 1
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ steps.pages_artifact.outputs.name }}
